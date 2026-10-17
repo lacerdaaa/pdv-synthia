@@ -96,4 +96,80 @@ public sealed partial class BackofficeAuthTests(ServerFixture fx) : IClassFixtur
 
     [GeneratedRegex("name=\"__RequestVerificationToken\" value=\"([^\"]+)\"")]
     private static partial Regex AntiforgeryRegex();
+
+    private async Task<HttpClient> LoginAsync(string username, string password)
+    {
+        var http = Client();
+        var page = await http.GetStringAsync("/retaguarda/login");
+        var res = await http.PostAsync("/retaguarda/login", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["_handler"] = "login",
+            ["__RequestVerificationToken"] = AntiforgeryRegex().Match(page).Groups[1].Value,
+            ["Input.Username"] = username,
+            ["Input.Password"] = password,
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+        return http;
+    }
+
+    [Fact]
+    public async Task Estoquista_nao_acessa_produtos_mas_acessa_estoque()
+    {
+        var users = fx.Factory.Services.GetRequiredService<BackofficeUsers>();
+        var u = await users.CreateAsync($"est{Guid.NewGuid():N}"[..12], "Estoquista", "segredo3", BackofficeRoles.Stock);
+        var http = await LoginAsync(u.Username, "segredo3");
+
+        var produtos = await http.GetAsync("/retaguarda/produtos");
+        Assert.Equal(HttpStatusCode.Redirect, produtos.StatusCode);
+        Assert.Equal("/retaguarda/sem-permissao", produtos.Headers.Location!.AbsolutePath);
+
+        Assert.Equal(HttpStatusCode.OK, (await http.GetAsync("/retaguarda/estoque")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await http.GetAsync("/retaguarda/inventarios")).StatusCode);
+        Assert.NotEqual(HttpStatusCode.OK, (await http.GetAsync("/retaguarda/usuarios")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Usuario_desativado_perde_o_acesso_na_hora()
+    {
+        var users = fx.Factory.Services.GetRequiredService<BackofficeUsers>();
+        var u = await UserAsync("segredo4");
+        var http = await LoginAsync(u.Username, "segredo4");
+        Assert.Equal(HttpStatusCode.OK, (await http.GetAsync("/retaguarda")).StatusCode);
+
+        await users.SetActiveAsync(u.Id, false);
+
+        var res = await http.GetAsync("/retaguarda");
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+        Assert.StartsWith("/retaguarda/login", res.Headers.Location!.AbsolutePath);
+        Assert.Null(await users.VerifyAsync(u.Username, "segredo4"));
+    }
+
+    [Fact]
+    public async Task Troca_da_propria_senha_confere_a_atual()
+    {
+        var users = fx.Factory.Services.GetRequiredService<BackofficeUsers>();
+        var u = await UserAsync("antiga1");
+
+        await Assert.ThrowsAsync<ArgumentException>(() => users.ChangeOwnPasswordAsync(u.Id, "errada", "nova123"));
+        await users.ChangeOwnPasswordAsync(u.Id, "antiga1", "nova123");
+
+        Assert.Null(await users.VerifyAsync(u.Username, "antiga1"));
+        Assert.NotNull(await users.VerifyAsync(u.Username, "nova123"));
+    }
+
+    [Fact]
+    public async Task Nao_fica_sem_administrador_ativo()
+    {
+        var users = fx.Factory.Services.GetRequiredService<BackofficeUsers>();
+        // Neste banco o único admin é o criado no primeiro start.
+        var admin = (await users.ListAsync()).Single(x => x.Role == BackofficeRoles.Admin);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => users.SetActiveAsync(admin.Id, false));
+        await Assert.ThrowsAsync<ArgumentException>(() => users.SetRoleAsync(admin.Id, BackofficeRoles.Stock));
+        Assert.True(await users.IsActiveAsync(admin.Id));
+
+        var u = await UserAsync("segredo5");
+        await Assert.ThrowsAsync<ArgumentException>(() => users.SetRoleAsync(u.Id, "dono"));
+        await Assert.ThrowsAsync<ArgumentException>(() => users.CreateAsync(u.Username, "Duplicado", "segredo5"));
+    }
 }
