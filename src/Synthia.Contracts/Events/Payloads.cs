@@ -62,6 +62,24 @@ public sealed record StockCounted(
     decimal? ExpectedQuantity = null,
     string? CountedBy = null);
 
+public static class AdjustmentReasons
+{
+    public const string Damage = "damage";          // quebra / avaria
+    public const string Expired = "expired";        // vencimento
+    public const string Consumption = "consumption"; // consumo interno
+    public const string Theft = "theft";            // furto / extravio
+    public const string SupplierReturn = "supplier_return";
+    public const string Other = "other";
+
+    public static readonly string[] All = [Damage, Expired, Consumption, Theft, SupplierReturn, Other];
+}
+
+/// <param name="Quantity">Quantidade que sai do estoque (sempre positiva).</param>
+public sealed record StockAdjustmentItem(Guid ProductId, string Description, decimal Quantity);
+
+/// <summary>Saída de mercadoria que não é venda (perda, consumo, devolução). Stream = o próprio ajuste.</summary>
+public sealed record StockAdjusted(Guid AdjustmentId, string Reason, IReadOnlyList<StockAdjustmentItem> Items, string AdjustedBy, string? Note);
+
 public static class StockReceiptSources
 {
     /// <summary>Mercadoria trazida da loja antiga na mudança.</summary>
