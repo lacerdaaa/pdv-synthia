@@ -9,7 +9,8 @@
   "terminal": {
     "id": "CX01",                                  // CX01..CX04
     "serverUrl": "http://192.168.10.2:5290",       // servidor local da loja
-    "databasePath": "C:\\Synthia\\caixa.db"
+    "databasePath": "C:\\Synthia\\caixa.db",
+    "apiKey": ""                                   // chave do caixa no servidor; prefira SYNTHIA_TERMINAL_KEY
   },
   "nfce": {
     "serie": 1,                                    // uma série por caixa

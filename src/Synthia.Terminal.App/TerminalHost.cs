@@ -51,11 +51,13 @@ public sealed class TerminalHost : IAsyncDisposable
         s.AddSingleton(sp => { var db = new LocalDb(sp.GetRequiredService<TerminalOptions>()); db.EnsureCreated(); return db; });
         s.AddSingleton<Outbox>();
         s.AddSingleton<LocalCatalog>();
-        s.AddSingleton(sp => new SyncClient(new HttpClient
+        s.AddSingleton(sp =>
         {
-            BaseAddress = sp.GetRequiredService<TerminalOptions>().ServerUrl,
-            Timeout = TimeSpan.FromSeconds(10),
-        }));
+            var http = new HttpClient { BaseAddress = sp.GetRequiredService<TerminalOptions>().ServerUrl, Timeout = TimeSpan.FromSeconds(10) };
+            http.DefaultRequestHeaders.Add("X-Terminal-Id", config.Terminal.Id);
+            if (config.Terminal.ResolveApiKey() is { } key) http.DefaultRequestHeaders.Add("X-Terminal-Key", key);
+            return new SyncClient(http);
+        });
         s.AddSingleton<OutboxPusher>();
         s.AddSingleton<IOutboxSignal>(sp => sp.GetRequiredService<OutboxPusher>());
         s.AddHostedService(sp => sp.GetRequiredService<OutboxPusher>());

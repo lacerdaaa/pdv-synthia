@@ -79,6 +79,15 @@ public sealed record TerminalSection
     public string Id { get; init; } = "CX01";
     public string ServerUrl { get; init; } = "http://192.168.10.2:5290";
     public string DatabasePath { get; init; } = "caixa.db";
+
+    /// <summary>
+    /// Chave deste caixa no servidor (Sync:Terminals:CX01 lá). Prefira a variável de ambiente
+    /// SYNTHIA_TERMINAL_KEY a gravar no arquivo.
+    /// </summary>
+    public string? ApiKey { get; init; }
+
+    public string? ResolveApiKey() =>
+        Environment.GetEnvironmentVariable("SYNTHIA_TERMINAL_KEY") is { Length: > 0 } fromEnv ? fromEnv : ApiKey;
 }
 
 public enum NfceEnvironment { Homologacao, Producao }
