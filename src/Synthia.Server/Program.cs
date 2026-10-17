@@ -34,9 +34,21 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/retaguarda/login";
+        options.AccessDeniedPath = "/retaguarda/sem-permissao";
         options.Cookie.Name = "synthia.retaguarda";
         options.ExpireTimeSpan = TimeSpan.FromHours(12);
         options.SlidingExpiration = true;
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            // Usuário desativado (ou apagado) perde o acesso na próxima requisição, sem esperar o cookie expirar.
+            var id = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var users = context.HttpContext.RequestServices.GetRequiredService<BackofficeUsers>();
+            if (!Guid.TryParse(id, out var userId) || !await users.IsActiveAsync(userId))
+            {
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+        };
     });
 builder.Services.AddAuthorization();
 
