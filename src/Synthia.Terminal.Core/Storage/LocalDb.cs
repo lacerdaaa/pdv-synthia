@@ -1,4 +1,3 @@
-using System.Data;
 using Dapper;
 using Microsoft.Data.Sqlite;
 
@@ -8,13 +7,6 @@ namespace Synthia.Terminal.Core.Storage;
 public sealed class LocalDb
 {
     private readonly string _connectionString;
-
-    static LocalDb()
-    {
-        SqlMapper.AddTypeHandler(new GuidHandler());
-        SqlMapper.RemoveTypeMap(typeof(Guid));
-        SqlMapper.RemoveTypeMap(typeof(Guid?));
-    }
 
     public LocalDb(TerminalOptions options)
     {
@@ -90,15 +82,4 @@ public sealed class LocalDb
         CREATE INDEX IF NOT EXISTS ix_outbox_pending ON outbox (sent_at, event_id);
         CREATE INDEX IF NOT EXISTS ix_outbox_stream ON outbox (stream_id, stream_seq);
         """;
-
-    private sealed class GuidHandler : SqlMapper.TypeHandler<Guid>
-    {
-        public override void SetValue(IDbDataParameter parameter, Guid value)
-        {
-            parameter.DbType = DbType.String;
-            parameter.Value = value.ToString();
-        }
-
-        public override Guid Parse(object value) => Guid.Parse((string)value);
-    }
 }

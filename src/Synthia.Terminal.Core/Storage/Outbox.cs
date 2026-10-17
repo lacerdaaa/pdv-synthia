@@ -82,8 +82,8 @@ public sealed class Outbox(TerminalOptions options, TimeProvider clock)
 
     private sealed class Row
     {
-        public Guid EventId { get; init; }
-        public Guid StreamId { get; init; }
+        public string EventId { get; init; } = "";
+        public string StreamId { get; init; } = "";
         public int StreamSeq { get; init; }
         public string Type { get; init; } = "";
         public string TerminalId { get; init; } = "";
@@ -92,7 +92,7 @@ public sealed class Outbox(TerminalOptions options, TimeProvider clock)
         public string Payload { get; init; } = "";
 
         public EventEnvelope ToEnvelope() => new(
-            EventId, StreamId, StreamSeq, Type, TerminalId, LocalDb.FromDbTime(OccurredAt), CatalogVersion,
+            Guid.Parse(EventId), Guid.Parse(StreamId), StreamSeq, Type, TerminalId, LocalDb.FromDbTime(OccurredAt), CatalogVersion,
             JsonDocument.Parse(Payload).RootElement.Clone());
     }
 }
