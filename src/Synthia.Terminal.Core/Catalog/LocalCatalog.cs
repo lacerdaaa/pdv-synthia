@@ -41,7 +41,21 @@ public sealed class LocalCatalog(LocalDb db, TimeProvider clock)
         using var conn = db.Open();
         var p = new DynamicParameters(args);
         p.Add("now", LocalDb.ToDbTime(clock.GetUtcNow()));
-        return conn.QuerySingleOrDefault<CatalogItem>($"{SelectItem} WHERE {where} LIMIT 1", p);
+        return conn.QuerySingleOrDefault<ItemRow>($"{SelectItem} WHERE {where} LIMIT 1", p)?.ToItem();
+    }
+
+    // SQLite devolve TEXT/INTEGER; a classe com setters deixa o Dapper converter para Guid/int.
+    private sealed class ItemRow
+    {
+        public Guid Id { get; init; }
+        public string Name { get; init; } = "";
+        public string? Barcode { get; init; }
+        public int? Plu { get; init; }
+        public string Unit { get; init; } = "";
+        public long PriceCents { get; init; }
+        public string Ncm { get; init; } = "";
+
+        public CatalogItem ToItem() => new(Id, Name, Barcode, Plu, Unit, PriceCents, Ncm);
     }
 
     /// <summary>Upsert idempotente: reaplicar o mesmo delta não muda nada.</summary>
