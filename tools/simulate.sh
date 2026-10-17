@@ -12,6 +12,10 @@ URL=http://localhost:5299
 
 psql -h localhost -U "$PG_USER" -d postgres -qc "DROP DATABASE IF EXISTS $DB WITH (FORCE)" -c "CREATE DATABASE $DB"
 
+# Chaves usadas só nesta execução: o servidor exige chave por caixa e chave de API no back-office.
+export Sync__Terminals__CX01=sim-cx01 Sync__Terminals__CX02=sim-cx02 Backoffice__ApiKeys__0=sim-backoffice
+export SYNTHIA_TERMINAL_KEY_CX01=sim-cx01 SYNTHIA_TERMINAL_KEY_CX02=sim-cx02 SYNTHIA_API_KEY=sim-backoffice
+
 dotnet build -v q PdvSynthia.slnx >/dev/null
 ConnectionStrings__Synthia="${PG_ADMIN/Database=postgres/Database=$DB}" \
   dotnet run --no-build --project src/Synthia.Server --urls "$URL" >/tmp/synthia-sim-server.log 2>&1 &

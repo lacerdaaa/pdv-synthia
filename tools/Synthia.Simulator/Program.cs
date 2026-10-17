@@ -23,6 +23,8 @@ var cx01 = new SimTerminal("CX01", workDir, serverUrl, recorder, clock);
 var cx02 = new SimTerminal("CX02", workDir, serverUrl, recorder, clock);
 var backofficeLink = new RecordingLink("Back-office", recorder);
 var backoffice = new HttpClient(backofficeLink) { BaseAddress = serverUrl };
+if (Environment.GetEnvironmentVariable("SYNTHIA_API_KEY") is { Length: > 0 } apiKey)
+    backoffice.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
 await using var pg = NpgsqlDataSource.Create(pgConnection);
 var metrics = new Metrics(pg, [cx01, cx02]);
 

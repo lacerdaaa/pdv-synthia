@@ -32,7 +32,11 @@ public sealed class SimTerminal
         Db = new LocalDb(options);
         Db.EnsureCreated();
 
-        var client = new SyncClient(new HttpClient(Link) { BaseAddress = server, Timeout = TimeSpan.FromSeconds(5) });
+        var http = new HttpClient(Link) { BaseAddress = server, Timeout = TimeSpan.FromSeconds(5) };
+        http.DefaultRequestHeaders.Add("X-Terminal-Id", id);
+        if (Environment.GetEnvironmentVariable($"SYNTHIA_TERMINAL_KEY_{id}") is { Length: > 0 } key)
+            http.DefaultRequestHeaders.Add("X-Terminal-Key", key);
+        var client = new SyncClient(http);
         Outbox = new Outbox(options, clock);
         Catalog = new LocalCatalog(Db, clock);
         Pusher = new OutboxPusher(Db, Outbox, client, NullLogger<OutboxPusher>.Instance);
