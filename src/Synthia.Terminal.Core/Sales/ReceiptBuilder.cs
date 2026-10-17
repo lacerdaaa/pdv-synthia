@@ -46,9 +46,13 @@ public sealed class ReceiptBuilder(StoreSection store, string terminalId, NfceEn
             lines.Add(new ReceiptLine.Columns("Troco R$", Amount(sale.ChangeCents)));
         lines.Add(new ReceiptLine.Separator());
 
-        if (sale.NfceKey is { } rawKey)
+        if (sale.NfceKey is { } rawKey && !NfceKey.IsValid(rawKey))
         {
-            var key = new NfceKey(rawKey);
+            lines.Add(new ReceiptLine.Text($"Chave: {rawKey}", Align.Center));
+        }
+        else if (sale.NfceKey is { } validKey)
+        {
+            var key = new NfceKey(validKey);
             if (sale.NfceStatus == NfceStatus.Pending)
             {
                 lines.Add(new ReceiptLine.Text("EMITIDA EM CONTINGÊNCIA", Align.Center, Bold: true));
