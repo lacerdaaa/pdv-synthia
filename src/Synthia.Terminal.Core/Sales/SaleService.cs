@@ -42,12 +42,15 @@ public sealed class SaleService(LocalDb db, Outbox outbox, IOutboxSignal signal,
         return sale;
     }
 
-    public void CancelItem(Guid saleId, Guid itemId, string reason)
+    /// <param name="refundMethod">Como o valor volta ao cliente; precisa ser uma forma usada na venda.</param>
+    public void CancelItem(Guid saleId, Guid itemId, string reason, string refundMethod)
     {
         var sale = FindSale(saleId) ?? throw new InvalidOperationException("Venda não encontrada neste caixa.");
         if (sale.Items.All(i => i.ItemId != itemId)) throw new InvalidOperationException("Item não pertence à venda.");
+        if (sale.Payments.All(p => p.Method != refundMethod))
+            throw new InvalidOperationException("Devolução só pela forma de pagamento usada na venda.");
 
-        Record(EventTypes.SaleItemCancelled, saleId, new SaleItemCancelled(saleId, itemId, reason));
+        Record(EventTypes.SaleItemCancelled, saleId, new SaleItemCancelled(saleId, itemId, reason, refundMethod));
     }
 
     public void CancelSale(Guid saleId, string reason)
