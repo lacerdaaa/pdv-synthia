@@ -15,4 +15,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Synthia.Terminal.Tests" />
+  </ItemGroup>
+
 </Project>
