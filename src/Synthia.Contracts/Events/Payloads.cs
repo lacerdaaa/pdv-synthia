@@ -79,6 +79,7 @@ public sealed record StockReceiptItem(Guid ProductId, string Description, decima
 /// </summary>
 /// <param name="Document">Número da nota, romaneio da transferência etc.</param>
 /// <param name="ReceivedBy">Usuário da retaguarda que lançou.</param>
+/// <param name="AccessKey">Chave da NF-e do fornecedor, quando a entrada veio do XML (impede importar duas vezes).</param>
 public sealed record StockReceived(
     Guid ReceiptId,
     string Source,
@@ -86,7 +87,8 @@ public sealed record StockReceived(
     string? Document,
     IReadOnlyList<StockReceiptItem> Items,
     string ReceivedBy,
-    string? Note);
+    string? Note,
+    string? AccessKey = null);
 
 public sealed record NfceAuthorized(Guid SaleId, string NfceKey, string Protocol);
 
