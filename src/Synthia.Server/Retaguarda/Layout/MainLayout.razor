@@ -5,21 +5,28 @@
         <a class="brand" href="/retaguarda"><img src="retaguarda/logo-xandao.png" alt="Xandão Supermercados" /></a>
         <nav>
             <NavLink href="/retaguarda" Match="NavLinkMatch.All">Painel</NavLink>
-            <NavLink href="/retaguarda/produtos">Produtos</NavLink>
+            <AuthorizeView Roles="@BackofficeRoles.CatalogEditors">
+                <NavLink href="/retaguarda/produtos">Produtos</NavLink>
+            </AuthorizeView>
             <NavLink href="/retaguarda/entradas">Entradas</NavLink>
+            <NavLink href="/retaguarda/notas">Notas (XML)</NavLink>
             <NavLink href="/retaguarda/estoque">Estoque</NavLink>
             <NavLink href="/retaguarda/inventarios">Inventário</NavLink>
             <NavLink href="/retaguarda/ajustes">Perdas e ajustes</NavLink>
-            <NavLink href="/retaguarda/notas">Notas (XML)</NavLink>
+            <AuthorizeView Roles="@BackofficeRoles.Admin">
+                <NavLink href="/retaguarda/usuarios">Usuários</NavLink>
+            </AuthorizeView>
         </nav>
         <div class="side-foot">
             <AuthorizeView>
                 <div class="who">@context.User.FindFirst(ClaimTypes.GivenName)?.Value</div>
+                <small class="role">@BackofficeRoles.Label(context.User.FindFirst(ClaimTypes.Role)?.Value ?? "")</small>
             </AuthorizeView>
             <form method="post" action="/retaguarda/logout">
                 <AntiforgeryToken />
                 <button type="submit" class="link">Sair</button>
             </form>
+            <a href="/retaguarda/minha-senha" class="link">Trocar senha</a>
             <a href="/docs/" class="link">Documentação</a>
         </div>
     </aside>

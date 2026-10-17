@@ -1,5 +1,5 @@
 @page "/retaguarda/produtos"
-@attribute [Authorize]
+@attribute [Authorize(Roles = BackofficeRoles.CatalogEditors)]
 @rendermode InteractiveServer
 @inject CatalogService Catalog
 

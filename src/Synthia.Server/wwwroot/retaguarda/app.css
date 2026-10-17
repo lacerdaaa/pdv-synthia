@@ -131,3 +131,6 @@ input.cell.small { width: 72px; }
 .nfe-head b { color: var(--navy); }
 .nfe-head .span-all { grid-column: 1 / -1; }
 .grid-table.nfe td { vertical-align: middle; }
+.side-foot .role { color: var(--soft); font-size: 12px; margin-top: -4px; }
+.card.narrow { max-width: 480px; }
+.grid.one { grid-template-columns: 1fr; }
