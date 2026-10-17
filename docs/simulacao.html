@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulação de um dia</title>
+<style>
+:root {
+  --bg: #fbfaf7; --surface: #ffffff; --surface-2: #f3f1ec; --text: #1d1c1a; --muted: #6b675f;
+  --border: #e3e0d8; --accent: #2f6fdb; --accent-soft: #e6eefc; --ok: #1f8a4c; --ok-soft: #e3f4ea;
+  --warn: #b26b00; --warn-soft: #fbf0dc; --bad: #c2362b; --bad-soft: #fbe6e4;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161614; --surface: #1f1e1c; --surface-2: #2a2926; --text: #ecebe7; --muted: #a29e95;
+    --border: #3a3834; --accent: #7aa7f5; --accent-soft: #243450; --ok: #5cc98a; --ok-soft: #1d3527;
+    --warn: #e7a84a; --warn-soft: #3a2d17; --bad: #f07b70; --bad-soft: #3d201d;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161614; --surface: #1f1e1c; --surface-2: #2a2926; --text: #ecebe7; --muted: #a29e95;
+  --border: #3a3834; --accent: #7aa7f5; --accent-soft: #243450; --ok: #5cc98a; --ok-soft: #1d3527;
+  --warn: #e7a84a; --warn-soft: #3a2d17; --bad: #f07b70; --bad-soft: #3d201d;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 var(--sans); }
+a { color: var(--accent); }
+code, pre { font-family: var(--mono); font-size: 12.5px; }
+code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+pre { background: var(--surface-2); padding: 10px 12px; border-radius: 8px; overflow: auto; margin: 6px 0 0; max-height: 340px; }
+button { font: inherit; cursor: pointer; }
+header.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+header.top .in { max-width: 1240px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+header.top strong { margin-right: auto; }
+.btn { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px; padding: 5px 12px; font-size: 14px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn:disabled { opacity: .4; cursor: default; }
+.progress { height: 3px; background: var(--surface-2); }
+.progress div { height: 100%; background: var(--accent); transition: width .2s; }
+main { max-width: 1240px; margin: 0 auto; padding: 20px 16px 80px; display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 20px; }
+main > * { min-width: 0; }
+aside { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 84px); overflow-y: auto; }
+aside h4 { margin: 14px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+aside button { display: flex; gap: 8px; width: 100%; text-align: left; background: none; border: 0; border-radius: 6px; padding: 5px 8px; color: var(--muted); font-size: 13.5px; }
+aside button:hover { background: var(--surface-2); color: var(--text); }
+aside button.on { background: var(--accent-soft); color: var(--text); }
+aside button span:first-child { font-variant-numeric: tabular-nums; min-width: 20px; }
+@media (max-width: 860px) { main { grid-template-columns: 1fr; } aside { position: static; max-height: 240px; border: 1px solid var(--border); border-radius: 10px; padding: 0 6px; } }
+h1 { font-size: clamp(24px, 4vw, 32px); margin: 0 0 6px; letter-spacing: -.02em; line-height: 1.2; }
+.lead { color: var(--muted); margin: 0 0 18px; max-width: 760px; }
+.phase { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); margin-bottom: 8px; }
+.stage { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+.stage h2 { margin: 0 0 16px; font-size: 21px; letter-spacing: -.01em; line-height: 1.3; }
+.flow { display: grid; gap: 14px; }
+.blk { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; padding-top: 14px; border-top: 1px solid var(--border); }
+@media (max-width: 600px) { .blk { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+.blk > .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-top: 2px; }
+.blk > .lbl b { display: block; color: var(--text); font-size: 13px; letter-spacing: 0; text-transform: none; }
+.routes { display: flex; flex-wrap: wrap; gap: 6px; }
+.route { font: 12.5px var(--mono); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; background: var(--bg); }
+.route .m { font-weight: 700; margin-right: 6px; }
+.m.GET { color: var(--ok); } .m.POST { color: var(--accent); } .m.PUT { color: var(--warn); } .m.local { color: var(--muted); }
+ol.proc { margin: 0; padding-left: 20px; } ol.proc li { margin: 2px 0; }
+.notes { overflow-wrap: anywhere; margin: 8px 0 0; padding: 0; list-style: none; font: 12.5px/1.6 var(--mono); color: var(--muted); }
+.ex { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; background: var(--bg); }
+.ex summary { list-style: none; cursor: pointer; padding: 8px 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13.5px; }
+.ex summary::-webkit-details-marker { display: none; }
+.ex .body { padding: 0 10px 10px; display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 760px) { .ex .body { grid-template-columns: minmax(0, 1fr); } }
+.ex .body h5 { margin: 0; font-size: 12px; color: var(--muted); font-weight: 500; }
+.actor { font-size: 12px; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); }
+.status { font: 600 12px var(--mono); padding: 1px 6px; border-radius: 4px; }
+.s2 { background: var(--ok-soft); color: var(--ok); } .sx { background: var(--bad-soft); color: var(--bad); }
+.note { font-size: 12.5px; color: var(--warn); }
+.note.bad { color: var(--bad); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+td, th { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+td.v { font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.before { color: var(--muted); text-decoration: line-through; }
+td.after { font-weight: 600; }
+tr.neg td.after { color: var(--bad); }
+.empty { color: var(--muted); font-style: italic; }
+.tablewrap { overflow-x: auto; }
+section.extra { grid-column: 1 / -1; margin-top: 10px; }
+section.extra h2 { font-size: 21px; margin: 24px 0 10px; }
+.finding { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--warn); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+.finding.bad { border-left-color: var(--bad); }
+.finding h3 { margin: 0 0 4px; font-size: 15.5px; }
+.finding p { margin: 4px 0 0; color: var(--muted); }
+.finding .ref { font-size: 12.5px; }
+.kbd { font: 11px var(--mono); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <strong>Simulação de um dia · PDV Synthia</strong>
+    <a class="btn" href="index.html">Documentação</a>
+    <button class="btn" id="prev" aria-label="Passo anterior">←</button>
+    <button class="btn primary" id="play">▶ Reproduzir</button>
+    <button class="btn" id="next" aria-label="Próximo passo">→</button>
+    <button class="btn" id="theme" aria-label="Alternar tema">◐</button>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+</header>
+
+<main>
+  <aside id="toc" aria-label="Passos"></aside>
+
+  <div>
+    <h1>Situação → rota → processo → resposta → efeito</h1>
+    <p class="lead">Execução real, não ilustração: servidor ASP.NET Core + PostgreSQL e dois caixas
+      (<code>Terminal.Core</code> + SQLite) rodando o roteiro de <code>tools/Synthia.Simulator</code>. Cada requisição,
+      resposta e mudança de estado abaixo foi gravada durante a execução. Só a rede (quedas, resposta perdida) e a
+      NFC-e (no lugar da ACBr) são simuladas. Use <span class="kbd">←</span> <span class="kbd">→</span> para navegar.</p>
+    <p class="lead" id="meta"></p>
+
+    <article class="stage" id="stage" aria-live="polite"></article>
+  </div>
+
+  <section class="extra" id="achados">
+    <h2>O que a simulação revelou</h2>
+    <div class="finding bad">
+      <h3>Estorno de item pago em dinheiro não sai do caixa esperado</h3>
+      <p>No passo 22 o feijão (R$ 8,99, pago em dinheiro) é cancelado e devolvido ao cliente. O <code>Projector</code>
+        desconta o valor das vendas, mas não do dinheiro esperado na gaveta. No fechamento (passo 26) o CX01 aparece
+        com R$ 8,99 de diferença que não existe. O CX02, sem estorno em dinheiro, fecha exato.</p>
+      <p class="ref">Proposta: <code>SaleItemCancelled</code> passa a carregar a forma de devolução (<code>refundMethod</code>) e o projetor desconta de <code>cash_sales_cents</code> quando for dinheiro.</p>
+    </div>
+    <div class="finding">
+      <h3>Cancelar um item de NFC-e já autorizada não existe no fiscal</h3>
+      <p>A SEFAZ não aceita cancelar um item da nota: é preciso cancelar a NFC-e inteira (prazo curto após a
+        autorização) e emitir outra. Hoje <code>CancelItem</code> só gera o evento. Depois de finalizada a venda, o fluxo deve virar
+        "cancela a venda e refaz", e o cancelamento de item fica só durante a venda (no carrinho, sem evento).</p>
+    </div>
+    <div class="finding">
+      <h3>Faltam o worker de contingência e a tela de inventário</h3>
+      <p>Nos passos 5, 17 e 18 os eventos <code>StockCounted</code>, <code>NfceAuthorized</code> e <code>NfceRejected</code>
+        foram gravados direto na outbox pelo simulador. O contrato e as projeções já funcionam; falta o código do caixa
+        que os produz (transmissão da contingência pela ACBr e tela de contagem).</p>
+    </div>
+    <div class="finding" style="border-left-color: var(--ok)">
+      <h3>Confirmado na prática</h3>
+      <p>Venda com servidor fora (12–13), resposta perdida e reenvio sem duplicar (14–15), produto inativo vendido offline
+        (19–20), estoque negativo sem bloquear a venda (21), preço agendado aplicado sem servidor (24) e rebuild das projeções
+        sem nenhuma mudança (27).</p>
+    </div>
+
+    <h2>Estado final</h2>
+    <div class="stage tablewrap"><table id="final"></table></div>
+  </section>
+</main>
+
+<script src="simulacao-data.js"></script>
+<script>
+(() => {
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch {}
+  document.getElementById('theme').onclick = () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch {}
+  };
+
+  const data = window.SIMULACAO;
+  const $ = id => document.getElementById(id);
+  if (!data) { $('stage').innerHTML = '<p>Rode <code>tools/simulate.sh</code> para gerar <code>simulacao-data.js</code>.</p>'; return; }
+
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const steps = data.steps;
+  $('meta').textContent = `${steps.length} passos · gerado em ${new Date(data.generatedAt).toLocaleString('pt-BR')}`;
+
+  // Índice agrupado por fase
+  let html = '', phase = '';
+  for (const s of steps) {
+    if (s.phase !== phase) { phase = s.phase; html += `<h4>${esc(phase)}</h4>`; }
+    html += `<button data-i="${s.number - 1}"><span>${s.number}</span><span>${esc(s.situation)}</span></button>`;
+  }
+  $('toc').innerHTML = html;
+  $('toc').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(+b.dataset.i); });
+
+  const route = r => {
+    if (r.startsWith('local')) return `<span class="route"><span class="m local">LOCAL</span>${esc(r.replace(/^local · /, ''))}</span>`;
+    const [m, ...p] = r.split(' ');
+    return `<span class="route"><span class="m ${m}">${m}</span>${esc(p.join(' '))}</span>`;
+  };
+
+  const exchange = x => {
+    const st = x.status == null ? '<span class="status sx">sem resposta</span>'
+      : `<span class="status ${x.status < 300 ? 's2' : 'sx'}">${x.status}</span>`;
+    const note = x.note ? `<span class="note ${x.status == null ? 'bad' : ''}">⚠ ${esc(x.note)}</span>` : '';
+    return `<details class="ex"><summary><span class="actor">${esc(x.actor)}</span>${route(x.method + ' ' + x.path)}${st}${note}</summary>
+      <div class="body">
+        <div><h5>Requisição</h5><pre>${x.request ? esc(x.request) : '<span class="empty">sem corpo</span>'}</pre></div>
+        <div><h5>Resposta</h5><pre>${x.response ? esc(x.response) : '<span class="empty">' + (x.status == null ? 'não chegou' : 'sem corpo') + '</span>'}</pre></div>
+      </div></details>`;
+  };
+
+  const effect = c => {
+    const neg = /^-/.test(c.after ?? '') ? ' class="neg"' : '';
+    return `<tr${neg}><td>${esc(c.key)}</td><td class="v before">${esc(c.before ?? '—')}</td><td class="v after">${esc(c.after ?? '—')}</td></tr>`;
+  };
+
+  let cur = 0, timer = null;
+  function go(i) {
+    cur = Math.max(0, Math.min(steps.length - 1, i));
+    const s = steps[cur];
+    $('stage').innerHTML = `
+      <span class="phase">Passo ${s.number} de ${steps.length} · ${esc(s.phase)}</span>
+      <h2>${esc(s.situation)}</h2>
+      <div class="flow">
+        <div class="blk"><div class="lbl"><b>Situação</b>o que acontece na loja</div>
+          <div>${esc(s.situation)}${s.notes.length ? `<ul class="notes">${s.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}</div></div>
+        <div class="blk"><div class="lbl"><b>Rota</b>por onde passa</div><div class="routes">${s.routes.map(route).join('')}</div></div>
+        <div class="blk"><div class="lbl"><b>Processo</b>o que o código faz</div><ol class="proc">${s.process.map(p => `<li>${esc(p).replace(/`([^`]+)`/g, '<code>$1</code>')}</li>`).join('')}</ol></div>
+        <div class="blk"><div class="lbl"><b>Resposta</b>HTTP gravado</div>
+          <div>${s.exchanges.length ? s.exchanges.map(exchange).join('') : '<span class="empty">Nenhuma chamada HTTP: tudo aconteceu no SQLite do caixa.</span>'}</div></div>
+        <div class="blk"><div class="lbl"><b>Efeito</b>estado que mudou</div>
+          <div class="tablewrap">${s.effects.length
+            ? `<table><thead><tr><th>Onde</th><th>Antes</th><th>Depois</th></tr></thead><tbody>${s.effects.map(effect).join('')}</tbody></table>`
+            : '<span class="empty">Nada mudou.</span>'}</div></div>
+      </div>`;
+    document.querySelectorAll('#toc button').forEach(b => b.classList.toggle('on', +b.dataset.i === cur));
+    document.querySelector('#toc button.on')?.scrollIntoView({ block: 'nearest' });
+    $('bar').style.width = `${(cur + 1) / steps.length * 100}%`;
+    $('prev').disabled = cur === 0;
+    $('next').disabled = cur === steps.length - 1;
+    try { history.replaceState(null, '', '#passo-' + s.number); } catch {}
+  }
+
+  function stop() { clearInterval(timer); timer = null; $('play').textContent = '▶ Reproduzir'; }
+  $('play').onclick = () => {
+    if (timer) return stop();
+    if (cur === steps.length - 1) go(0);
+    $('play').textContent = '❚❚ Pausar';
+    timer = setInterval(() => cur < steps.length - 1 ? go(cur + 1) : stop(), 4000);
+  };
+  $('prev').onclick = () => { stop(); go(cur - 1); };
+  $('next').onclick = () => { stop(); go(cur + 1); };
+  addEventListener('keydown', e => {
+    if (e.target.closest('input, textarea')) return;
+    if (e.key === 'ArrowRight') { stop(); go(cur + 1); }
+    if (e.key === 'ArrowLeft') { stop(); go(cur - 1); }
+  });
+
+  $('final').innerHTML = '<thead><tr><th>Onde</th><th>Valor</th></tr></thead><tbody>' +
+    data.final.map(f => `<tr${/^-/.test(f.value) ? ' class="neg"' : ''}><td>${esc(f.key)}</td><td class="v after">${esc(f.value)}</td></tr>`).join('') + '</tbody>';
+
+  const m = location.hash.match(/passo-(\d+)/);
+  go(m ? +m[1] - 1 : 0);
+})();
+</script>
+</body>
+</html>
