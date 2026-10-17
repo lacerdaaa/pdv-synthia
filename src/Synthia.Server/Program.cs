@@ -2,6 +2,7 @@ using Microsoft.Extensions.FileProviders;
 using Npgsql;
 using Synthia.Contracts.Catalog;
 using Synthia.Contracts.Sync;
+using Synthia.Server.Backoffice;
 using Synthia.Server.Catalog;
 using Synthia.Server.Data;
 using Synthia.Server.Sync;
@@ -15,6 +16,9 @@ builder.Services.AddSingleton<Migrator>();
 builder.Services.AddSingleton<Projector>();
 builder.Services.AddSingleton<EventStore>();
 builder.Services.AddSingleton<CatalogService>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<BackofficeEvents>();
+builder.Services.AddSingleton<StockService>();
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer((doc, _, _) =>
 {
     doc.Info.Title = "PDV Synthia · Servidor local";
