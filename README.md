@@ -22,6 +22,7 @@ simulador de sync, o catálogo de eventos e um **console de API ao vivo** gerado
 - [Arquitetura](#arquitetura)
 - [Como a sincronização funciona](#como-a-sincronização-funciona)
 - [Stack](#stack)
+- [O caixa](#o-caixa)
 - [Hardware do caixa](#hardware-do-caixa)
 - [Começando](#começando)
 - [Documentação e console de API](#documentação-e-console-de-api)
@@ -103,11 +104,46 @@ caixa nunca pede ID ao servidor e uma venda nunca é ordenada depois do próprio
 | Caixa · dados | SQLite (Microsoft.Data.Sqlite + Dapper), WAL | Arquivo local e transacional; o worker lê sem bloquear a venda. |
 | Caixa · fiscal | ACBrLib NFC-e *(a integrar)* | Série própria por caixa, certificado A1 local, contingência tpEmis 9. |
 | Caixa · dispositivos | ESC/POS, protocolo Toledo, System.IO.Ports | Padrões de mercado; trocar de modelo é configuração. |
-| Caixa · interface | Avalonia *(proposta)* | Desktop .NET para Windows/Linux sobre o mesmo `Terminal.Core`. |
+| Caixa · interface | Avalonia 12 (MVVM, CommunityToolkit) | App desktop para Windows/Linux sobre o `Terminal.Core`; testado headless. |
 | Servidor | ASP.NET Core minimal API | HTTP simples; polling basta para 4 caixas. |
 | Servidor · dados | PostgreSQL 16 (Npgsql + Dapper) | SQL explícito, `jsonb`, projeções reconstruíveis. |
 | Documentação | OpenAPI nativo do .NET + página própria em `/docs` | Console de API ao vivo sem dependências externas. |
 | Testes | xUnit, Postgres real, `FakeTimeProvider` | Integração do servidor e ponta a ponta caixa → servidor. |
+
+## O caixa
+
+![Tela de venda](docs/img/caixa-2-venda.png)
+
+App desktop em Avalonia sobre o `Terminal.Core`: toda a regra de venda está na `CheckoutSession` (testada sem
+interface) e a tela só repassa o teclado. Operação inteira pelo teclado, como nos PDVs de mercado.
+
+```bash
+# experimentar sem servidor nem hardware (dispositivos simulados, catálogo de exemplo, banco caixa-demo.db)
+dotnet run --project src/Synthia.Terminal.App -- --demo
+
+# caixa de verdade: terminal.json ao lado do executável, ou
+dotnet run --project src/Synthia.Terminal.App -- --config caminho/terminal.json
+```
+
+| Tecla | Ação |
+|---|---|
+| `Enter` | Registra o código; no pagamento, recebe em dinheiro (vazio = restante) |
+| `3*código` · `1,235*PLU` | Multiplica · informa o peso sem balança |
+| `PLU` | Produto pesado: lê a balança do caixa |
+| `F4` | Pagamento |
+| `F5` `F6` `F7` `F8` | Dinheiro · débito · crédito · PIX (TEF) |
+| `Del` | Remove item (antes de finalizar) |
+| `Esc` | Sai do pagamento estornando o TEF · 2× descarta a venda |
+| `F9` · `F10` · `F12` | Sangria · reimprime · fecha turno |
+
+Ao finalizar: grava `SaleCompleted` na outbox, emite a NFC-e (simulada, com numeração e chave reais da série do
+caixa), imprime o DANFE e a via do TEF, e abre a gaveta se houve dinheiro. Impressora fora do ar não impede a
+venda: o operador reimprime com `F10`. O topo mostra operador, eventos pendentes de envio e versão do catálogo; em
+homologação, uma faixa avisa que a NFC-e não tem valor fiscal.
+
+| Abrir turno | Pagamento | Finalizada |
+|---|---|---|
+| ![](docs/img/caixa-1-abrir-turno.png) | ![](docs/img/caixa-3-pagamento.png) | ![](docs/img/caixa-4-finalizada.png) |
 
 ## Hardware do caixa
 
@@ -273,13 +309,15 @@ estorno em dinheiro fora da gaveta, já corrigido.
 src/
   Synthia.Contracts        envelope, payloads, mensagens de sync, Uuid7, JSON comum
   Synthia.Terminal.Core    LocalDb, Outbox, LocalCatalog, Cart, SaleService, ShiftService,
-                           OutboxPusher, CatalogPuller, INfceEmitter, ScanResolver,
-                           TerminalConfig, contratos de dispositivos
+                           CheckoutSession, ReceiptBuilder, NfceKey/NfceNumbering, ScanResolver,
+                           OutboxPusher, CatalogPuller, TerminalConfig, contratos de dispositivos
   Synthia.Terminal.Devices balança Toledo, ESC/POS, leitor serial, dispositivos simulados
+  Synthia.Terminal.App     app do caixa (Avalonia): abertura de turno, venda, pagamento
   Synthia.Server           Migrator + SQL, EventStore, Projector, CatalogService, OpenAPI, /docs
 tests/
   Synthia.Terminal.Tests   caixa com SQLite temporário, relógio e servidor falsos
   Synthia.Server.Tests     servidor contra Postgres real, docs/OpenAPI, ponta a ponta
+  Synthia.Terminal.App.Tests  tela do caixa sem monitor (Avalonia headless), gera as capturas
 config/
   terminal.example.json    configuração comentada de um caixa
 tools/
@@ -302,6 +340,10 @@ dotnet test
   detecção de leitor em modo teclado, `terminal.json` e fábrica de dispositivos.
 - **Servidor:** idempotência, estoque negativo, contagem, cancelamentos e devoluções na gaveta, fila de NFC-e,
   rebuild, delta/snapshot do catálogo, `/docs` e OpenAPI.
+- **Checkout:** multiplicador, balança (estável, instável, sem balança), etiqueta, pagamento misto, TEF negado,
+  estorno ao sair do pagamento, impressora fora, sangria, chave e numeração da NFC-e.
+- **Tela do caixa (headless):** abre turno, vende pelo teclado, paga em débito + dinheiro, descarta com Esc,
+  sangria e fechamento. `SYNTHIA_SCREENSHOTS=docs/img dotnet test tests/Synthia.Terminal.App.Tests` regenera as capturas.
 - **Ponta a ponta:** caixa SQLite baixa catálogo, vende e o servidor Postgres projeta estoque e turno.
 
 O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
@@ -310,7 +352,8 @@ O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
 
 - [ ] Integração ACBrLib (emissão, contingência, worker de transmissão, inutilização no fim do dia)
 - [x] Camada de dispositivos (leitor, balança, impressora/gaveta, TEF simulado) e etiqueta de balança
-- [ ] Interface do caixa (proposta: Avalonia) e tela de inventário
+- [x] App do caixa: turno, venda, balança, pagamentos, sangria, fechamento, DANFE
+- [ ] Tela de inventário e consulta de preço
 - [ ] Campos tributários no produto (CFOP, CST/CSOSN, origem, CEST, alíquotas)
 - [ ] Operadores, login no caixa e permissão de supervisor
 - [ ] Back-office web e fila de NFC-e rejeitadas
