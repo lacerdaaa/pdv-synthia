@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Synthia.Server\Synthia.Server.csproj" />
+    <ProjectReference Include="..\..\src\Synthia.Terminal.Core\Synthia.Terminal.Core.csproj" />
   </ItemGroup>
 
 </Project>
