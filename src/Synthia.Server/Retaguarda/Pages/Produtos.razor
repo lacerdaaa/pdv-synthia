@@ -1,0 +1,149 @@
+@page "/retaguarda/produtos"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject CatalogService Catalog
+
+<PageTitle>Produtos · Retaguarda</PageTitle>
+
+<header class="page-head">
+    <h1>Produtos</h1>
+    <div class="actions">
+        <a class="button" href="/retaguarda/produtos/importar">Importar planilha</a>
+        <button class="primary" @onclick="New">Novo produto</button>
+    </div>
+</header>
+
+<div class="toolbar">
+    <input class="search" placeholder="Buscar por descrição, código de barras ou PLU" @bind="search" @bind:event="oninput" />
+    <label class="check"><input type="checkbox" @bind="showInactive" /> mostrar inativos</label>
+    <span class="muted">@Filtered.Count() produto(s)</span>
+</div>
+
+@if (message is not null) { <p class="flash">@message</p> }
+
+@if (editing is not null)
+{
+    <section class="card editor">
+        <h2>@(isNew ? "Novo produto" : "Editar produto")</h2>
+        <EditForm Model="editing" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <div class="grid">
+                <label class="span2">Descrição <InputText @bind-Value="editing.Name" /></label>
+                <label>Código de barras <InputText @bind-Value="editing.Barcode" inputmode="numeric" /></label>
+                <label>PLU (balança) <InputNumber @bind-Value="editing.Plu" /></label>
+                <label>Unidade
+                    <InputSelect @bind-Value="editing.Unit">
+                        <option value="UN">UN</option><option value="KG">KG</option><option value="CX">CX</option>
+                        <option value="PCT">PCT</option><option value="L">L</option>
+                    </InputSelect>
+                </label>
+                <label>Preço de venda (R$) <InputText @bind-Value="editing.Price" inputmode="decimal" /></label>
+                <label>NCM <InputText @bind-Value="editing.Ncm" inputmode="numeric" maxlength="8" /></label>
+                <label class="check"><InputCheckbox @bind-Value="editing.Active" /> ativo</label>
+            </div>
+            <ValidationSummary />
+            @if (error is not null) { <p class="error">@error</p> }
+            <div class="actions">
+                <button type="button" @onclick="() => editing = null">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+        </EditForm>
+    </section>
+}
+
+<table class="grid-table">
+    <thead><tr><th>Descrição</th><th>Código de barras</th><th>PLU</th><th>Un</th><th class="num">Preço</th><th>NCM</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var p in Filtered.Take(500))
+        {
+            <tr class="@(p.Active ? "" : "inactive")">
+                <td>@p.Name @if (!p.Active) { <span class="badge">inativo</span> }</td>
+                <td class="mono">@p.Barcode</td>
+                <td class="mono">@p.Plu</td>
+                <td>@p.Unit</td>
+                <td class="num">@Fmt.Money(p.PriceCents)</td>
+                <td class="mono @(p.Ncm == "00000000" ? "warn" : "")">@p.Ncm</td>
+                <td class="num"><button class="link" @onclick="() => Edit(p)">editar</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (products.Count == 0)
+{
+    <p class="empty">Nenhum produto ainda. Comece por <a href="/retaguarda/produtos/importar">importar a planilha</a> do sistema atual.</p>
+}
+
+@code {
+    private List<ProductData> products = [];
+    private string search = "";
+    private bool showInactive;
+    private ProductForm? editing;
+    private bool isNew;
+    private string? error;
+    private string? message;
+
+    private IEnumerable<ProductData> Filtered => products
+        .Where(p => showInactive || p.Active)
+        .Where(p => search.Length == 0
+                    || p.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
+                    || p.Barcode == search.Trim()
+                    || p.Plu?.ToString() == search.Trim());
+
+    protected override async Task OnInitializedAsync() => products = [.. await Catalog.ListProductsAsync()];
+
+    private void New() { editing = new ProductForm(); isNew = true; error = null; }
+
+    private void Edit(ProductData p) { editing = ProductForm.From(p); isNew = false; error = null; }
+
+    private async Task SaveAsync()
+    {
+        if (editing is null) return;
+        if (editing.ToProduct(products) is not { } product) { error = editing.Error; return; }
+
+        try
+        {
+            await Catalog.UpsertProductAsync(product);
+            message = $"{product.Name} salvo. Os caixas recebem a alteração em até 30 s.";
+            editing = null;
+            products = [.. await Catalog.ListProductsAsync()];
+        }
+        catch (Npgsql.PostgresException ex) when (ex.SqlState == "23505")
+        {
+            error = "Já existe produto ativo com esse código de barras ou PLU.";
+        }
+    }
+
+    private sealed class ProductForm
+    {
+        public Guid Id { get; set; } = Guid.CreateVersion7();
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Informe a descrição.")]
+        public string Name { get; set; } = "";
+        public string? Barcode { get; set; }
+        public int? Plu { get; set; }
+        public string Unit { get; set; } = "UN";
+        public string Price { get; set; } = "";
+        public string Ncm { get; set; } = "";
+        public bool Active { get; set; } = true;
+        public string? Error { get; private set; }
+
+        public static ProductForm From(ProductData p) => new()
+        {
+            Id = p.Id, Name = p.Name, Barcode = p.Barcode, Plu = p.Plu, Unit = p.Unit,
+            Price = (p.PriceCents / 100m).ToString("N2", Fmt.PtBr), Ncm = p.Ncm == "00000000" ? "" : p.Ncm, Active = p.Active,
+        };
+
+        public ProductData? ToProduct(IReadOnlyList<ProductData> others)
+        {
+            var barcode = new string((Barcode ?? "").Where(char.IsAsciiDigit).ToArray());
+            var ncm = new string(Ncm.Where(char.IsAsciiDigit).ToArray());
+            if (!CsvText.TryMoney(Price, out var cents)) { Error = "Preço inválido."; return null; }
+            if (barcode.Length == 0 && Plu is null) { Error = "Informe código de barras ou PLU."; return null; }
+            if (ncm.Length is not (0 or 8)) { Error = "NCM tem 8 dígitos."; return null; }
+            if (Active && others.Any(o => o.Id != Id && o.Active && ((barcode.Length > 0 && o.Barcode == barcode) || (Plu is not null && o.Plu == Plu))))
+            { Error = "Já existe produto ativo com esse código de barras ou PLU."; return null; }
+
+            return new ProductData(Id, Name.Trim(), barcode.Length > 0 ? barcode : null, Plu, Unit, cents, ncm.Length > 0 ? ncm : "00000000", Active);
+        }
+    }
+}
