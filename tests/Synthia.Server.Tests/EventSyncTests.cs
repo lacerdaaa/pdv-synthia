@@ -8,7 +8,7 @@ namespace Synthia.Server.Tests;
 
 public sealed class EventSyncTests(ServerFixture fx) : IClassFixture<ServerFixture>
 {
-    private readonly HttpClient _http = fx.Factory.CreateClient();
+    private readonly HttpClient _http = fx.ApiClient();
 
     private async Task<PushEventsResponse> PushAsync(params EventEnvelope[] events)
     {

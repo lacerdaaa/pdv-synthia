@@ -26,7 +26,7 @@ public sealed class EndToEndTests(ServerFixture fx) : IClassFixture<ServerFixtur
     [Fact]
     public async Task Caixa_baixa_catalogo_vende_e_servidor_projeta_estoque()
     {
-        var http = fx.Factory.CreateClient();
+        var http = fx.ApiClient();
         var leite = new ProductData(Guid.CreateVersion7(), "Leite 1L", "7890001", null, "UN", 549, "04012010", true);
         (await http.PutAsJsonAsync($"/backoffice/products/{leite.Id}", leite)).EnsureSuccessStatusCode();
 

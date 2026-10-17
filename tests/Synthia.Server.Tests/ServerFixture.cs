@@ -15,6 +15,9 @@ public sealed class ServerFixture : IAsyncLifetime
 
     private readonly string _database = $"synthia_test_{Guid.NewGuid():N}";
 
+    /// <summary>Chave de API do back-office configurada para os testes (integrações/automação).</summary>
+    public const string ApiKey = "chave-de-teste-da-api";
+
     public WebApplicationFactory<Program> Factory { get; private set; } = null!;
     public NpgsqlDataSource Db { get; private set; } = null!;
 
@@ -30,10 +33,20 @@ public sealed class ServerFixture : IAsyncLifetime
         var cs = new NpgsqlConnectionStringBuilder(_adminConnectionString) { Database = _database }.ConnectionString;
         Db = NpgsqlDataSource.Create(cs);
         Factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(b => b.UseSetting("ConnectionStrings:Synthia", cs));
+            .WithWebHostBuilder(b => b
+                .UseSetting("ConnectionStrings:Synthia", cs)
+                .UseSetting("Backoffice:ApiKeys:0", ApiKey));
 
         // Força a inicialização (e as migrações) antes do primeiro teste.
         Factory.CreateClient().Dispose();
+    }
+
+    /// <summary>Cliente HTTP autenticado na API do back-office pela chave de API.</summary>
+    public HttpClient ApiClient()
+    {
+        var http = Factory.CreateClient();
+        http.DefaultRequestHeaders.Add("X-Api-Key", ApiKey);
+        return http;
     }
 
     public async Task DisposeAsync()

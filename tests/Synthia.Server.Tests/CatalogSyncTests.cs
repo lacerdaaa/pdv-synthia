@@ -6,7 +6,7 @@ namespace Synthia.Server.Tests;
 
 public sealed class CatalogSyncTests(ServerFixture fx) : IClassFixture<ServerFixture>
 {
-    private readonly HttpClient _http = fx.Factory.CreateClient();
+    private readonly HttpClient _http = fx.ApiClient();
 
     private static ProductData Product(string name, long cents) =>
         new(Guid.CreateVersion7(), name, null, null, "UN", cents, "00000000", true);
