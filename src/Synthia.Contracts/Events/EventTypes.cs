@@ -9,6 +9,7 @@ public static class EventTypes
     public const string SaleCancelled = nameof(SaleCancelled);
     public const string CashWithdrawal = nameof(CashWithdrawal);
     public const string StockCounted = nameof(StockCounted);
+    public const string StockReceived = nameof(StockReceived);
     public const string NfceAuthorized = nameof(NfceAuthorized);
     public const string NfceRejected = nameof(NfceRejected);
 }

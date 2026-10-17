@@ -55,6 +55,32 @@ public sealed record CashWithdrawal(Guid ShiftId, long AmountCents, string Reaso
 
 public sealed record StockCounted(Guid ProductId, decimal CountedQuantity);
 
+public static class StockReceiptSources
+{
+    /// <summary>Mercadoria trazida da loja antiga na mudança.</summary>
+    public const string Transfer = "transfer";
+    /// <summary>Compra de fornecedor (com ou sem XML da NF-e).</summary>
+    public const string Supplier = "supplier";
+    public const string Other = "other";
+}
+
+/// <param name="UnitCostCents">Custo unitário quando conhecido (nota do fornecedor); nulo em transferência.</param>
+public sealed record StockReceiptItem(Guid ProductId, string Description, decimal Quantity, long? UnitCostCents);
+
+/// <summary>
+/// Entrada de mercadoria lançada na retaguarda. Stream = a própria entrada.
+/// </summary>
+/// <param name="Document">Número da nota, romaneio da transferência etc.</param>
+/// <param name="ReceivedBy">Usuário da retaguarda que lançou.</param>
+public sealed record StockReceived(
+    Guid ReceiptId,
+    string Source,
+    string? Supplier,
+    string? Document,
+    IReadOnlyList<StockReceiptItem> Items,
+    string ReceivedBy,
+    string? Note);
+
 public sealed record NfceAuthorized(Guid SaleId, string NfceKey, string Protocol);
 
 public sealed record NfceRejected(Guid SaleId, string NfceKey, string Code, string Reason);
