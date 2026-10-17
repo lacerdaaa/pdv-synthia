@@ -58,7 +58,8 @@ public sealed class Projector(ILogger<Projector> logger)
 
                 if (await IsItemReturnedAsync(conn, tx, item.ItemId)) break;
                 await InsertMovementAsync(conn, tx, e, item.ProductId, item.ItemId, "item_cancelled", item.Quantity);
-                await AddToShiftAsync(conn, tx, sale.ShiftId, e.TerminalId, 0, -item.TotalCents, 0, 0);
+                var cashRefund = p.RefundMethod == PaymentMethods.Cash ? item.TotalCents : 0;
+                await AddToShiftAsync(conn, tx, sale.ShiftId, e.TerminalId, 0, -item.TotalCents, -cashRefund, 0);
                 break;
             }
 
@@ -80,7 +81,10 @@ public sealed class Projector(ILogger<Projector> logger)
                     returnedCents += item.TotalCents;
                 }
 
-                var cash = sale.Payments.Where(x => x.Method == PaymentMethods.Cash).Sum(x => x.AmountCents) - sale.ChangeCents;
+                // Devolve o dinheiro que ainda está na gaveta: o líquido da venda menos o que já
+                // saiu em devoluções de item.
+                var cash = sale.Payments.Where(x => x.Method == PaymentMethods.Cash).Sum(x => x.AmountCents) - sale.ChangeCents
+                           - await CashAlreadyRefundedAsync(conn, tx, sale, before: e.EventId);
                 await AddToShiftAsync(conn, tx, sale.ShiftId, e.TerminalId, -1, -returnedCents, -cash, 0);
                 await conn.ExecuteAsync("DELETE FROM nfce_queue WHERE sale_id = @SaleId", new { p.SaleId }, tx);
                 break;
@@ -149,6 +153,21 @@ public sealed class Projector(ILogger<Projector> logger)
         await conn.ExecuteScalarAsync<bool>(
             "SELECT EXISTS (SELECT 1 FROM stock_movements WHERE item_id = @itemId AND kind IN ('item_cancelled', 'sale_cancelled'))",
             new { itemId }, tx);
+
+    private static async Task<long> CashAlreadyRefundedAsync(NpgsqlConnection conn, IDbTransaction tx, SaleCompleted sale, Guid before)
+    {
+        var cancelled = await conn.QueryAsync<string>(
+            "SELECT payload::text FROM events WHERE type = @Type AND stream_id = @SaleId AND event_id < @before",
+            new { Type = EventTypes.SaleItemCancelled, sale.SaleId, before }, tx);
+
+        var cashItems = cancelled
+            .Select(json => JsonSerializer.Deserialize<SaleItemCancelled>(json, SynthiaJson.Options)!)
+            .Where(c => c.RefundMethod == PaymentMethods.Cash)
+            .Select(c => c.ItemId)
+            .ToHashSet();
+
+        return sale.Items.Where(i => cashItems.Contains(i.ItemId)).Sum(i => i.TotalCents);
+    }
 
     private static async Task<SaleCompleted?> FindSaleAsync(NpgsqlConnection conn, IDbTransaction tx, Guid saleId)
     {
