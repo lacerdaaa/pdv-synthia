@@ -12,6 +12,8 @@ public sealed record StockMovement(DateTime OccurredAt, string Kind, decimal Qua
 
 public sealed record BackofficeSummary(int ActiveProducts, int NegativeProducts, int Receipts, int TransferReceipts, int SalesToday, long SalesTodayCents);
 
+public sealed record AdjustmentSummary(DateTime AdjustedAt, StockAdjusted Adjustment);
+
 public sealed record ReceiptSummary(Guid ReceiptId, DateTime ReceivedAt, string Source, string? Supplier, string? Document, int ItemCount, decimal TotalQuantity, string ReceivedBy);
 
 /// <summary>Entradas de mercadoria e consulta de estoque da retaguarda.</summary>
@@ -32,6 +34,26 @@ public sealed class StockService(NpgsqlDataSource dataSource, BackofficeEvents e
         var receipt = new StockReceived(Guid.CreateVersion7(), source, Blank(supplier), Blank(document), items, receivedBy, Blank(note), accessKey);
         await events.AppendAsync(EventTypes.StockReceived, receipt.ReceiptId, receipt, ct);
         return receipt;
+    }
+
+    public async Task<StockAdjusted> AdjustAsync(string reason, IReadOnlyList<StockAdjustmentItem> items, string adjustedBy, string? note, CancellationToken ct = default)
+    {
+        if (!AdjustmentReasons.All.Contains(reason)) throw new ArgumentException("Motivo inválido.");
+        if (items.Count == 0) throw new ArgumentException("Ajuste sem itens.");
+        if (items.Any(i => i.Quantity <= 0)) throw new ArgumentException("Quantidades devem ser positivas.");
+
+        var adjustment = new StockAdjusted(Guid.CreateVersion7(), reason, items, adjustedBy, Blank(note));
+        await events.AppendAsync(EventTypes.StockAdjusted, adjustment.AdjustmentId, adjustment, ct);
+        return adjustment;
+    }
+
+    public async Task<IReadOnlyList<AdjustmentSummary>> ListAdjustmentsAsync(int limit = 100, CancellationToken ct = default)
+    {
+        await using var conn = await dataSource.OpenConnectionAsync(ct);
+        var rows = await conn.QueryAsync<(DateTime OccurredAt, string Payload)>(
+            "SELECT occurred_at, payload::text FROM events WHERE type = @type ORDER BY event_id DESC LIMIT @limit",
+            new { type = EventTypes.StockAdjusted, limit });
+        return rows.Select(r => new AdjustmentSummary(r.OccurredAt, JsonSerializer.Deserialize<StockAdjusted>(r.Payload, SynthiaJson.Options)!)).ToList();
     }
 
     public async Task<IReadOnlyList<ReceiptSummary>> ListReceiptsAsync(int limit = 100, CancellationToken ct = default)
