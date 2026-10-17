@@ -146,7 +146,7 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
   <strong>PDV Synthia</strong>
   <nav id="nav">
     <a href="#principios">Princípios</a><a href="#stack">Stack</a><a href="#topologia">Topologia</a>
-    <a href="#simulador">Simulador</a><a href="#caixa">Caixa</a><a href="#hardware">Hardware</a><a href="#eventos">Eventos</a><a href="#api">API</a>
+    <a href="#simulador">Simulador</a><a href="#caixa">Caixa</a><a href="#retaguarda">Retaguarda</a><a href="#hardware">Hardware</a><a href="#eventos">Eventos</a><a href="#api">API</a>
     <a href="#falhas">Falhas</a><a href="#codigo">Código</a><a href="#aberto">Em aberto</a><a href="simulacao.html">Simulação de um dia →</a>
   </nav>
   <button class="theme" id="theme" aria-label="Alternar tema">◐</button>
@@ -265,6 +265,29 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
         <tr><td><code>Del</code></td><td>Remove o item selecionado (antes de finalizar, não gera evento)</td></tr>
         <tr><td><code>Esc</code></td><td>Sai do pagamento estornando o TEF · duas vezes descarta a venda</td></tr>
         <tr><td><code>F9</code> · <code>F10</code> · <code>F12</code></td><td>Sangria (imprime e abre a gaveta) · reimprime o último cupom · fecha o turno</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="retaguarda">
+    <h2>Retaguarda</h2>
+    <p class="stat">Back-office web (Blazor Server) servido pelo próprio servidor da loja em <code>/retaguarda</code>, com login.
+      Produtos, entradas de mercadoria (inclusive a transferência da loja antiga) e estoque. Tudo vira evento no mesmo log das vendas.</p>
+    <div class="tabs" id="boTabs" role="tablist">
+      <button role="tab" data-shot="retaguarda-1-painel">Painel</button>
+      <button role="tab" data-shot="retaguarda-2-importar">Importar produtos</button>
+      <button role="tab" data-shot="retaguarda-3-entrada">Nova entrada</button>
+      <button role="tab" data-shot="retaguarda-4-estoque">Estoque</button>
+      <button role="tab" data-shot="retaguarda-5-historico">Histórico</button>
+    </div>
+    <img id="boShot" class="shot" alt="Tela da retaguarda" width="1366" height="860">
+    <div class="tablewrap" style="margin-top:12px"><table>
+      <thead><tr><th>Tela</th><th>O que faz</th></tr></thead>
+      <tbody>
+        <tr><td>Painel</td><td>Produtos ativos, entradas, negativos, vendas do dia e o roteiro de implantação do mercado novo, marcando o que já foi feito.</td></tr>
+        <tr><td>Produtos</td><td>Busca, cadastro e edição. Importação de planilha CSV com prévia: novos, atualizados (pelo código de barras ou PLU), sem mudança e linhas com erro ou aviso (NCM ausente, dígito verificador).</td></tr>
+        <tr><td>Entradas</td><td>Transferência da loja antiga, fornecedor sem XML ou outra. Itens bipados (Enter adiciona) ou por planilha <code>codigo;quantidade;custo</code>; repetidos são somados. Gera <code>StockReceived</code>.</td></tr>
+        <tr><td>Estoque</td><td>Saldo de cada produto (sem movimento = 0), filtro de negativos e histórico de movimentos: vendas, entradas, contagens e cancelamentos.</td></tr>
       </tbody>
     </table></div>
   </section>
@@ -707,6 +730,15 @@ dotnet test</code></pre>
   };
   shotTabs.addEventListener('click', e => e.target.dataset.shot && showShot(e.target.dataset.shot));
   showShot('caixa-2-venda');
+
+  // Capturas da retaguarda
+  const boTabs = $('boTabs');
+  const showBo = k => {
+    $('boShot').src = `img/${k}.png`;
+    [...boTabs.children].forEach(b => b.setAttribute('aria-selected', b.dataset.shot === k));
+  };
+  boTabs.addEventListener('click', e => e.target.dataset.shot && showBo(e.target.dataset.shot));
+  showBo('retaguarda-1-painel');
 
   // Etiqueta da balança (mesma regra de ScaleBarcode.TryParse)
   const ean13Ok = c => /^\d{13}$/.test(c) && (10 - [...c.slice(0, 12)].reduce((s, d, i) => s + +d * (i % 2 ? 3 : 1), 0) % 10) % 10 === +c[12];
