@@ -14,6 +14,11 @@
     <EmbeddedResource Include="Data\Migrations\*.sql" />
   </ItemGroup>
 
+  <!-- Documentação interativa servida em /docs. -->
+  <ItemGroup>
+    <None Include="..\..\docs\**\*" Link="docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>

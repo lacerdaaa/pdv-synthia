@@ -1,3 +1,4 @@
+using Microsoft.Extensions.FileProviders;
 using Npgsql;
 using Synthia.Contracts.Catalog;
 using Synthia.Contracts.Sync;
@@ -25,6 +26,15 @@ var app = builder.Build();
 
 await app.Services.GetRequiredService<Migrator>().MigrateAsync();
 
+// Documentação interativa (docs/ do repositório, copiada para a saída do build) + OpenAPI.
+var docsPath = Path.Combine(AppContext.BaseDirectory, "docs");
+if (Directory.Exists(docsPath))
+{
+    var docs = new PhysicalFileProvider(docsPath);
+    app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = docs, RequestPath = "/docs" });
+    app.UseStaticFiles(new StaticFileOptions { FileProvider = docs, RequestPath = "/docs" });
+    app.MapGet("/", () => Results.Redirect("/docs/")).ExcludeFromDescription();
+}
 app.MapOpenApi();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
