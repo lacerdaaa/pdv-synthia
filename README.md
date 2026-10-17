@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/img/logo-xandao.png" alt="Xandão Supermercados" width="220"></p>
+
 # PDV Synthia
 
 [![CI](https://github.com/lacerdaaa/pdv-synthia/actions/workflows/ci.yml/badge.svg)](https://github.com/lacerdaaa/pdv-synthia/actions/workflows/ci.yml)
@@ -5,8 +7,8 @@
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791)
 ![SQLite](https://img.shields.io/badge/SQLite-WAL-003B57)
 
-PDV offline-first para o **Market SP**: quatro caixas que vendem sozinhos, um servidor local que consolida e uma
-nuvem que é só cópia.
+PDV offline-first para o **Xandão Supermercados** (projeto Market SP): quatro caixas que vendem sozinhos, um
+servidor local que consolida e uma nuvem que é só cópia.
 
 > **O caixa vende sem depender de nada além dele mesmo**, do pinpad e (para NFC-e normal) da internet.
 > Servidor e nuvem são para consolidar, não para vender.
@@ -115,7 +117,8 @@ caixa nunca pede ID ao servidor e uma venda nunca é ordenada depois do próprio
 ![Tela de venda](docs/img/caixa-2-venda.png)
 
 App desktop em Avalonia sobre o `Terminal.Core`: toda a regra de venda está na `CheckoutSession` (testada sem
-interface) e a tela só repassa o teclado. Operação inteira pelo teclado, como nos PDVs de mercado.
+interface) e a tela só repassa o teclado. Operação inteira pelo teclado, como nos PDVs de mercado. Visual em
+azul e branco com as cores da marca (azul `#253C70`, vermelho `#C8272E`).
 
 ```bash
 # experimentar sem servidor nem hardware (dispositivos simulados, catálogo de exemplo, banco caixa-demo.db)
@@ -303,6 +306,13 @@ tools/simulate.sh          # sobe servidor descartável, roda o roteiro e gera d
 O resultado fica em [`/docs/simulacao.html`](docs/simulacao.html). Foi essa simulação que encontrou o bug do
 estorno em dinheiro fora da gaveta, já corrigido.
 
+## Marca
+
+A logo com fundo transparente ([`docs/img/logo-xandao.png`](docs/img/logo-xandao.png)) e a variante com contorno
+branco para fundos coloridos ([`logo-xandao-contorno.png`](docs/img/logo-xandao-contorno.png)) foram extraídas de um
+print por [`tools/branding/make_logo.py`](tools/branding/make_logo.py), que mantém os brancos do desenho (olhos,
+luvas, contorno do X) e vaza o miolo das letras. Com a arte original em vetor, basta trocar os PNGs.
+
 ## Estrutura do repositório
 
 ```
@@ -321,6 +331,7 @@ tests/
 config/
   terminal.example.json    configuração comentada de um caixa
 tools/
+  branding/make_logo.py    extrai a logo transparente de um print
   Synthia.Simulator        roteiro de um dia de loja
   simulate.sh              executa o simulador contra um servidor descartável
 docs/
