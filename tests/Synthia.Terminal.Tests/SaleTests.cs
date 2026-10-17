@@ -89,12 +89,27 @@ public sealed class SaleTests : IDisposable
         var item = cart.Add(_t.Catalog.FindByBarcode("1")!, 1);
         var sale = await _t.Sales.CompleteAsync(cart, [new SalePayment(PaymentMethods.Cash, 99)]);
 
-        _t.Sales.CancelItem(sale.SaleId, item.ItemId, "erro do operador");
+        _t.Sales.CancelItem(sale.SaleId, item.ItemId, "erro do operador", PaymentMethods.Cash);
         await _t.Pusher.PushPendingAsync();
 
         var cancel = _t.Server.Events.Values.Single(e => e.Type == EventTypes.SaleItemCancelled);
         Assert.Equal(sale.SaleId, cancel.StreamId);
         Assert.Equal(2, cancel.StreamSeq);
+        Assert.Equal(PaymentMethods.Cash, SynthiaJson.FromElement<SaleItemCancelled>(cancel.Payload).RefundMethod);
+    }
+
+    [Fact]
+    public async Task Devolucao_so_pela_forma_de_pagamento_da_venda()
+    {
+        _t.SeedProduct("Pão", 99, barcode: "1");
+        _t.Shifts.Open("Maria", 0);
+        var cart = new Cart();
+        var item = cart.Add(_t.Catalog.FindByBarcode("1")!, 1);
+        var sale = await _t.Sales.CompleteAsync(cart, [new SalePayment(PaymentMethods.Debit, 99)]);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            _t.Sales.CancelItem(sale.SaleId, item.ItemId, "troca", PaymentMethods.Cash));
+        Assert.Equal(2, _t.Pending()); // ShiftOpened + SaleCompleted, nada a mais
     }
 
     [Fact]
