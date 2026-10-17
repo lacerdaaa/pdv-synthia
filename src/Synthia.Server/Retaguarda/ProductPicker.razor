@@ -1,0 +1,33 @@
+@* Busca de produto por nome, código de barras ou PLU; usado onde o operador precisa escolher um produto. *@
+<div class="picker">
+    <input @bind="term" @bind:event="oninput" placeholder="@Placeholder" autocomplete="off" />
+    @if (Matches.Any())
+    {
+        <div class="picker-list">
+            @foreach (var p in Matches)
+            {
+                <button type="button" @onclick="() => Select(p)">
+                    <span>@p.Name</span><small class="mono">@(p.Barcode ?? p.Plu?.ToString())</small>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<ProductData> Products { get; set; } = [];
+    [Parameter] public EventCallback<ProductData> OnSelected { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Buscar produto…";
+    private string term = "";
+
+    private IEnumerable<ProductData> Matches => term.Trim().Length < 2 ? [] : Products
+        .Where(p => p.Active && (p.Name.Contains(term.Trim(), StringComparison.OrdinalIgnoreCase)
+                                 || p.Barcode == term.Trim() || p.Plu?.ToString() == term.Trim()))
+        .Take(6);
+
+    private async Task Select(ProductData p)
+    {
+        term = "";
+        await OnSelected.InvokeAsync(p);
+    }
+}
