@@ -106,6 +106,21 @@ details > div { padding: 0 0 14px; color: var(--muted); font-size: 15px; }
 .method { font: 600 12px var(--mono); padding: 2px 6px; border-radius: 4px; margin-right: 6px; }
 .GET { background: var(--ok-soft); color: var(--ok); } .POST { background: var(--accent-soft); color: var(--accent); }
 .PUT { background: var(--warn-soft); color: var(--warn); }
+.banner { border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 14px; color: var(--muted); background: var(--surface); }
+.banner.live { border-color: var(--ok); background: var(--ok-soft); color: var(--text); }
+.banner b { color: var(--text); }
+.tag { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 6px; }
+.op summary .sum { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 4px; }
+.op summary > span { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.try { display: grid; gap: 10px; }
+.try label { font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+.try input, .try textarea { font: 13px var(--mono); color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; width: 100%; }
+.try textarea { min-height: 180px; resize: vertical; }
+.try .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.res { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.code { font: 600 12px var(--mono); padding: 1px 6px; border-radius: 4px; }
+.code.ok { background: var(--ok-soft); color: var(--ok); } .code.err { background: var(--bad-soft); color: var(--bad); }
+.responses { font-size: 13px; color: var(--muted); }
 ul.check { list-style: none; padding: 0; }
 ul.check li { padding: 6px 0 6px 28px; position: relative; border-bottom: 1px solid var(--border); }
 ul.check li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 14px; height: 14px; border: 1.5px solid var(--muted); border-radius: 4px; }
@@ -240,6 +255,7 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
 
   <section id="api">
     <h2>API do servidor</h2>
+    <div class="banner" id="apiBanner"></div>
     <div id="apiList"></div>
   </section>
 
@@ -273,6 +289,9 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
     <h3 style="margin-top:20px">Rodar</h3>
 <pre><code># servidor (Postgres em localhost, usuário/banco synthia)
 dotnet run --project src/Synthia.Server
+
+# esta documentação + console de API ao vivo
+http://localhost:5290/docs
 
 # testes (SYNTHIA_TEST_PG aponta para um usuário que pode criar bancos)
 dotnet test</code></pre>
@@ -473,9 +492,132 @@ dotnet test</code></pre>
       '{ "id": "…", "productId": "…", "priceCents": 2599, "effectiveAt": "2026-10-18T06:00:00Z" }'],
     ['POST', '/backoffice/projections/rebuild', 'Apaga as projeções e relê todo o log de eventos.', '204'],
   ];
-  $('apiList').innerHTML = api.map(([m, p, d, ex]) =>
-    `<details><summary><span><span class="method ${m}">${m}</span><code>${p}</code></span></summary><div><p>${d}</p><pre><code></code></pre></div></details>`).join('');
-  [...$('apiList').querySelectorAll('pre code')].forEach((c, i) => c.textContent = api[i][3]);
+  const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const renderStatic = () => {
+    $('apiList').innerHTML = api.map(([m, p, d]) =>
+      `<details><summary><span><span class="method ${m}">${m}</span><code>${esc(p)}</code></span></summary><div><p>${esc(d)}</p><pre><code></code></pre></div></details>`).join('');
+    [...$('apiList').querySelectorAll('pre code')].forEach((c, i) => c.textContent = api[i][3]);
+  };
+
+  // UUIDv7 sem crypto.randomUUID (que exige contexto seguro; o servidor da loja roda em http na LAN).
+  const uuid7 = () => {
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    let ts = Date.now();
+    for (let i = 5; i >= 0; i--) { b[i] = ts % 256; ts = Math.floor(ts / 256); }
+    b[6] = (b[6] & 0x0f) | 0x70; b[8] = (b[8] & 0x3f) | 0x80;
+    const h = [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  };
+
+  // Exemplos prontos para enviar, montados a cada render com ids novos.
+  let firstProduct = null;
+  const examples = {
+    PushEvents: () => {
+      const saleId = uuid7(), shiftId = uuid7(), productId = firstProduct?.id ?? uuid7();
+      const unit = firstProduct?.priceCents ?? 2899, name = firstProduct?.name ?? 'Arroz 5kg';
+      return { body: { events: [{
+        eventId: uuid7(), streamId: saleId, streamSeq: 1, type: 'SaleCompleted', terminalId: 'CX01',
+        occurredAt: new Date().toISOString(), catalogVersion: 1,
+        payload: { saleId, shiftId, items: [{ itemId: uuid7(), productId, description: name, quantity: 2, unitPriceCents: unit, totalCents: unit * 2 }],
+          payments: [{ method: 'cash', amountCents: unit * 2 + 100, tefNsu: null }], totalCents: unit * 2, changeCents: 100,
+          nfceKey: null, nfceStatus: 'authorized' } }] } };
+    },
+    GetCatalogDelta: () => ({ query: { since: 0 } }),
+    UpsertProduct: () => {
+      const id = uuid7();
+      return { path: { id }, body: { id, name: 'Produto teste', barcode: String(7890000000000 + Math.floor(Math.random() * 1e9)), plu: null, unit: 'UN', priceCents: 999, ncm: '00000000', active: true } };
+    },
+    SchedulePrice: () => ({ body: { id: uuid7(), productId: firstProduct?.id ?? '(cadastre um produto antes)', priceCents: 899,
+      effectiveAt: new Date(Date.now() + 3600e3).toISOString() } }),
+  };
+
+  async function renderLive(spec) {
+    try { firstProduct = (await (await fetch('/backoffice/products')).json())[0] ?? null; } catch {}
+    $('apiBanner').className = 'banner live';
+    $('apiBanner').innerHTML = `<b>Console ao vivo</b> · ${esc(spec.info?.title)} em <code>${esc(location.host)}</code> ·
+      <a href="/openapi/v1.json">openapi/v1.json</a>. As chamadas são reais e gravam neste banco.`;
+
+    const ops = [];
+    for (const [path, item] of Object.entries(spec.paths ?? {}))
+      for (const [method, op] of Object.entries(item)) ops.push({ path, method: method.toUpperCase(), op });
+
+    const tags = [...new Set(ops.map(o => o.op.tags?.[0] ?? 'Outros'))];
+    $('apiList').innerHTML = tags.map(tag => `<div class="tag">${esc(tag)}</div>` + ops.filter(o => (o.op.tags?.[0] ?? 'Outros') === tag).map((o, i) => {
+      const id = o.op.operationId ?? `${o.method}${o.path}`;
+      const params = (o.op.parameters ?? []).map(p =>
+        `<label>${esc(p.name)} <small>(${esc(p.in)}${p.required ? ', obrigatório' : ''})</small><input data-param="${esc(p.name)}" data-in="${esc(p.in)}"></label>`).join('');
+      const hasBody = !!o.op.requestBody;
+      const responses = Object.keys(o.op.responses ?? {}).join(', ');
+      return `<details class="op" data-op="${esc(id)}" data-method="${o.method}" data-path="${esc(o.path)}">
+        <summary><span><span class="method ${o.method}">${o.method}</span><code>${esc(o.path)}</code><span class="sum">${esc(o.op.summary)}</span></span></summary>
+        <div class="try">
+          ${o.op.description ? `<p>${esc(o.op.description)}</p>` : ''}
+          <div class="responses">Respostas: ${esc(responses)}</div>
+          ${params}
+          ${hasBody ? '<label>Corpo (JSON)<textarea data-body spellcheck="false"></textarea></label>' : ''}
+          <div class="row"><button class="primary" data-send>Enviar</button>
+            ${examples[id] ? '<button class="ghost" data-reset>Novo exemplo</button>' : ''}
+            <span class="res" data-res></span></div>
+          <pre hidden><code data-out></code></pre>
+        </div></details>`;
+    }).join('')).join('');
+
+    const fill = el => {
+      const ex = examples[el.dataset.op]?.() ?? {};
+      el.querySelectorAll('[data-param]').forEach(i => i.value = (ex.path ?? {})[i.dataset.param] ?? (ex.query ?? {})[i.dataset.param] ?? '');
+      const body = el.querySelector('[data-body]');
+      if (body) body.value = JSON.stringify(ex.body ?? {}, null, 2);
+    };
+    $('apiList').querySelectorAll('.op').forEach(fill);
+
+    $('apiList').addEventListener('click', async e => {
+      const el = e.target.closest('.op');
+      if (!el) return;
+      if (e.target.matches('[data-reset]')) return fill(el);
+      if (!e.target.matches('[data-send]')) return;
+
+      let url = el.dataset.path;
+      const query = new URLSearchParams();
+      el.querySelectorAll('[data-param]').forEach(i => {
+        if (i.dataset.in === 'path') url = url.replace(`{${i.dataset.param}}`, encodeURIComponent(i.value));
+        else if (i.value !== '') query.set(i.dataset.param, i.value);
+      });
+      if ([...query].length) url += '?' + query;
+
+      const body = el.querySelector('[data-body]');
+      const res = el.querySelector('[data-res]'), out = el.querySelector('[data-out]');
+      res.textContent = 'enviando…';
+      const t0 = performance.now();
+      try {
+        const r = await fetch(url, { method: el.dataset.method,
+          headers: body ? { 'content-type': 'application/json' } : {}, body: body ? body.value : undefined });
+        const text = await r.text();
+        let pretty = text;
+        try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch {}
+        res.innerHTML = `<span class="code ${r.ok ? 'ok' : 'err'}">${r.status}</span> ${Math.round(performance.now() - t0)} ms · <code>${esc(el.dataset.method)} ${esc(url)}</code>`;
+        out.textContent = pretty || '(sem corpo)';
+        if (el.dataset.op === 'UpsertProduct' && r.ok) {
+          try { firstProduct = JSON.parse(body.value); } catch {}
+        }
+      } catch (err) {
+        res.innerHTML = `<span class="code err">erro</span> ${esc(err.message)}`;
+        out.textContent = '';
+      }
+      out.parentElement.hidden = false;
+    });
+  }
+
+  (async () => {
+    if (location.protocol.startsWith('http')) {
+      try {
+        const r = await fetch('/openapi/v1.json');
+        if (r.ok) return renderLive(await r.json());
+      } catch {}
+    }
+    $('apiBanner').innerHTML = 'Lista estática. Rode o servidor (<code>dotnet run --project src/Synthia.Server</code>) e abra ' +
+      '<code>http://localhost:5290/docs</code> para testar as rotas ao vivo, como no Swagger.';
+    renderStatic();
+  })();
 
   // Regras de conflito
   const rules = [
