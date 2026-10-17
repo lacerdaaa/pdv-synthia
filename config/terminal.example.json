@@ -2,7 +2,7 @@
 // Valores comentados com "padrão" seguem o mais comum no varejo e podem ser omitidos.
 {
   "store": {
-    "name": "Market SP",
+    "name": "Xandão Supermercados",
     "cnpj": "00.000.000/0001-91",                 // do certificado A1; compõe a chave da NFC-e
     "address": "Rua Exemplo, 100 - São Paulo/SP"
   },

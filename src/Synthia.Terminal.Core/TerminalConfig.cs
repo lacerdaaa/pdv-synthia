@@ -69,7 +69,7 @@ public sealed record TerminalConfig
 /// <summary>Dados impressos no cupom. CNPJ também compõe a chave da NFC-e.</summary>
 public sealed record StoreSection
 {
-    public string Name { get; init; } = "Market SP";
+    public string Name { get; init; } = "Xandão Supermercados";
     public string Cnpj { get; init; } = "00.000.000/0001-91";
     public string Address { get; init; } = "";
 }
