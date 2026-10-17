@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Synthia.Contracts/Synthia.Contracts.csproj" />
+    <Project Path="src/Synthia.Server/Synthia.Server.csproj" />
+    <Project Path="src/Synthia.Terminal.Core/Synthia.Terminal.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Synthia.Server.Tests/Synthia.Server.Tests.csproj" />
+    <Project Path="tests/Synthia.Terminal.Tests/Synthia.Terminal.Tests.csproj" />
+  </Folder>
+</Solution>
