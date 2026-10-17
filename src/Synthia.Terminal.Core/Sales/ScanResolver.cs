@@ -4,7 +4,8 @@ using Synthia.Terminal.Core.Catalog;
 namespace Synthia.Terminal.Core.Sales;
 
 /// <param name="FixedTotalCents">Total vindo da etiqueta da balança; nulo quando o caixa calcula.</param>
-public sealed record ScanResult(CatalogItem Product, decimal Quantity, long? FixedTotalCents);
+/// <param name="FromScaleLabel">Quantidade já veio da etiqueta: não pesar nem multiplicar.</param>
+public sealed record ScanResult(CatalogItem Product, decimal Quantity, long? FixedTotalCents, bool FromScaleLabel = false);
 
 /// <summary>
 /// Transforma o que o leitor leu em item de carrinho. Primeiro procura o código exato no cadastro
@@ -22,12 +23,12 @@ public sealed class ScanResolver(LocalCatalog catalog, ScaleBarcodeFormat format
             return null;
 
         if (label.WeightKg is { } kg)
-            return new ScanResult(weighed, kg, null);
+            return new ScanResult(weighed, kg, null, FromScaleLabel: true);
 
         // Etiqueta com total: a quantidade é derivada só para o estoque; o valor cobrado é o da etiqueta.
         var total = label.TotalCents!.Value;
         var quantity = weighed.PriceCents > 0 ? Math.Round((decimal)total / weighed.PriceCents, 3) : 0;
-        return new ScanResult(weighed, quantity > 0 ? quantity : 0.001m, total);
+        return new ScanResult(weighed, quantity > 0 ? quantity : 0.001m, total, FromScaleLabel: true);
     }
 
     public SaleItem? AddTo(Cart cart, string code) =>
