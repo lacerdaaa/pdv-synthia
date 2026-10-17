@@ -635,10 +635,19 @@ dotnet test</code></pre>
   };
 
   async function renderLive(spec) {
-    try { firstProduct = (await (await fetch('/backoffice/products')).json())[0] ?? null; } catch {}
+    let loggedIn = false;
+    try {
+      const r = await fetch('/backoffice/products');
+      loggedIn = r.ok;
+      if (r.ok) firstProduct = (await r.json())[0] ?? null;
+    } catch {}
     $('apiBanner').className = 'banner live';
     $('apiBanner').innerHTML = `<b>Console ao vivo</b> · ${esc(spec.info?.title)} em <code>${esc(location.host)}</code> ·
-      <a href="/openapi/v1.json">openapi/v1.json</a>. As chamadas são reais e gravam neste banco.`;
+      <a href="/openapi/v1.json">openapi/v1.json</a>. As chamadas são reais e gravam neste banco.<br>` +
+      (loggedIn
+        ? 'Back-office: autenticado pelo seu login da retaguarda.'
+        : 'Back-office: <a href="/retaguarda/login?returnUrl=/docs/">entre na retaguarda</a> (admin ou gerente) para testar, ou use o cabeçalho <code>X-Api-Key</code>.') +
+      ' Sync: exige <code>X-Terminal-Id</code> + <code>X-Terminal-Key</code> quando o servidor tem chaves de caixa configuradas.';
 
     const ops = [];
     for (const [path, item] of Object.entries(spec.paths ?? {}))
@@ -697,7 +706,8 @@ dotnet test</code></pre>
         const text = await r.text();
         let pretty = text;
         try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch {}
-        res.innerHTML = `<span class="code ${r.ok ? 'ok' : 'err'}">${r.status}</span> ${Math.round(performance.now() - t0)} ms · <code>${esc(el.dataset.method)} ${esc(url)}</code>`;
+        const hint = r.status === 401 ? ' · sem credencial: entre na retaguarda' : r.status === 403 ? ' · sem permissão' : '';
+        res.innerHTML = `<span class="code ${r.ok ? 'ok' : 'err'}">${r.status}</span> ${Math.round(performance.now() - t0)} ms · <code>${esc(el.dataset.method)} ${esc(url)}</code>${hint}`;
         out.textContent = pretty || '(sem corpo)';
         if (el.dataset.op === 'UpsertProduct' && r.ok) {
           try { firstProduct = JSON.parse(body.value); } catch {}
