@@ -23,6 +23,7 @@ builder.Services.AddSingleton<CatalogService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<BackofficeEvents>();
 builder.Services.AddSingleton<StockService>();
+builder.Services.AddSingleton<InventoryService>();
 builder.Services.AddSingleton<BackofficeUsers>();
 
 // Retaguarda (Blazor Server) com login por cookie.
