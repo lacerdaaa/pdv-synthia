@@ -1,0 +1,39 @@
+@page "/retaguarda/minha-senha"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject BackofficeUsers Users
+
+<PageTitle>Trocar senha · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Trocar senha</h1></header>
+
+<section class="card narrow">
+    <div class="grid one">
+        <label>Senha atual <input type="password" @bind="current" autocomplete="current-password" /></label>
+        <label>Nova senha <input type="password" @bind="next" autocomplete="new-password" /></label>
+        <label>Repita a nova senha <input type="password" @bind="repeat" autocomplete="new-password" /></label>
+    </div>
+    @if (message is not null) { <p class="@(ok ? "flash" : "error")">@message</p> }
+    <div class="actions end"><button class="primary" @onclick="ChangeAsync">Trocar senha</button></div>
+</section>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> Auth { get; set; } = default!;
+    private string current = "", next = "", repeat = "";
+    private string? message;
+    private bool ok;
+
+    private async Task ChangeAsync()
+    {
+        ok = false;
+        if (next != repeat) { message = "As senhas novas não conferem."; return; }
+        var id = Guid.Parse((await Auth).User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        try
+        {
+            await Users.ChangeOwnPasswordAsync(id, current, next);
+            message = "Senha trocada."; ok = true;
+            current = next = repeat = "";
+        }
+        catch (ArgumentException ex) { message = ex.Message; }
+    }
+}
