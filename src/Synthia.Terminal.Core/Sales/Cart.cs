@@ -15,11 +15,15 @@ public sealed class Cart
 
     public long TotalCents => _items.Sum(i => i.TotalCents);
 
-    public SaleItem Add(CatalogItem product, decimal quantity)
+    /// <param name="fixedTotalCents">
+    /// Total já definido fora do caixa, como o impresso na etiqueta da balança: o cliente paga o da etiqueta.
+    /// </param>
+    public SaleItem Add(CatalogItem product, decimal quantity, long? fixedTotalCents = null)
     {
         if (quantity <= 0) throw new ArgumentOutOfRangeException(nameof(quantity));
+        if (fixedTotalCents < 0) throw new ArgumentOutOfRangeException(nameof(fixedTotalCents));
 
-        var total = (long)Math.Round(quantity * product.PriceCents, MidpointRounding.AwayFromZero);
+        var total = fixedTotalCents ?? (long)Math.Round(quantity * product.PriceCents, MidpointRounding.AwayFromZero);
         var item = new SaleItem(Guid.CreateVersion7(), product.Id, product.Name, quantity, product.PriceCents, total);
         _items.Add(item);
         return item;
