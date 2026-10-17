@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Synthia.Terminal.App.ViewModels"
+             x:Class="Synthia.Terminal.App.Views.OpenShiftView"
+             x:DataType="vm:OpenShiftViewModel">
+  <UserControl.KeyBindings>
+    <KeyBinding Gesture="Enter" Command="{Binding OpenCommand}" />
+  </UserControl.KeyBindings>
+  <Border Classes="card" Width="440" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="28">
+    <StackPanel Spacing="14">
+      <TextBlock Text="Abrir turno" FontSize="26" FontWeight="Bold" />
+      <TextBlock Classes="label" Text="O caixa está fechado. Informe o operador e o fundo de troco." TextWrapping="Wrap" />
+      <StackPanel Spacing="4">
+        <TextBlock Classes="label" Text="Operador" />
+        <TextBox x:Name="Operator" Text="{Binding OperatorName}" FontSize="18" />
+      </StackPanel>
+      <StackPanel Spacing="4">
+        <TextBlock Classes="label" Text="Fundo de troco (R$)" />
+        <TextBox Text="{Binding OpeningCash}" FontSize="18" />
+      </StackPanel>
+      <TextBlock Text="{Binding Error}" Foreground="#C2362B" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      <Button Content="Abrir turno (Enter)" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center" Background="#2F6FDB" Foreground="White" FontSize="16" Padding="12" />
+    </StackPanel>
+  </Border>
+</UserControl>
