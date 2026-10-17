@@ -11,6 +11,12 @@ public sealed class ShiftService(LocalDb db, Outbox outbox, IOutboxSignal signal
         return Guid.TryParse(Meta.Get(conn, Meta.OpenShiftId), out var id) ? id : null;
     }
 
+    public string? CurrentOperator()
+    {
+        using var conn = db.Open();
+        return Meta.Get(conn, Meta.OpenShiftOperator);
+    }
+
     public Guid Open(string operatorName, long openingCashCents)
     {
         using var conn = db.Open();
@@ -22,6 +28,7 @@ public sealed class ShiftService(LocalDb db, Outbox outbox, IOutboxSignal signal
         var shiftId = Guid.CreateVersion7();
         outbox.Append(conn, tx, EventTypes.ShiftOpened, shiftId, new ShiftOpened(shiftId, operatorName, openingCashCents));
         Meta.Set(conn, Meta.OpenShiftId, shiftId.ToString(), tx);
+        Meta.Set(conn, Meta.OpenShiftOperator, operatorName, tx);
 
         tx.Commit();
         signal.Notify();
@@ -51,6 +58,7 @@ public sealed class ShiftService(LocalDb db, Outbox outbox, IOutboxSignal signal
         var shiftId = RequireOpenShift(conn, tx);
         outbox.Append(conn, tx, EventTypes.ShiftClosed, shiftId, new ShiftClosed(shiftId, declaredCashCents));
         Meta.Delete(conn, Meta.OpenShiftId, tx);
+        Meta.Delete(conn, Meta.OpenShiftOperator, tx);
 
         tx.Commit();
         signal.Notify();
