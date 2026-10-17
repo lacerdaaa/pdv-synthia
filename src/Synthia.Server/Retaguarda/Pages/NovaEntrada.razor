@@ -1,0 +1,122 @@
+@page "/retaguarda/entradas/nova"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject StockService Stock
+@inject CatalogService Catalog
+@inject NavigationManager Navigation
+
+<PageTitle>Nova entrada · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Nova entrada</h1></header>
+
+<section class="card">
+    <div class="grid">
+        <label>Origem
+            <select @bind="source">
+                <option value="@StockReceiptSources.Transfer">Transferência da loja antiga</option>
+                <option value="@StockReceiptSources.Supplier">Fornecedor (sem XML)</option>
+                <option value="@StockReceiptSources.Other">Outra</option>
+            </select>
+        </label>
+        @if (source == StockReceiptSources.Supplier)
+        {
+            <label>Fornecedor <input @bind="supplier" /></label>
+        }
+        <label>Documento <input @bind="document" placeholder="@(source == StockReceiptSources.Transfer ? "romaneio / carga" : "número da nota")" /></label>
+        <label class="span2">Observação <input @bind="note" /></label>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Itens</h2>
+    <p class="muted">Bipe ou digite o código de barras (ou PLU), informe a quantidade e tecle Enter. Ou importe uma planilha
+        com <code>codigo;quantidade;custo</code> (<a href="/retaguarda/modelos/entrada.csv">modelo</a>).</p>
+    <form class="additem" @onsubmit="Add">
+        <input @ref="codeInput" class="code" @bind="code" placeholder="Código de barras ou PLU" autocomplete="off" />
+        <input class="qty" @bind="qty" placeholder="Qtd" inputmode="decimal" />
+        @if (source == StockReceiptSources.Supplier) { <input class="qty" @bind="cost" placeholder="Custo R$" inputmode="decimal" /> }
+        <button type="submit">Adicionar</button>
+        <InputFile OnChange="ImportAsync" accept=".csv,text/csv" />
+    </form>
+    @if (itemError is not null) { <p class="error">@itemError</p> }
+    @foreach (var e in importErrors) { <div class="error">@e</div> }
+
+    <table class="grid-table">
+        <thead><tr><th>Produto</th><th class="num">Quantidade</th><th class="num">Custo unit.</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var i in items)
+            {
+                <tr><td>@i.Description</td><td class="num">@Fmt.Qty(i.Quantity)</td>
+                    <td class="num">@(i.UnitCostCents is { } c ? Fmt.Money(c) : "—")</td>
+                    <td class="num"><button class="link" @onclick="() => items.Remove(i)">remover</button></td></tr>
+            }
+        </tbody>
+    </table>
+    @if (items.Count == 0) { <p class="empty">Nenhum item.</p> }
+</section>
+
+<div class="actions end">
+    <a class="button" href="/retaguarda/entradas">Cancelar</a>
+    <button class="primary" disabled="@(items.Count == 0 || saving)" @onclick="SaveAsync">
+        Lançar entrada (@items.Count item(ns), @Fmt.Qty(items.Sum(i => i.Quantity)) un/kg)
+    </button>
+</div>
+@if (error is not null) { <p class="error">@error</p> }
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> Auth { get; set; } = default!;
+    private string source = StockReceiptSources.Transfer;
+    private string? supplier, document, note;
+    private string code = "", qty = "1", cost = "";
+    private readonly List<StockReceiptItem> items = [];
+    private List<string> importErrors = [];
+    private IReadOnlyList<ProductData> products = [];
+    private string? itemError, error;
+    private bool saving;
+    private ElementReference codeInput;
+
+    protected override async Task OnInitializedAsync() => products = await Catalog.ListProductsAsync();
+
+    private async Task Add()
+    {
+        itemError = null;
+        var product = ReceiptImport.FindProduct(products, code);
+        if (product is null) { itemError = $"Produto não encontrado: {code}"; return; }
+        if (!CsvText.TryDecimal(qty, out var q) || q <= 0) { itemError = "Quantidade inválida."; return; }
+        if (product.Unit != "KG" && q != decimal.Truncate(q)) { itemError = $"{product.Name} é por unidade."; return; }
+        long? unitCost = CsvText.TryMoney(cost, out var c) ? c : null;
+
+        Merge(new StockReceiptItem(product.Id, product.Name, q, unitCost));
+        code = ""; qty = "1"; cost = "";
+        await codeInput.FocusAsync();
+    }
+
+    private async Task ImportAsync(InputFileChangeEventArgs e)
+    {
+        using var ms = new MemoryStream();
+        await e.File.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024).CopyToAsync(ms);
+        var plan = ReceiptImport.Plan(CsvText.Decode(ms.ToArray()), products);
+        foreach (var r in plan.Where(r => r.Item is not null)) Merge(r.Item!);
+        importErrors = plan.Where(r => r.Error is not null).Select(r => $"Linha {r.Line}: {r.Error}").ToList();
+    }
+
+    private void Merge(StockReceiptItem item)
+    {
+        var at = items.FindIndex(i => i.ProductId == item.ProductId);
+        if (at < 0) items.Add(item);
+        else items[at] = items[at] with { Quantity = items[at].Quantity + item.Quantity, UnitCostCents = item.UnitCostCents ?? items[at].UnitCostCents };
+    }
+
+    private async Task SaveAsync()
+    {
+        saving = true;
+        try
+        {
+            var user = (await Auth).User.FindFirst(ClaimTypes.GivenName)?.Value ?? "retaguarda";
+            await Stock.ReceiveAsync(source, supplier, document, items, user, note);
+            Navigation.NavigateTo("/retaguarda/entradas?salva=1");
+        }
+        catch (ArgumentException ex) { error = ex.Message; }
+        finally { saving = false; }
+    }
+}

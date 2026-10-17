@@ -1,0 +1,60 @@
+@page "/retaguarda/entradas"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject StockService Stock
+
+<PageTitle>Entradas · Retaguarda</PageTitle>
+
+<header class="page-head">
+    <h1>Entradas de mercadoria</h1>
+    <div class="actions"><a class="button primary" href="/retaguarda/entradas/nova">Nova entrada</a></div>
+</header>
+
+@if (Saved) { <p class="flash">Entrada lançada. O estoque já foi atualizado.</p> }
+
+<table class="grid-table">
+    <thead><tr><th>Data</th><th>Origem</th><th>Fornecedor</th><th>Documento</th><th class="num">Itens</th><th class="num">Quantidade</th><th>Lançada por</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var r in receipts)
+        {
+            <tr>
+                <td>@Fmt.When(r.ReceivedAt)</td>
+                <td>@Fmt.Source(r.Source)</td>
+                <td>@r.Supplier</td>
+                <td class="mono">@r.Document</td>
+                <td class="num">@r.ItemCount</td>
+                <td class="num">@Fmt.Qty(r.TotalQuantity)</td>
+                <td>@r.ReceivedBy</td>
+                <td class="num"><button class="link" @onclick="() => ShowAsync(r.ReceiptId)">ver itens</button></td>
+            </tr>
+            @if (open?.ReceiptId == r.ReceiptId)
+            {
+                <tr class="detail"><td colspan="8">
+                    <table class="grid-table inner">
+                        <thead><tr><th>Produto</th><th class="num">Quantidade</th><th class="num">Custo unit.</th></tr></thead>
+                        <tbody>
+                            @foreach (var i in open.Items)
+                            {
+                                <tr><td>@i.Description</td><td class="num">@Fmt.Qty(i.Quantity)</td>
+                                    <td class="num">@(i.UnitCostCents is { } c ? Fmt.Money(c) : "—")</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                    @if (open.Note is not null) { <p class="muted">Obs.: @open.Note</p> }
+                </td></tr>
+            }
+        }
+    </tbody>
+</table>
+@if (receipts.Count == 0) { <p class="empty">Nenhuma entrada ainda. A primeira deve ser a transferência da loja antiga.</p> }
+
+@code {
+    [SupplyParameterFromQuery(Name = "salva")] private int? SavedFlag { get; set; }
+    private bool Saved => SavedFlag == 1;
+    private IReadOnlyList<ReceiptSummary> receipts = [];
+    private StockReceived? open;
+
+    protected override async Task OnInitializedAsync() => receipts = await Stock.ListReceiptsAsync();
+
+    private async Task ShowAsync(Guid id) => open = open?.ReceiptId == id ? null : await Stock.GetReceiptAsync(id);
+}
