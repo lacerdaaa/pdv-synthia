@@ -25,6 +25,7 @@ simulador de sync, o catálogo de eventos e um **console de API ao vivo** gerado
 - [Como a sincronização funciona](#como-a-sincronização-funciona)
 - [Stack](#stack)
 - [O caixa](#o-caixa)
+- [Retaguarda](#retaguarda)
 - [Hardware do caixa](#hardware-do-caixa)
 - [Começando](#começando)
 - [Documentação e console de API](#documentação-e-console-de-api)
@@ -109,6 +110,7 @@ caixa nunca pede ID ao servidor e uma venda nunca é ordenada depois do próprio
 | Caixa · interface | Avalonia 12 (MVVM, CommunityToolkit) | App desktop para Windows/Linux sobre o `Terminal.Core`; testado headless. |
 | Servidor | ASP.NET Core minimal API | HTTP simples; polling basta para 4 caixas. |
 | Servidor · dados | PostgreSQL 16 (Npgsql + Dapper) | SQL explícito, `jsonb`, projeções reconstruíveis. |
+| Retaguarda | Blazor Server + cookie auth | Back-office na rede da loja, mesmo processo e mesmos serviços do servidor. |
 | Documentação | OpenAPI nativo do .NET + página própria em `/docs` | Console de API ao vivo sem dependências externas. |
 | Testes | xUnit, Postgres real, `FakeTimeProvider` | Integração do servidor e ponta a ponta caixa → servidor. |
 
@@ -147,6 +149,33 @@ homologação, uma faixa avisa que a NFC-e não tem valor fiscal.
 | Abrir turno | Pagamento | Finalizada |
 |---|---|---|
 | ![](docs/img/caixa-1-abrir-turno.png) | ![](docs/img/caixa-3-pagamento.png) | ![](docs/img/caixa-4-finalizada.png) |
+
+## Retaguarda
+
+![Retaguarda: importação de produtos](docs/img/retaguarda-2-importar.png)
+
+Back-office web em **Blazor Server**, servido pelo próprio servidor da loja em **http://localhost:5290/retaguarda**:
+funciona em qualquer navegador da rede da loja, sem instalar nada e sem depender de internet. Separado do caixa de
+propósito: outras pessoas (gerente, estoquista), outros lugares (escritório, depósito) e o caixa continua só vendendo.
+
+| Tela | O que faz |
+|---|---|
+| Painel | Indicadores e o **roteiro de implantação do mercado novo**, marcando o que já foi feito |
+| Produtos | Busca, cadastro, edição e **importação de planilha** com prévia (novos, atualizados, erros e avisos por linha) |
+| Entradas | **Transferência da loja antiga**, fornecedor sem XML ou outra; itens bipados ou por planilha |
+| Estoque | Saldo por produto, filtro de negativos e histórico de movimentos de cada produto |
+
+- **Login** por usuário e senha (hash PBKDF2, cookie de 12 h). No primeiro start, o servidor cria o usuário `admin`
+  com a senha de `Backoffice:InitialAdminPassword`; sem ela, gera uma senha e mostra uma única vez no log.
+  Em desenvolvimento a senha é `synthia`.
+- **Planilhas CSV** como o Excel brasileiro salva (`;`, vírgula decimal, Windows-1252 ou UTF-8). Modelos em
+  `/retaguarda/modelos/produtos.csv` e `/retaguarda/modelos/entrada.csv`.
+- **Entradas** viram o evento `StockReceived` (origem `RETAGUARDA`) no mesmo log das vendas: o saldo é sempre
+  última contagem + movimentos, e o rebuild das projeções continua valendo.
+
+| Painel | Nova entrada | Estoque |
+|---|---|---|
+| ![](docs/img/retaguarda-1-painel.png) | ![](docs/img/retaguarda-3-entrada.png) | ![](docs/img/retaguarda-4-estoque.png) |
 
 ## Hardware do caixa
 
@@ -324,6 +353,7 @@ src/
   Synthia.Terminal.Devices balança Toledo, ESC/POS, leitor serial, dispositivos simulados
   Synthia.Terminal.App     app do caixa (Avalonia): abertura de turno, venda, pagamento
   Synthia.Server           Migrator + SQL, EventStore, Projector, CatalogService, OpenAPI, /docs
+                           Backoffice/ (usuários, estoque, importações) e Retaguarda/ (Blazor)
 tests/
   Synthia.Terminal.Tests   caixa com SQLite temporário, relógio e servidor falsos
   Synthia.Server.Tests     servidor contra Postgres real, docs/OpenAPI, ponta a ponta
@@ -367,7 +397,8 @@ O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
 - [ ] Tela de inventário e consulta de preço
 - [ ] Campos tributários no produto (CFOP, CST/CSOSN, origem, CEST, alíquotas)
 - [ ] Operadores, login no caixa e permissão de supervisor
-- [ ] Back-office web e fila de NFC-e rejeitadas
+- [x] Retaguarda: login, produtos com importação, entradas (transferência), estoque e histórico
+- [ ] Retaguarda: importação de XML da NF-e, inventário, ajustes/perdas, usuários, fila de NFC-e rejeitadas
 - [ ] Autenticação dos caixas na API de sync (chave por terminal ou mTLS na VLAN)
 - [ ] Outbox servidor → nuvem e serviço da nuvem
 - [ ] Servidor com standby ou aceitar horas fora? · Edição de preço pela nuvem no MVP?
