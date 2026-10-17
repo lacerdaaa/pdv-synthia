@@ -19,22 +19,30 @@ public sealed class CatalogService(NpgsqlDataSource dataSource)
     /// <summary>Acima dessa distância o caixa baixa o snapshot em vez de paginar o delta.</summary>
     public const long MaxDeltaDistance = 5000;
 
-    public async Task<long> UpsertProductAsync(ProductData product, CancellationToken ct = default)
+    public async Task<long> UpsertProductAsync(ProductData product, CancellationToken ct = default) =>
+        await UpsertProductsAsync([product], ct);
+
+    /// <summary>Grava vários produtos numa transação (importação de planilha). Devolve a última versão.</summary>
+    public async Task<long> UpsertProductsAsync(IReadOnlyList<ProductData> products, CancellationToken ct = default)
     {
         await using var conn = await dataSource.OpenConnectionAsync(ct);
         await using var tx = await conn.BeginTransactionAsync(ct);
 
-        var version = await AppendChangeAsync(conn, tx, CatalogEntities.Product, product.Id, product);
-        await conn.ExecuteAsync(
-            """
-            INSERT INTO products (id, name, barcode, plu, unit, price_cents, ncm, active, version)
-            VALUES (@Id, @Name, @Barcode, @Plu, @Unit, @PriceCents, @Ncm, @Active, @version)
-            ON CONFLICT (id) DO UPDATE SET
-              name = excluded.name, barcode = excluded.barcode, plu = excluded.plu, unit = excluded.unit,
-              price_cents = excluded.price_cents, ncm = excluded.ncm, active = excluded.active, version = excluded.version
-            """,
-            new { product.Id, product.Name, product.Barcode, product.Plu, product.Unit, product.PriceCents, product.Ncm, product.Active, version },
-            tx);
+        long version = 0;
+        foreach (var product in products)
+        {
+            version = await AppendChangeAsync(conn, tx, CatalogEntities.Product, product.Id, product);
+            await conn.ExecuteAsync(
+                """
+                INSERT INTO products (id, name, barcode, plu, unit, price_cents, ncm, active, version)
+                VALUES (@Id, @Name, @Barcode, @Plu, @Unit, @PriceCents, @Ncm, @Active, @version)
+                ON CONFLICT (id) DO UPDATE SET
+                  name = excluded.name, barcode = excluded.barcode, plu = excluded.plu, unit = excluded.unit,
+                  price_cents = excluded.price_cents, ncm = excluded.ncm, active = excluded.active, version = excluded.version
+                """,
+                new { product.Id, product.Name, product.Barcode, product.Plu, product.Unit, product.PriceCents, product.Ncm, product.Active, version },
+                tx);
+        }
 
         await tx.CommitAsync(ct);
         return version;
