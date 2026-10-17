@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDV Synthia</title>
+<style>
+:root {
+  --bg: #fbfaf7; --surface: #ffffff; --surface-2: #f3f1ec; --text: #1d1c1a; --muted: #6b675f;
+  --border: #e3e0d8; --accent: #2f6fdb; --accent-soft: #e6eefc; --ok: #1f8a4c; --ok-soft: #e3f4ea;
+  --warn: #b26b00; --warn-soft: #fbf0dc; --bad: #c2362b; --bad-soft: #fbe6e4;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161614; --surface: #1f1e1c; --surface-2: #2a2926; --text: #ecebe7; --muted: #a29e95;
+    --border: #3a3834; --accent: #7aa7f5; --accent-soft: #243450; --ok: #5cc98a; --ok-soft: #1d3527;
+    --warn: #e7a84a; --warn-soft: #3a2d17; --bad: #f07b70; --bad-soft: #3d201d;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161614; --surface: #1f1e1c; --surface-2: #2a2926; --text: #ecebe7; --muted: #a29e95;
+  --border: #3a3834; --accent: #7aa7f5; --accent-soft: #243450; --ok: #5cc98a; --ok-soft: #1d3527;
+  --warn: #e7a84a; --warn-soft: #3a2d17; --bad: #f07b70; --bad-soft: #3d201d;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 var(--sans); }
+a { color: var(--accent); }
+code, pre { font-family: var(--mono); font-size: .88em; }
+code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+pre { background: var(--surface-2); padding: 14px 16px; border-radius: 8px; overflow-x: auto; margin: 0; }
+pre code { background: none; padding: 0; }
+header.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+header.top .in { max-width: 1080px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; }
+header.top strong { white-space: nowrap; }
+nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+nav a { color: var(--muted); text-decoration: none; padding: 4px 10px; border-radius: 6px; white-space: nowrap; font-size: 14px; }
+nav a:hover, nav a.on { color: var(--text); background: var(--surface-2); }
+button { font: inherit; cursor: pointer; }
+.theme { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 4px 8px; }
+main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 80px; }
+section { padding-top: 40px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.15; margin: 16px 0 8px; letter-spacing: -.02em; }
+h2 { font-size: 24px; margin: 0 0 12px; letter-spacing: -.01em; }
+h3 { font-size: 17px; margin: 0 0 6px; }
+.lead { font-size: 18px; color: var(--muted); max-width: 720px; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.card p { margin: 0; color: var(--muted); font-size: 15px; }
+.pill { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 13px; }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+
+/* Topologia */
+.topo { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 760px) { .topo { grid-template-columns: 1fr; } }
+.topo svg { width: 100%; height: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.topo svg .node rect { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; transition: .15s; }
+.topo svg .node { cursor: pointer; }
+.topo svg .node:hover rect, .topo svg .node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
+.topo svg text { fill: var(--text); font: 13px var(--sans); }
+.topo svg text.sub { fill: var(--muted); font-size: 11px; }
+.topo svg .edge { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.topo svg .zone { fill: none; stroke: var(--border); stroke-dasharray: 5 4; }
+.topo svg .lbl { fill: var(--muted); font-size: 11px; }
+
+/* Simulador */
+.sim { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.toggle { border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 8px; padding: 6px 12px; font-size: 14px; }
+.toggle[aria-pressed="true"] { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.primary { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 14px; }
+.ghost { border: 1px solid var(--border); background: none; color: var(--text); border-radius: 8px; padding: 6px 12px; font-size: 14px; }
+.lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.lane { border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg); }
+.lane h4 { margin: 0 0 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+.queue { display: flex; flex-wrap: wrap; gap: 3px; min-height: 22px; margin: 6px 0; }
+.ev { width: 12px; height: 12px; border-radius: 3px; background: var(--warn); }
+.ev.sent { background: var(--ok); opacity: .35; }
+.stat { font-size: 13px; color: var(--muted); }
+.stat b { color: var(--text); font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--ok); }
+.dot.off { background: var(--bad); }
+.server { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.log { margin-top: 12px; font: 12.5px/1.5 var(--mono); background: var(--surface-2); border-radius: 8px; padding: 10px; height: 150px; overflow-y: auto; }
+.log div { white-space: pre-wrap; }
+.log .ok { color: var(--ok); } .log .bad { color: var(--bad); } .log .warn { color: var(--warn); }
+
+/* Tabs */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.tabs button { border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-family: var(--mono); }
+.tabs button[aria-selected="true"] { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; }
+@media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0 16px; margin-bottom: 8px; }
+details summary { cursor: pointer; padding: 12px 0; font-weight: 500; list-style: none; display: flex; justify-content: space-between; gap: 8px; }
+details summary::after { content: "+"; color: var(--muted); }
+details[open] summary::after { content: "–"; }
+details > div { padding: 0 0 14px; color: var(--muted); font-size: 15px; }
+.method { font: 600 12px var(--mono); padding: 2px 6px; border-radius: 4px; margin-right: 6px; }
+.GET { background: var(--ok-soft); color: var(--ok); } .POST { background: var(--accent-soft); color: var(--accent); }
+.PUT { background: var(--warn-soft); color: var(--warn); }
+ul.check { list-style: none; padding: 0; }
+ul.check li { padding: 6px 0 6px 28px; position: relative; border-bottom: 1px solid var(--border); }
+ul.check li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 14px; height: 14px; border: 1.5px solid var(--muted); border-radius: 4px; }
+footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <strong>PDV Synthia</strong>
+  <nav id="nav">
+    <a href="#principios">Princípios</a><a href="#stack">Stack</a><a href="#topologia">Topologia</a>
+    <a href="#simulador">Simulador</a><a href="#eventos">Eventos</a><a href="#api">API</a>
+    <a href="#falhas">Falhas</a><a href="#codigo">Código</a><a href="#aberto">Em aberto</a>
+  </nav>
+  <button class="theme" id="theme" aria-label="Alternar tema">◐</button>
+</div></header>
+
+<main>
+  <span class="pill">Market SP · modelo de sincronização</span>
+  <h1>O caixa vende sozinho.<br>Servidor e nuvem só consolidam.</h1>
+  <p class="lead">PDV offline-first para 4 caixas. Venda, catálogo e preço vivem no SQLite de cada caixa;
+    o servidor da loja recebe eventos imutáveis e distribui o catálogo; a nuvem é cópia.</p>
+
+  <section id="principios">
+    <h2>Princípios</h2>
+    <div class="grid">
+      <div class="card"><h3>Offline-first no caixa</h3><p>Catálogo, preços e venda em SQLite local. Servidor fora do ar = caixa continua.</p></div>
+      <div class="card"><h3>Eventos imutáveis</h3><p>O caixa nunca faz UPDATE remoto. Registra fatos; o servidor deriva estoque e saldos.</p></div>
+      <div class="card"><h3>Um dono por dado</h3><p>Vendas nascem no caixa; catálogo e preço no back-office. Quase nenhum conflito.</p></div>
+      <div class="card"><h3>Pelo menos uma vez + idempotência</h3><p>Reenviar é sempre seguro: <code>event_id</code> é chave primária no servidor.</p></div>
+      <div class="card"><h3>Nuvem é cópia</h3><p>A loja funciona 100% sem internet, exceto TEF e autorização online de NFC-e.</p></div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2>Stack</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Camada</th><th>Tecnologia</th><th>Por quê</th></tr></thead>
+      <tbody>
+        <tr><td>Linguagem</td><td>C# / .NET 10 (LTS)</td><td>Uma linguagem do caixa à nuvem; contratos compartilhados num só projeto; ACBrLib tem binding .NET.</td></tr>
+        <tr><td>Caixa · dados</td><td>SQLite (Microsoft.Data.Sqlite + Dapper), modo WAL</td><td>Arquivo local, transacional; o worker de sync lê sem bloquear a venda.</td></tr>
+        <tr><td>Caixa · fiscal</td><td>ACBrLib NFC-e (a integrar)</td><td>Emissão no próprio caixa, série própria, certificado A1 local, contingência tpEmis 9.</td></tr>
+        <tr><td>Caixa · interface</td><td>Avalonia (proposta, a decidir)</td><td>UI desktop .NET para Windows/Linux, compartilha o <code>Terminal.Core</code>.</td></tr>
+        <tr><td>Servidor local</td><td>ASP.NET Core minimal API</td><td>HTTP simples; polling basta para 4 caixas.</td></tr>
+        <tr><td>Servidor · dados</td><td>PostgreSQL 16 (Npgsql + Dapper)</td><td>SQL explícito para <code>ON CONFLICT DO NOTHING</code>, jsonb para payloads, projeções reconstruíveis.</td></tr>
+        <tr><td>IDs</td><td>UUIDv7 monotônico (<code>Uuid7</code>)</td><td>Gerado na origem sem coordenação e ordenável por tempo, inclusive no mesmo milissegundo.</td></tr>
+        <tr><td>Testes</td><td>xUnit, Postgres real, FakeTimeProvider</td><td>Testes de integração do servidor e ponta a ponta caixa → servidor.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="topologia">
+    <h2>Topologia</h2>
+    <p class="stat">Clique em um componente.</p>
+    <div class="topo">
+      <svg viewBox="0 0 560 330" role="img" aria-label="Topologia: caixas, servidor local, nuvem, SEFAZ e TEF">
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor" style="color: var(--muted)"/></marker></defs>
+        <rect class="zone" x="10" y="20" width="370" height="140" rx="10"/>
+        <text class="lbl" x="22" y="38">Loja · VLAN dos caixas · fibra + 4G</text>
+        <g class="node" data-k="caixa"><rect x="24" y="52" width="150" height="88" rx="8"/>
+          <text x="38" y="76">Caixa (×4)</text><text class="sub" x="38" y="96">SQLite: catálogo + outbox</text>
+          <text class="sub" x="38" y="112">ACBr: NFC-e, impressão</text><text class="sub" x="38" y="128">Pinpad, leitor, balança</text></g>
+        <g class="node" data-k="servidor"><rect x="224" y="52" width="142" height="88" rx="8"/>
+          <text x="238" y="76">Servidor local</text><text class="sub" x="238" y="96">Postgres: eventos, catálogo</text>
+          <text class="sub" x="238" y="112">API .NET de sync</text><text class="sub" x="238" y="128">Back-office web</text></g>
+        <g class="node" data-k="nuvem"><rect x="410" y="52" width="140" height="88" rx="8"/>
+          <text x="424" y="76">Nuvem</text><text class="sub" x="424" y="96">Réplica + dashboards</text>
+          <text class="sub" x="424" y="112">Backup + XMLs NFC-e</text><text class="sub" x="424" y="128">Acesso remoto</text></g>
+        <g class="node" data-k="sefaz"><rect x="24" y="230" width="150" height="56" rx="8"/>
+          <text x="38" y="254">SEFAZ-SP</text><text class="sub" x="38" y="272">Autoriza NFC-e</text></g>
+        <g class="node" data-k="tef"><rect x="224" y="230" width="142" height="56" rx="8"/>
+          <text x="238" y="254">TEF / adquirente</text><text class="sub" x="238" y="272">Autoriza cartão</text></g>
+        <path class="edge" d="M174 80 H222" marker-end="url(#arr)"/><text class="lbl" x="180" y="74">eventos</text>
+        <path class="edge" d="M224 118 H176" marker-end="url(#arr)"/><text class="lbl" x="178" y="134">catálogo</text>
+        <path class="edge" d="M366 96 H408" marker-end="url(#arr)"/><text class="lbl" x="370" y="90">HTTPS</text>
+        <path class="edge" d="M80 140 V228" marker-end="url(#arr)"/><text class="lbl" x="86" y="190">NFC-e</text>
+        <path class="edge" d="M140 140 V180 H295 V228" marker-end="url(#arr)"/><text class="lbl" x="200" y="174">cartão</text>
+      </svg>
+      <div class="card" id="topoInfo" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="simulador">
+    <h2>Simulador de sincronização</h2>
+    <p class="stat">Venda nos caixas, derrube o servidor ou a internet e veja a outbox acumular e drenar.
+      Envio a cada 2 s com backoff exponencial até 60 s (acelerado aqui 10×).</p>
+    <div class="sim">
+      <div class="controls">
+        <button class="primary" id="sellAll">Vender em todos</button>
+        <button class="toggle" id="tServer" aria-pressed="false">Servidor fora do ar</button>
+        <button class="toggle" id="tNet" aria-pressed="false">Internet fora</button>
+        <button class="ghost" id="cancelLast">Cancelar último item</button>
+        <button class="ghost" id="reset">Reiniciar</button>
+      </div>
+      <div class="lanes" id="lanes"></div>
+      <div class="server">
+        <div class="card"><h3>Servidor · events</h3><p class="stat">Gravados: <b id="sEvents">0</b> · Duplicados ignorados: <b id="sDup">0</b></p></div>
+        <div class="card"><h3>Estoque · Arroz 5kg</h3><p class="stat">Saldo projetado: <b id="sStock">50</b></p></div>
+        <div class="card"><h3>Fila NFC-e</h3><p class="stat">Pendentes de transmissão: <b id="sNfce">0</b></p></div>
+      </div>
+      <div class="log" id="log" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="eventos">
+    <h2>Eventos</h2>
+    <p class="stat">Gravados na tabela <code>outbox</code> do caixa na mesma transação do fato. Valores em centavos.</p>
+    <div class="tabs" id="evTabs" role="tablist"></div>
+    <div class="split">
+      <div class="card" id="evInfo"></div>
+      <pre><code id="evJson"></code></pre>
+    </div>
+    <h3 style="margin-top:20px">Envelope</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Campo</th><th>Tipo</th><th>Para quê</th></tr></thead>
+      <tbody>
+        <tr><td><code>event_id</code></td><td>UUIDv7</td><td>Chave de idempotência; ordem de envio.</td></tr>
+        <tr><td><code>stream_id</code></td><td>UUIDv7</td><td>A venda, o turno ou o item afetado.</td></tr>
+        <tr><td><code>stream_seq</code></td><td>int</td><td>Ordem dentro do stream (1, 2, 3…).</td></tr>
+        <tr><td><code>type</code></td><td>text</td><td>Tipo do evento.</td></tr>
+        <tr><td><code>terminal_id</code></td><td>text</td><td>Caixa de origem (CX01…CX04).</td></tr>
+        <tr><td><code>occurred_at</code></td><td>timestamptz</td><td>Relógio do caixa (NTP do servidor).</td></tr>
+        <tr><td><code>catalog_version</code></td><td>bigint</td><td>Versão do catálogo usada no fato.</td></tr>
+        <tr><td><code>payload</code></td><td>json</td><td>Corpo específico do tipo.</td></tr>
+        <tr><td><code>sent_at</code></td><td>timestamptz null</td><td>Só no caixa: preenchido após ack do servidor.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="api">
+    <h2>API do servidor</h2>
+    <div id="apiList"></div>
+  </section>
+
+  <section id="falhas">
+    <h2>Cenários de falha</h2>
+    <p class="stat">Nenhuma falha isolada afeta a venda em dinheiro; só a queda total de internet afeta cartão.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Falha</th><th>O que acontece</th><th>Recuperação</th></tr></thead>
+      <tbody>
+        <tr><td>Servidor local cai</td><td>Caixas vendem; outbox acumula; catálogo congela na última versão.</td><td>Servidor volta e drena as outboxes sozinho.</td></tr>
+        <tr><td>Internet principal cai</td><td>Roteador muda para 4G; TEF e NFC-e seguem.</td><td>Automática.</td></tr>
+        <tr><td>Internet total cai</td><td>Dinheiro: NFC-e em contingência. Cartão: só com fallback do pinpad, senão maquininha reserva.</td><td>Transmissão das NFC-e pendentes quando voltar.</td></tr>
+        <tr><td>Nuvem cai</td><td>Nada muda na loja.</td><td>Servidor reenvia o acumulado.</td></tr>
+        <tr><td>Disco do caixa morre</td><td>Perde só eventos não enviados (normalmente segundos).</td><td>Reinstala; baixa snapshot do catálogo.</td></tr>
+        <tr><td>Disco do servidor morre</td><td>Caixas seguem vendendo.</td><td>Restaura <code>pg_dump</code> + replay das outboxes (30 dias).</td></tr>
+        <tr><td>Falta de energia</td><td>No-break segura caixas, rede e servidor por minutos.</td><td>Desligamento limpo se passar do limite.</td></tr>
+      </tbody>
+    </table></div>
+    <h3 style="margin-top:20px">Conflitos viram regras</h3>
+    <div id="rules"></div>
+  </section>
+
+  <section id="codigo">
+    <h2>Código</h2>
+    <div class="grid">
+      <div class="card"><h3><code>Synthia.Contracts</code></h3><p>Envelope, payloads, mensagens de sync, <code>Uuid7</code>, JSON comum.</p></div>
+      <div class="card"><h3><code>Synthia.Terminal.Core</code></h3><p><code>LocalDb</code>, <code>Outbox</code>, <code>LocalCatalog</code>, <code>Cart</code>, <code>SaleService</code>, <code>ShiftService</code>, <code>OutboxPusher</code>, <code>CatalogPuller</code>.</p></div>
+      <div class="card"><h3><code>Synthia.Server</code></h3><p><code>Migrator</code>, <code>EventStore</code>, <code>Projector</code>, <code>CatalogService</code>, endpoints.</p></div>
+      <div class="card"><h3><code>tests/</code></h3><p>Caixa com SQLite temporário e servidor falso; servidor contra Postgres real; ponta a ponta.</p></div>
+    </div>
+    <h3 style="margin-top:20px">Rodar</h3>
+<pre><code># servidor (Postgres em localhost, usuário/banco synthia)
+dotnet run --project src/Synthia.Server
+
+# testes (SYNTHIA_TEST_PG aponta para um usuário que pode criar bancos)
+dotnet test</code></pre>
+  </section>
+
+  <section id="aberto">
+    <h2>Decisões em aberto</h2>
+    <ul class="check">
+      <li>Servidor local com standby (2º mini PC + replicação) ou aceitar horas de servidor fora?</li>
+      <li>Edição de preço pela nuvem no MVP ou fase 2?</li>
+      <li>Qual TEF (PayGo ou SiTef) e se tem fallback offline para cartão.</li>
+      <li>Contador: confirmar CSOSN/CST, NCM do cadastro e regime tributário antes da primeira NFC-e.</li>
+      <li>Framework da interface do caixa (proposta: Avalonia).</li>
+      <li>Autenticação dos caixas na API de sync (chave por terminal ou mTLS na VLAN).</li>
+      <li>Outbox servidor → nuvem e o serviço da nuvem.</li>
+    </ul>
+  </section>
+
+  <footer>PDV Synthia · documentação do sistema</footer>
+</main>
+
+<script>
+(() => {
+  // Tema
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch {}
+  document.getElementById('theme').onclick = () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch {}
+  };
+
+  // Navegação ativa
+  const links = [...document.querySelectorAll('#nav a')];
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-40% 0px -55% 0px' });
+  document.querySelectorAll('main section').forEach(s => obs.observe(s));
+
+  // Topologia
+  const topo = {
+    caixa: ['Caixa (×4)', 'Vende sem depender de nada além de si, do pinpad e (para NFC-e normal) da internet. Cada venda grava a linha da <code>outbox</code> na mesma transação SQLite. Um worker envia a outbox a cada 2 s; outro puxa o delta do catálogo a cada 30 s.', 'Synthia.Terminal.Core'],
+    servidor: ['Servidor local', 'Recebe lotes em <code>POST /sync/events</code> e grava com <code>ON CONFLICT DO NOTHING</code>. Na mesma transação alimenta projeções: movimentos de estoque, totais do turno e fila de NFC-e. Atribui <code>version</code> a cada alteração do catálogo.', 'Synthia.Server'],
+    nuvem: ['Nuvem', 'Recebe <code>events</code> e <code>catalog_changes</code> do servidor por HTTPS de saída (nenhuma porta aberta na loja). Réplica para dashboards, backup diário criptografado (90 dias) e XMLs das NFC-e (5 anos).', 'a implementar'],
+    sefaz: ['SEFAZ-SP', 'Autoriza a NFC-e emitida pelo próprio caixa via ACBr, com série própria por caixa. Sem internet: contingência offline (tpEmis 9) e transmissão posterior.', 'INfceEmitter'],
+    tef: ['TEF / adquirente', 'Autoriza cartão direto do caixa. PayGo ou SiTef ainda em aberto; fallback offline depende do pinpad/adquirente.', 'a decidir'],
+  };
+  const info = document.getElementById('topoInfo');
+  const nodes = document.querySelectorAll('.topo .node');
+  const showTopo = k => {
+    const [t, d, m] = topo[k];
+    info.innerHTML = `<h3>${t}</h3><p>${d}</p><p style="margin-top:10px"><span class="pill">${m}</span></p>`;
+    nodes.forEach(n => n.classList.toggle('on', n.dataset.k === k));
+  };
+  nodes.forEach(n => n.addEventListener('click', () => showTopo(n.dataset.k)));
+  showTopo('caixa');
+
+  // Simulador
+  const SPEED = 10, BASE = 2000 / SPEED, MAX = 60000 / SPEED;
+  let state;
+  const $ = id => document.getElementById(id);
+  const log = (msg, cls = '') => {
+    const el = $('log'), d = document.createElement('div');
+    d.className = cls; d.textContent = `${new Date().toLocaleTimeString('pt-BR')}  ${msg}`;
+    el.appendChild(d); el.scrollTop = el.scrollHeight;
+    while (el.children.length > 120) el.firstChild.remove();
+  };
+  let seq = 0;
+  const uuid = () => (Date.now().toString(16).padStart(12, '0') + (++seq).toString(16).padStart(8, '0'));
+
+  function reset() {
+    state = {
+      serverDown: false, netDown: false,
+      terminals: ['CX01', 'CX02', 'CX03', 'CX04'].map(id => ({ id, outbox: [], sent: 0, delay: BASE, next: 0, lastItem: null })),
+      server: new Map(), dup: 0, stock: 50, nfce: 0,
+    };
+    $('tServer').setAttribute('aria-pressed', 'false');
+    $('tNet').setAttribute('aria-pressed', 'false');
+    $('log').innerHTML = '';
+    log('Loja aberta. Estoque inicial de Arroz 5kg: 50.');
+    render();
+  }
+
+  function sell(t) {
+    const qty = 1 + Math.floor(Math.random() * 3);
+    const nfce = state.netDown ? 'pending' : 'authorized';
+    const saleId = uuid();
+    t.outbox.push({ id: uuid(), type: 'SaleCompleted', qty, saleId, nfce, sent: false });
+    t.lastItem = { saleId, qty };
+    log(`${t.id} vendeu ${qty}× Arroz 5kg · NFC-e ${nfce === 'pending' ? 'em contingência' : 'autorizada'}`, nfce === 'pending' ? 'warn' : '');
+    t.next = 0;
+  }
+
+  function apply(e) {
+    if (state.server.has(e.id)) { state.dup++; return; }
+    state.server.set(e.id, e);
+    if (e.type === 'SaleCompleted') { state.stock -= e.qty; if (e.nfce === 'pending') state.nfce++; }
+    if (e.type === 'SaleItemCancelled') state.stock += e.qty;
+  }
+
+  function tick() {
+    const now = performance.now();
+    for (const t of state.terminals) {
+      if (now < t.next) continue;
+      const batch = t.outbox.filter(e => !e.sent).slice(0, 100);
+      if (!batch.length) { t.delay = BASE; t.next = now + BASE; continue; }
+      if (state.serverDown) {
+        t.delay = Math.min(t.delay * 2, MAX); t.next = now + t.delay;
+        log(`${t.id} POST /sync/events falhou · próxima tentativa em ${(t.delay * SPEED / 1000).toFixed(0)} s`, 'bad');
+        continue;
+      }
+      // Simula ack perdido de vez em quando: o caixa reenvia e o servidor ignora o duplicado.
+      const lostAck = Math.random() < 0.15;
+      batch.forEach(apply);
+      if (lostAck) { log(`${t.id} enviou ${batch.length} evento(s), mas o ack se perdeu; vai reenviar`, 'warn'); t.next = now + BASE; continue; }
+      batch.forEach(e => e.sent = true);
+      t.sent += batch.length; t.delay = BASE; t.next = now + BASE;
+      log(`${t.id} → servidor: ${batch.length} evento(s) aceitos`, 'ok');
+    }
+    if (!state.netDown && state.nfce > 0 && Math.random() < 0.05) { state.nfce--; log('NFC-e em contingência transmitida à SEFAZ', 'ok'); }
+    render();
+  }
+
+  function render() {
+    $('lanes').innerHTML = state.terminals.map((t, i) => {
+      const pend = t.outbox.filter(e => !e.sent).length;
+      const dots = t.outbox.slice(-40).map(e => `<span class="ev${e.sent ? ' sent' : ''}"></span>`).join('');
+      return `<div class="lane"><h4>${t.id} <span class="dot${state.serverDown ? ' off' : ''}" title="link com servidor"></span></h4>
+        <div class="queue">${dots}</div>
+        <div class="stat">Pendentes de envio: <b>${pend}</b></div>
+        <div class="stat">Enviados: <b>${t.sent}</b></div>
+        <button class="ghost" style="margin-top:8px;width:100%" data-sell="${i}">Vender</button></div>`;
+    }).join('');
+    $('sEvents').textContent = state.server.size;
+    $('sDup').textContent = state.dup;
+    $('sStock').textContent = state.stock;
+    $('sNfce').textContent = state.nfce;
+  }
+
+  $('lanes').addEventListener('click', e => { const i = e.target.dataset.sell; if (i !== undefined) { sell(state.terminals[+i]); render(); } });
+  $('sellAll').onclick = () => { state.terminals.forEach(sell); render(); };
+  $('tServer').onclick = e => {
+    state.serverDown = !state.serverDown; e.currentTarget.setAttribute('aria-pressed', state.serverDown);
+    log(state.serverDown ? 'Servidor local caiu. Caixas seguem vendendo; outbox acumula.' : 'Servidor voltou. Outboxes drenam sozinhas.', state.serverDown ? 'bad' : 'ok');
+  };
+  $('tNet').onclick = e => {
+    state.netDown = !state.netDown; e.currentTarget.setAttribute('aria-pressed', state.netDown);
+    log(state.netDown ? 'Internet caiu. NFC-e passa a sair em contingência (tpEmis 9).' : 'Internet voltou. Contingência será transmitida.', state.netDown ? 'bad' : 'ok');
+  };
+  $('cancelLast').onclick = () => {
+    const t = state.terminals.find(t => t.lastItem);
+    if (!t) return log('Nenhuma venda para cancelar.');
+    t.outbox.push({ id: uuid(), type: 'SaleItemCancelled', qty: t.lastItem.qty, sent: false });
+    log(`${t.id} cancelou ${t.lastItem.qty}× Arroz 5kg (novo evento, a venda original não muda)`, 'warn');
+    t.lastItem = null; render();
+  };
+  $('reset').onclick = reset;
+  reset();
+  setInterval(tick, 100);
+
+  // Eventos
+  const events = {
+    ShiftOpened: ['Abertura de turno', 'Stream = turno. Registra operador e fundo de troco.', { shiftId: '0199…a1', operator: 'Maria', openingCashCents: 10000 }],
+    SaleCompleted: ['Venda finalizada', 'Stream = venda. Carrega preço praticado, pagamentos e chave/status da NFC-e. Gera movimentos de estoque negativos e soma no turno.',
+      { saleId: '0199…b7', shiftId: '0199…a1', items: [{ itemId: '0199…c3', productId: '0199…01', description: 'Arroz 5kg', quantity: 2, unitPriceCents: 2899, totalCents: 5798 }],
+        payments: [{ method: 'cash', amountCents: 6000, tefNsu: null }], totalCents: 5798, changeCents: 202, nfceKey: '3526…0001', nfceStatus: 'authorized' }],
+    SaleItemCancelled: ['Item cancelado', 'Novo evento no stream da venda. O servidor estorna estoque e total; a venda original nunca é alterada.', { saleId: '0199…b7', itemId: '0199…c3', reason: 'cliente desistiu' }],
+    SaleCancelled: ['Venda cancelada', 'Estorna todos os itens ainda não estornados e remove a venda da fila de NFC-e.', { saleId: '0199…b7', reason: 'erro do operador' }],
+    CashWithdrawal: ['Sangria', 'Soma em retiradas do turno.', { shiftId: '0199…a1', amountCents: 50000, reason: 'sangria' }],
+    ShiftClosed: ['Fechamento de turno', 'Registra o dinheiro declarado para conferência com o calculado.', { shiftId: '0199…a1', declaredCashCents: 61202 }],
+    StockCounted: ['Contagem de estoque', 'O saldo passa a ser a contagem mais os movimentos posteriores ao timestamp dela.', { productId: '0199…01', countedQuantity: 48 }],
+    NfceAuthorized: ['NFC-e autorizada', 'Contingência transmitida com sucesso: sai da fila.', { saleId: '0199…b7', nfceKey: '3526…0001', protocol: '135260000000001' }],
+    NfceRejected: ['NFC-e rejeitada', 'Entra na fila do back-office para correção (NCM, tributação) e reenvio.', { saleId: '0199…b7', nfceKey: '3526…0001', code: '778', reason: 'NCM inexistente' }],
+  };
+  const tabs = $('evTabs');
+  const showEv = k => {
+    const [t, d, p] = events[k];
+    $('evInfo').innerHTML = `<h3>${t}</h3><p>${d}</p>`;
+    $('evJson').textContent = JSON.stringify(p, null, 2);
+    [...tabs.children].forEach(b => b.setAttribute('aria-selected', b.dataset.k === k));
+  };
+  tabs.innerHTML = Object.keys(events).map(k => `<button role="tab" data-k="${k}">${k}</button>`).join('');
+  tabs.addEventListener('click', e => e.target.dataset.k && showEv(e.target.dataset.k));
+  showEv('SaleCompleted');
+
+  // API
+  const api = [
+    ['POST', '/sync/events', 'Caixa envia lote de até 1000 eventos. Devolve todos os event_id aceitos, inclusive os já existentes.',
+      'POST /sync/events\n{ "events": [ { "eventId": "…", "streamId": "…", "streamSeq": 1, "type": "SaleCompleted",\n  "terminalId": "CX01", "occurredAt": "2026-10-17T12:00:00Z", "catalogVersion": 42, "payload": { … } } ] }\n\n200 { "accepted": ["…"] }'],
+    ['GET', '/sync/catalog?since={versão}', 'Delta do catálogo depois da versão do caixa, em páginas de 500. Pede snapshot se o caixa é novo, está à frente do servidor ou ficou mais de 5000 versões para trás.',
+      'GET /sync/catalog?since=40\n\n200 { "since": 40, "latestVersion": 42, "snapshotRequired": false,\n  "changes": [ { "version": 41, "entity": "product", "entityId": "…", "data": { … } } ] }'],
+    ['GET', '/sync/catalog/snapshot', 'Catálogo completo e preços agendados ainda válidos, lidos numa transação consistente.',
+      '200 { "version": 42, "products": [ … ], "scheduledPrices": [ … ] }'],
+    ['GET', '/backoffice/products', 'Lista o cadastro atual.', '200 [ { "id": "…", "name": "Arroz 5kg", "priceCents": 2899, … } ]'],
+    ['PUT', '/backoffice/products/{id}', 'Cria ou altera produto e grava uma linha em catalog_changes. Exclusão é active = false.',
+      'PUT /backoffice/products/…\n{ "id": "…", "name": "Arroz 5kg", "barcode": "789…", "plu": null, "unit": "UN",\n  "priceCents": 2899, "ncm": "10063021", "active": true }\n\n200 { "version": 43 }'],
+    ['POST', '/backoffice/scheduled-prices', 'Agenda preço; os caixas aplicam sozinhos no horário, mesmo offline.',
+      '{ "id": "…", "productId": "…", "priceCents": 2599, "effectiveAt": "2026-10-18T06:00:00Z" }'],
+    ['POST', '/backoffice/projections/rebuild', 'Apaga as projeções e relê todo o log de eventos.', '204'],
+  ];
+  $('apiList').innerHTML = api.map(([m, p, d, ex]) =>
+    `<details><summary><span><span class="method ${m}">${m}</span><code>${p}</code></span></summary><div><p>${d}</p><pre><code></code></pre></div></details>`).join('');
+  [...$('apiList').querySelectorAll('pre code')].forEach((c, i) => c.textContent = api[i][3]);
+
+  // Regras de conflito
+  const rules = [
+    ['Estoque vendido abaixo de zero', 'Venda nunca é bloqueada. Estoque fica negativo e gera alerta. Estoque é ledger de movimentos.'],
+    ['Caixa offline vendeu com preço antigo', 'Vale o preço da venda: o evento carrega o preço praticado e a catalog_version.'],
+    ['Produto excluído vendido offline', 'Exclusão é lógica (active = false). O evento continua válido.'],
+    ['Cancelamento de item ou venda', 'Novo evento (SaleItemCancelled, SaleCancelled), nunca alteração do original.'],
+    ['Ajuste de inventário no expediente', 'StockCounted: saldo = contagem + movimentos posteriores ao timestamp.'],
+    ['Mesmo produto editado em dois lugares (fase 2)', 'Último a chegar no servidor vence, por campo, com histórico em catalog_changes.'],
+  ];
+  $('rules').innerHTML = rules.map(([s, r]) => `<details><summary>${s}</summary><div>${r}</div></details>`).join('');
+})();
+</script>
+</body>
+</html>
