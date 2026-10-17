@@ -19,12 +19,17 @@ public sealed class StockService(NpgsqlDataSource dataSource, BackofficeEvents e
 {
     public async Task<StockReceived> ReceiveAsync(
         string source, string? supplier, string? document, IReadOnlyList<StockReceiptItem> items, string receivedBy, string? note,
-        CancellationToken ct = default)
+        CancellationToken ct = default) =>
+        await ReceiveAsync(source, supplier, document, items, receivedBy, note, accessKey: null, ct);
+
+    public async Task<StockReceived> ReceiveAsync(
+        string source, string? supplier, string? document, IReadOnlyList<StockReceiptItem> items, string receivedBy, string? note,
+        string? accessKey, CancellationToken ct = default)
     {
         if (items.Count == 0) throw new ArgumentException("Entrada sem itens.");
         if (items.Any(i => i.Quantity <= 0)) throw new ArgumentException("Quantidades devem ser positivas.");
 
-        var receipt = new StockReceived(Guid.CreateVersion7(), source, Blank(supplier), Blank(document), items, receivedBy, Blank(note));
+        var receipt = new StockReceived(Guid.CreateVersion7(), source, Blank(supplier), Blank(document), items, receivedBy, Blank(note), accessKey);
         await events.AppendAsync(EventTypes.StockReceived, receipt.ReceiptId, receipt, ct);
         return receipt;
     }
