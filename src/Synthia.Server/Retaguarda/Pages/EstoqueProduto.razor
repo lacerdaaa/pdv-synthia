@@ -1,0 +1,50 @@
+@page "/retaguarda/estoque/{ProductId:guid}"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject StockService Stock
+
+<PageTitle>Histórico · Retaguarda</PageTitle>
+
+<header class="page-head">
+    <h1>@(balance?.Name ?? "Produto")</h1>
+    <div class="actions"><a class="button" href="/retaguarda/estoque">Voltar</a></div>
+</header>
+
+@if (balance is not null)
+{
+    <div class="tiles small">
+        <div class="tile @(balance.Quantity < 0 ? "alert" : "")"><span>Saldo atual</span><b>@Fmt.Qty(balance.Quantity) @balance.Unit</b></div>
+        <div class="tile"><span>Código</span><b class="mono">@(balance.Barcode ?? balance.Plu?.ToString())</b></div>
+    </div>
+}
+
+<p class="muted">Saldo = última contagem + movimentos posteriores. Cada linha é um fato registrado; nada é editado.</p>
+<table class="grid-table">
+    <thead><tr><th>Data</th><th>Movimento</th><th>Origem</th><th class="num">Quantidade</th></tr></thead>
+    <tbody>
+        @foreach (var m in history)
+        {
+            <tr>
+                <td>@Fmt.When(m.OccurredAt)</td>
+                <td>@Fmt.Movement(m.Kind)</td>
+                <td>@m.TerminalId</td>
+                <td class="num @(m.Kind == "count" ? "" : m.Quantity < 0 ? "neg" : "pos")">
+                    @(m.Kind == "count" ? "= " : m.Quantity > 0 ? "+" : "")@Fmt.Qty(m.Quantity)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (history.Count == 0) { <p class="empty">Sem movimentos.</p> }
+
+@code {
+    [Parameter] public Guid ProductId { get; set; }
+    private StockBalance? balance;
+    private IReadOnlyList<StockMovement> history = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        balance = (await Stock.BalancesAsync()).FirstOrDefault(b => b.ProductId == ProductId);
+        history = await Stock.HistoryAsync(ProductId);
+    }
+}

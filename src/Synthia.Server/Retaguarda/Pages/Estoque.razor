@@ -1,0 +1,46 @@
+@page "/retaguarda/estoque"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject StockService Stock
+
+<PageTitle>Estoque · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Estoque</h1></header>
+
+<div class="toolbar">
+    <input class="search" placeholder="Buscar produto, código de barras ou PLU" @bind="search" @bind:event="oninput" @bind:after="LoadAsync" />
+    <label class="check"><input type="checkbox" @bind="onlyNegative" @bind:after="LoadAsync" /> só negativos</label>
+    <span class="muted">@balances.Count produto(s)</span>
+</div>
+
+<table class="grid-table">
+    <thead><tr><th>Produto</th><th>Código</th><th class="num">Saldo</th><th>Un</th><th>Último movimento</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var b in balances.Take(1000))
+        {
+            <tr class="@(b.Active ? "" : "inactive")">
+                <td>@b.Name</td>
+                <td class="mono">@(b.Barcode ?? b.Plu?.ToString())</td>
+                <td class="num @(b.Quantity < 0 ? "neg" : b.Quantity == 0 ? "zero" : "")">@Fmt.Qty(b.Quantity)</td>
+                <td>@b.Unit</td>
+                <td>@(b.LastMovementAt is { } d ? Fmt.When(d) : "—")</td>
+                <td class="num"><a href="/retaguarda/estoque/@b.ProductId">histórico</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [SupplyParameterFromQuery(Name = "negativos")] private int? NegativeFlag { get; set; }
+    private string search = "";
+    private bool onlyNegative;
+    private IReadOnlyList<StockBalance> balances = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        onlyNegative = NegativeFlag == 1;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync() => balances = await Stock.BalancesAsync(search, onlyNegative);
+}
