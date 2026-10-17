@@ -124,6 +124,19 @@ details > div { padding: 0 0 14px; color: var(--muted); font-size: 15px; }
 ul.check { list-style: none; padding: 0; }
 ul.check li { padding: 6px 0 6px 28px; position: relative; border-bottom: 1px solid var(--border); }
 ul.check li::before { content: ""; position: absolute; left: 2px; top: 11px; width: 14px; height: 14px; border: 1.5px solid var(--muted); border-radius: 4px; }
+.label-tool { display: grid; gap: 12px; }
+.label-inputs { display: flex; flex-wrap: wrap; gap: 12px; }
+.label-inputs label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.label-inputs input, .label-inputs select { font: 15px var(--mono); padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); }
+.label-inputs input { width: 17ch; }
+.label-digits { display: flex; flex-wrap: wrap; gap: 3px; font: 600 18px var(--mono); }
+.label-digits span { padding: 4px 6px; border-radius: 5px; background: var(--surface-2); }
+.label-digits .p { background: var(--surface-2); color: var(--muted); }
+.label-digits .c { background: var(--accent-soft); color: var(--accent); }
+.label-digits .v { background: var(--ok-soft); color: var(--ok); }
+.label-digits .d { background: var(--warn-soft); color: var(--warn); }
+#lblOut { margin: 0; }
+ol.steps { padding-left: 20px; } ol.steps li { margin: 4px 0; }
 footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
 </style>
 </head>
@@ -132,7 +145,7 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
   <strong>PDV Synthia</strong>
   <nav id="nav">
     <a href="#principios">Princípios</a><a href="#stack">Stack</a><a href="#topologia">Topologia</a>
-    <a href="#simulador">Simulador</a><a href="#eventos">Eventos</a><a href="#api">API</a>
+    <a href="#simulador">Simulador</a><a href="#hardware">Hardware</a><a href="#eventos">Eventos</a><a href="#api">API</a>
     <a href="#falhas">Falhas</a><a href="#codigo">Código</a><a href="#aberto">Em aberto</a><a href="simulacao.html">Simulação de um dia →</a>
   </nav>
   <button class="theme" id="theme" aria-label="Alternar tema">◐</button>
@@ -226,6 +239,45 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
       </div>
       <div class="log" id="log" aria-live="polite"></div>
     </div>
+  </section>
+
+  <section id="hardware">
+    <h2>Hardware do caixa</h2>
+    <p class="stat">Padrões de mercado como default; tudo ajustável por caixa em <code>terminal.json</code>
+      (exemplo em <code>config/terminal.example.json</code>).</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Equipamento</th><th>Conexão</th><th>Como o Synthia fala com ele</th><th>Config</th></tr></thead>
+      <tbody>
+        <tr><td>Leitor de código de barras</td><td>USB</td><td>Modo teclado (padrão de fábrica): a tela repassa as teclas ao <code>KeyboardWedgeDetector</code>, que reconhece a leitura pela velocidade (&lt; 50 ms entre teclas). Modo serial: <code>SerialBarcodeScanner</code> lê linhas terminadas em CR.</td><td><code>devices.scanner</code></td></tr>
+        <tr><td>Balança de checkout</td><td>Serial RS-232 / USB-serial</td><td>Protocolo Toledo: envia ENQ, recebe STX + 5 dígitos (gramas) + ETX; <code>I</code> instável, <code>N</code> negativo, <code>S</code> sobrecarga. Sem resposta, o peso é digitado.</td><td><code>devices.scale</code></td></tr>
+        <tr><td>Impressora térmica 80 mm</td><td>Rede (RAW 9100), serial ou USB</td><td>ESC/POS: texto CP850, negrito, alinhamento, QR Code nativo (DANFE NFC-e), corte parcial. 48 colunas.</td><td><code>devices.printer</code></td></tr>
+        <tr><td>Gaveta de dinheiro</td><td>RJ11 na impressora</td><td>Pulso ESC/POS pela impressora (<code>ESC p 0 25 250</code>).</td><td>—</td></tr>
+        <tr><td>Pinpad</td><td>USB</td><td>Pelo cliente TEF (SiTef ou PayGo), atrás de <code>IPaymentTerminal</code>. Hoje: simulado.</td><td><code>devices.paymentTerminal</code></td></tr>
+        <tr><td>Balança etiquetadora</td><td>Rede (servidor)</td><td>Recebe os PLUs do catálogo (MGV). O caixa lê a etiqueta EAN-13 com prefixo 2.</td><td><code>scaleLabel</code></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 style="margin-top:20px">Etiqueta da balança</h3>
+    <p class="stat">EAN-13 = <code>2</code> + PLU + valor + dígito verificador. Teste um código:</p>
+    <div class="card label-tool">
+      <div class="label-inputs">
+        <label>Código lido<input id="lblCode" value="2001001007409" inputmode="numeric" maxlength="13"></label>
+        <label>Dígitos do PLU<select id="lblCodeLen"><option>4</option><option>5</option><option selected>6</option><option>7</option></select></label>
+        <label>Valor embutido<select id="lblKind"><option value="price" selected>Total (R$)</option><option value="weight">Peso (kg)</option></select></label>
+      </div>
+      <div class="label-digits" id="lblDigits" aria-hidden="true"></div>
+      <p id="lblOut" aria-live="polite"></p>
+    </div>
+
+    <h3 style="margin-top:20px">Implantação de um caixa</h3>
+    <ol class="steps">
+      <li>Ligar leitor, balança (anotar a porta COM), impressora (IP fixo ou USB) e gaveta na impressora.</li>
+      <li>Copiar <code>terminal.example.json</code> para <code>terminal.json</code>: id do caixa, IP do servidor, série da NFC-e, portas.</li>
+      <li>Conferir o formato da etiqueta no MGV (dígitos do código, total ou peso) e refletir em <code>scaleLabel</code>.</li>
+      <li>Instalar o certificado A1 e definir <code>SYNTHIA_CERT_PASSWORD</code>; manter <code>ambiente: homologacao</code> até os testes fiscais.</li>
+      <li>Subir o caixa: ele valida a configuração, baixa o catálogo do servidor e mostra o que falta.</li>
+      <li>Teste de bancada: ler um EAN, ler uma etiqueta, pesar, imprimir, abrir gaveta, venda TEF simulada.</li>
+    </ol>
   </section>
 
   <section id="eventos">
@@ -618,6 +670,24 @@ dotnet test</code></pre>
       '<code>http://localhost:5290/docs</code> para testar as rotas ao vivo, como no Swagger.';
     renderStatic();
   })();
+
+  // Etiqueta da balança (mesma regra de ScaleBarcode.TryParse)
+  const ean13Ok = c => /^\d{13}$/.test(c) && (10 - [...c.slice(0, 12)].reduce((s, d, i) => s + +d * (i % 2 ? 3 : 1), 0) % 10) % 10 === +c[12];
+  const decodeLabel = () => {
+    const code = $('lblCode').value.trim(), n = +$('lblCodeLen').value, kind = $('lblKind').value;
+    const cls = i => i === 0 ? 'p' : i <= n ? 'c' : i < 12 ? 'v' : 'd';
+    $('lblDigits').innerHTML = [...code].map((d, i) => `<span class="${cls(i)}">${d}</span>`).join('');
+    const out = $('lblOut');
+    if (code.length !== 13) return out.textContent = 'Digite os 13 dígitos.';
+    if (code[0] !== '2') return out.textContent = 'Não começa com 2: é um código de barras comum, procurado direto no cadastro.';
+    if (!ean13Ok(code)) return out.textContent = 'Dígito verificador inválido: leitura com erro, o caixa recusa.';
+    const plu = +code.slice(1, 1 + n), value = +code.slice(1 + n, 12);
+    out.innerHTML = kind === 'price'
+      ? `PLU <b>${plu}</b> · total <b>${(value / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</b> (cobrado como impresso; o peso é derivado pelo preço do cadastro)`
+      : `PLU <b>${plu}</b> · peso <b>${(value / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 3 })} kg</b> (o caixa calcula o total pelo preço vigente)`;
+  };
+  ['lblCode', 'lblCodeLen', 'lblKind'].forEach(id => $(id).addEventListener('input', decodeLabel));
+  decodeLabel();
 
   // Regras de conflito
   const rules = [
