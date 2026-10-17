@@ -124,12 +124,12 @@ section.extra h2 { font-size: 21px; margin: 24px 0 10px; }
 
   <section class="extra" id="achados">
     <h2>O que a simulação revelou</h2>
-    <div class="finding bad">
-      <h3>Estorno de item pago em dinheiro não sai do caixa esperado</h3>
-      <p>No passo 22 o feijão (R$ 8,99, pago em dinheiro) é cancelado e devolvido ao cliente. O <code>Projector</code>
-        desconta o valor das vendas, mas não do dinheiro esperado na gaveta. No fechamento (passo 26) o CX01 aparece
-        com R$ 8,99 de diferença que não existe. O CX02, sem estorno em dinheiro, fecha exato.</p>
-      <p class="ref">Proposta: <code>SaleItemCancelled</code> passa a carregar a forma de devolução (<code>refundMethod</code>) e o projetor desconta de <code>cash_sales_cents</code> quando for dinheiro.</p>
+    <div class="finding" style="border-left-color: var(--ok)">
+      <h3>Corrigido: estorno em dinheiro agora sai do dinheiro esperado</h3>
+      <p>A primeira execução mostrou o CX01 fechando com R$ 8,99 de diferença: o feijão devolvido em dinheiro (passo 22)
+        saía das vendas, mas não da gaveta. Agora <code>SaleItemCancelled</code> carrega <code>refundMethod</code>, o caixa
+        só aceita devolver por uma forma usada na venda, e o <code>Projector</code> desconta da gaveta quando é dinheiro, sem
+        descontar de novo se a venda inteira for cancelada depois. Os dois caixas fecham exatos no passo 26.</p>
     </div>
     <div class="finding">
       <h3>Cancelar um item de NFC-e já autorizada não existe no fiscal</h3>

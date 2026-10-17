@@ -439,7 +439,7 @@ dotnet test</code></pre>
     SaleCompleted: ['Venda finalizada', 'Stream = venda. Carrega preço praticado, pagamentos e chave/status da NFC-e. Gera movimentos de estoque negativos e soma no turno.',
       { saleId: '0199…b7', shiftId: '0199…a1', items: [{ itemId: '0199…c3', productId: '0199…01', description: 'Arroz 5kg', quantity: 2, unitPriceCents: 2899, totalCents: 5798 }],
         payments: [{ method: 'cash', amountCents: 6000, tefNsu: null }], totalCents: 5798, changeCents: 202, nfceKey: '3526…0001', nfceStatus: 'authorized' }],
-    SaleItemCancelled: ['Item cancelado', 'Novo evento no stream da venda. O servidor estorna estoque e total; a venda original nunca é alterada.', { saleId: '0199…b7', itemId: '0199…c3', reason: 'cliente desistiu' }],
+    SaleItemCancelled: ['Item cancelado', 'Novo evento no stream da venda. O servidor estorna estoque e total e, se a devolução for em dinheiro, o dinheiro esperado na gaveta. A venda original nunca é alterada.', { saleId: '0199…b7', itemId: '0199…c3', reason: 'cliente desistiu', refundMethod: 'cash' }],
     SaleCancelled: ['Venda cancelada', 'Estorna todos os itens ainda não estornados e remove a venda da fila de NFC-e.', { saleId: '0199…b7', reason: 'erro do operador' }],
     CashWithdrawal: ['Sangria', 'Soma em retiradas do turno.', { shiftId: '0199…a1', amountCents: 50000, reason: 'sangria' }],
     ShiftClosed: ['Fechamento de turno', 'Registra o dinheiro declarado para conferência com o calculado.', { shiftId: '0199…a1', declaredCashCents: 61202 }],
