@@ -20,7 +20,7 @@ public sealed class Outbox(TerminalOptions options, TimeProvider clock)
             "SELECT coalesce(max(stream_seq), 0) + 1 FROM outbox WHERE stream_id = @streamId", new { streamId }, tx);
 
         var envelope = new EventEnvelope(
-            Guid.CreateVersion7(clock.GetUtcNow()),
+            Uuid7.Next(clock.GetUtcNow()),
             streamId,
             seq,
             type,

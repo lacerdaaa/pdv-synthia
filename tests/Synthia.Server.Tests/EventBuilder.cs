@@ -6,7 +6,7 @@ namespace Synthia.Server.Tests;
 internal static class EventBuilder
 {
     public static EventEnvelope Make<T>(string type, Guid streamId, int seq, T payload, DateTimeOffset? at = null) =>
-        new(Guid.CreateVersion7(), streamId, seq, type, "CX01", at ?? DateTimeOffset.UtcNow, 1, SynthiaJson.ToElement(payload));
+        new(Uuid7.Next(), streamId, seq, type, "CX01", at ?? DateTimeOffset.UtcNow, 1, SynthiaJson.ToElement(payload));
 
     public static (EventEnvelope Event, SaleCompleted Sale) Sale(Guid shiftId, params (Guid ProductId, decimal Qty, long UnitCents)[] items)
     {
