@@ -2,11 +2,13 @@
   <Folder Name="/src/">
     <Project Path="src/Synthia.Contracts/Synthia.Contracts.csproj" />
     <Project Path="src/Synthia.Server/Synthia.Server.csproj" />
+    <Project Path="src/Synthia.Terminal.App/Synthia.Terminal.App.csproj" />
     <Project Path="src/Synthia.Terminal.Core/Synthia.Terminal.Core.csproj" />
     <Project Path="src/Synthia.Terminal.Devices/Synthia.Terminal.Devices.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Synthia.Server.Tests/Synthia.Server.Tests.csproj" />
+    <Project Path="tests/Synthia.Terminal.App.Tests/Synthia.Terminal.App.Tests.csproj" />
     <Project Path="tests/Synthia.Terminal.Tests/Synthia.Terminal.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
