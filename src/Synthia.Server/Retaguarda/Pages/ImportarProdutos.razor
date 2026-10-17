@@ -1,0 +1,109 @@
+@page "/retaguarda/produtos/importar"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject CatalogService Catalog
+
+<PageTitle>Importar produtos · Retaguarda</PageTitle>
+
+<header class="page-head">
+    <h1>Importar produtos</h1>
+    <div class="actions"><a class="button" href="/retaguarda/modelos/produtos.csv">Baixar modelo</a></div>
+</header>
+
+<section class="card">
+    <p>Planilha <b>CSV</b> (no Excel: <i>Salvar como › CSV</i>). Colunas, em qualquer ordem:
+        <code>codigo_barras</code>, <code>plu</code>, <code>descricao</code>, <code>unidade</code>, <code>preco</code>, <code>ncm</code>
+        e, opcional, <code>ativo</code>. Produtos já cadastrados são encontrados pelo código de barras ou PLU e atualizados.</p>
+    <InputFile OnChange="LoadAsync" accept=".csv,text/csv" />
+    @if (error is not null) { <p class="error">@error</p> }
+</section>
+
+@if (plan is not null)
+{
+    <div class="tiles small">
+        <div class="tile"><span>Novos</span><b>@Count(ImportAction.Create)</b></div>
+        <div class="tile"><span>Atualizados</span><b>@Count(ImportAction.Update)</b></div>
+        <div class="tile"><span>Sem mudança</span><b>@Count(ImportAction.Unchanged)</b></div>
+        <div class="tile @(Count(ImportAction.Error) > 0 ? "alert" : "")"><span>Com erro (ignorados)</span><b>@Count(ImportAction.Error)</b></div>
+    </div>
+
+    <div class="toolbar">
+        <button class="primary" disabled="@(ToImport.Count == 0 || saving)" @onclick="ImportAsync">
+            Importar @ToImport.Count produto(s)
+        </button>
+        <label class="check"><input type="checkbox" @bind="onlyProblems" /> só linhas com erro ou aviso</label>
+    </div>
+
+    <table class="grid-table">
+        <thead><tr><th>Linha</th><th></th><th>Produto</th><th>Código</th><th>PLU</th><th class="num">Preço</th><th>Observações</th></tr></thead>
+        <tbody>
+            @foreach (var r in plan.Where(r => !onlyProblems || r.Errors.Count > 0 || r.Warnings.Count > 0).Take(1000))
+            {
+                <tr class="@(r.Action == ImportAction.Error ? "row-error" : "")">
+                    <td class="mono">@r.Line</td>
+                    <td><span class="badge @r.Action.ToString().ToLowerInvariant()">@ActionLabel(r.Action)</span></td>
+                    <td>@r.Label</td>
+                    <td class="mono">@r.Product?.Barcode</td>
+                    <td class="mono">@r.Product?.Plu</td>
+                    <td class="num">@(r.Product is null ? "" : Fmt.Money(r.Product.PriceCents))</td>
+                    <td>
+                        @foreach (var e in r.Errors) { <div class="error">@e</div> }
+                        @foreach (var w in r.Warnings) { <div class="warn">@w</div> }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (done is not null) { <p class="flash">@done <a href="/retaguarda/produtos">Ver produtos</a></p> }
+
+@code {
+    private IReadOnlyList<ProductImportRow>? plan;
+    private bool onlyProblems;
+    private bool saving;
+    private string? error;
+    private string? done;
+
+    private List<ProductData> ToImport => plan?.Where(r => r.Action is ImportAction.Create or ImportAction.Update)
+        .Select(r => r.Product!).ToList() ?? [];
+
+    private int Count(ImportAction a) => plan?.Count(r => r.Action == a) ?? 0;
+
+    private static string ActionLabel(ImportAction a) => a switch
+    {
+        ImportAction.Create => "novo",
+        ImportAction.Update => "atualiza",
+        ImportAction.Unchanged => "igual",
+        _ => "erro",
+    };
+
+    private async Task LoadAsync(InputFileChangeEventArgs e)
+    {
+        error = null; done = null; plan = null;
+        try
+        {
+            using var ms = new MemoryStream();
+            await e.File.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(ms);
+            plan = ProductImport.Plan(CsvText.Decode(ms.ToArray()), await Catalog.ListProductsAsync());
+        }
+        catch (IOException ex) { error = $"Não foi possível ler o arquivo: {ex.Message}"; }
+    }
+
+    private async Task ImportAsync()
+    {
+        saving = true;
+        try
+        {
+            var items = ToImport;
+            await Catalog.UpsertProductsAsync(items);
+            done = $"{items.Count} produto(s) importado(s). Os caixas recebem em até 30 s.";
+            plan = null;
+        }
+        catch (Npgsql.PostgresException ex) when (ex.SqlState == "23505")
+        {
+            error = "Algum código de barras ou PLU já pertence a outro produto ativo. Nada foi gravado.";
+        }
+        finally { saving = false; }
+    }
+}
