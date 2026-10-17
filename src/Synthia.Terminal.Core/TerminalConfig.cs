@@ -10,6 +10,7 @@ namespace Synthia.Terminal.Core;
 /// </summary>
 public sealed record TerminalConfig
 {
+    public StoreSection Store { get; init; } = new();
     public TerminalSection Terminal { get; init; } = new();
     public NfceSection Nfce { get; init; } = new();
     public ScaleLabelSection ScaleLabel { get; init; } = new();
@@ -38,6 +39,8 @@ public sealed record TerminalConfig
     {
         var errors = new List<string>();
 
+        if (new string(Store.Cnpj.Where(char.IsAsciiDigit).ToArray()).Length != 14)
+            errors.Add("store.cnpj deve ter 14 dígitos.");
         if (!System.Text.RegularExpressions.Regex.IsMatch(Terminal.Id, "^CX[0-9]{2}$"))
             errors.Add("terminal.id deve seguir CX01, CX02...");
         if (!Uri.TryCreate(Terminal.ServerUrl, UriKind.Absolute, out _))
@@ -61,6 +64,14 @@ public sealed record TerminalConfig
 
         return errors;
     }
+}
+
+/// <summary>Dados impressos no cupom. CNPJ também compõe a chave da NFC-e.</summary>
+public sealed record StoreSection
+{
+    public string Name { get; init; } = "Market SP";
+    public string Cnpj { get; init; } = "00.000.000/0001-91";
+    public string Address { get; init; } = "";
 }
 
 public sealed record TerminalSection
