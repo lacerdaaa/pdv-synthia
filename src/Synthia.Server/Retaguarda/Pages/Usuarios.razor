@@ -1,0 +1,94 @@
+@page "/retaguarda/usuarios"
+@attribute [Authorize(Roles = BackofficeRoles.Admin)]
+@rendermode InteractiveServer
+@inject BackofficeUsers Users
+
+<PageTitle>Usuários · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Usuários</h1></header>
+
+<section class="card">
+    <h2>Novo usuário</h2>
+    <div class="grid">
+        <label>Usuário (login) <input @bind="username" autocomplete="off" /></label>
+        <label>Nome <input @bind="displayName" /></label>
+        <label>Papel
+            <select @bind="role">
+                @foreach (var r in BackofficeRoles.All) { <option value="@r">@BackofficeRoles.Label(r)</option> }
+            </select>
+        </label>
+        <label>Senha inicial <input type="password" @bind="password" autocomplete="new-password" /></label>
+    </div>
+    <p class="muted">Gerente: tudo menos usuários. Estoquista: entradas, notas, inventário, perdas e estoque, sem alterar produtos e preços.</p>
+    <div class="actions end"><button class="primary" @onclick="CreateAsync">Criar usuário</button></div>
+</section>
+
+@if (message is not null) { <p class="@(ok ? "flash" : "error")">@message</p> }
+
+<table class="grid-table">
+    <thead><tr><th>Nome</th><th>Usuário</th><th>Papel</th><th>Situação</th><th>Senha</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var u in users)
+        {
+            <tr class="@(u.Active ? "" : "inactive")">
+                <td>@u.DisplayName</td>
+                <td class="mono">@u.Username</td>
+                <td>
+                    <select value="@u.Role" @onchange="e => SetRoleAsync(u, e.Value?.ToString())">
+                        @foreach (var r in BackofficeRoles.All) { <option value="@r">@BackofficeRoles.Label(r)</option> }
+                    </select>
+                </td>
+                <td>@(u.Active ? "ativo" : "desativado")</td>
+                <td>
+                    @if (resetting == u.Id)
+                    {
+                        <div class="additem">
+                            <input type="password" class="qty" @bind="newPassword" placeholder="nova senha" autocomplete="new-password" />
+                            <button @onclick="() => ResetAsync(u)">Salvar</button>
+                        </div>
+                    }
+                    else { <button class="link" @onclick="() => StartReset(u)">redefinir</button> }
+                </td>
+                <td class="num"><button class="link" @onclick="() => ToggleAsync(u)">@(u.Active ? "desativar" : "reativar")</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<p class="muted">Mudança de papel vale a partir do próximo login do usuário. Desativar tira o acesso na hora.</p>
+
+@code {
+    private IReadOnlyList<BackofficeUserRow> users = [];
+    private string username = "", displayName = "", role = BackofficeRoles.Stock, password = "", newPassword = "";
+    private Guid? resetting;
+    private string? message;
+    private bool ok;
+
+    protected override async Task OnInitializedAsync() => users = await Users.ListAsync();
+
+    private void StartReset(BackofficeUserRow u) { resetting = u.Id; newPassword = ""; }
+
+    private async Task RunAsync(Func<Task> action, string success)
+    {
+        try { await action(); message = success; ok = true; }
+        catch (ArgumentException ex) { message = ex.Message; ok = false; }
+        users = await Users.ListAsync();
+    }
+
+    private Task CreateAsync() => RunAsync(async () =>
+    {
+        await Users.CreateAsync(username, displayName, password, role);
+        username = displayName = password = "";
+    }, $"Usuário {username} criado.");
+
+    private Task SetRoleAsync(BackofficeUserRow u, string? r) =>
+        RunAsync(() => Users.SetRoleAsync(u.Id, r ?? ""), $"{u.DisplayName} agora é {BackofficeRoles.Label(r ?? "")}.");
+
+    private Task ToggleAsync(BackofficeUserRow u) =>
+        RunAsync(() => Users.SetActiveAsync(u.Id, !u.Active), $"{u.DisplayName} {(u.Active ? "desativado" : "reativado")}.");
+
+    private Task ResetAsync(BackofficeUserRow u) => RunAsync(async () =>
+    {
+        await Users.SetPasswordAsync(u.Id, newPassword);
+        resetting = null;
+    }, $"Senha de {u.DisplayName} redefinida.");
+}
