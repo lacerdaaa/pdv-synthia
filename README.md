@@ -83,7 +83,7 @@ sequenceDiagram
     S-->>W: accepted [event_id…]
     W->>CX: marca sent_at
   end
-  Note over W,S: erro ou timeout → backoff 2 s → 60 s;<br/>reenvio é inofensivo
+  Note over W,S: erro ou timeout → backoff 2 s → 60 s<br/>reenvio é inofensivo
 ```
 
 **Servidor → caixas (catálogo).** Toda alteração no back-office grava uma linha em `catalog_changes` com `version`
