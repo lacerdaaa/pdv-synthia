@@ -4,6 +4,8 @@ PDV offline-first para o Market SP: o caixa vende sozinho; servidor da loja e nu
 
 Documentação interativa (arquitetura, simulador de sync, eventos, API, falhas): [`docs/index.html`](docs/index.html).
 
+Simulação real de um dia de loja, passo a passo (situação → rota → processo → resposta → efeito): [`docs/simulacao.html`](docs/simulacao.html), gerada por `tools/simulate.sh`.
+
 ## Stack
 
 - **.NET 10** em todas as camadas, contratos compartilhados em `Synthia.Contracts`
