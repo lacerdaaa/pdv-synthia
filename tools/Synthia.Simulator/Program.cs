@@ -358,13 +358,13 @@ await Run("Conflitos", "Os dois caixas vendem a última unidade de azeite ao mes
 
 await Run("Conflitos", "Cliente do CX01 desiste do feijão da primeira venda",
 [
-    "Caixa: SaleService.CancelItem valida que o item é da venda e grava SaleItemCancelled (seq 2). A venda original não muda.",
-    "Servidor: Projector procura o SaleCompleted do stream, estorna a quantidade (kind = item_cancelled) e subtrai o valor do turno.",
+    "Caixa: SaleService.CancelItem valida que o item é da venda e que a devolução sai por uma forma usada nela; grava SaleItemCancelled (seq 2) com refundMethod = cash. A venda original não muda.",
+    "Servidor: Projector procura o SaleCompleted do stream, estorna a quantidade (kind = item_cancelled), subtrai o valor do turno e, por ser em dinheiro, do dinheiro esperado na gaveta.",
 ], async () =>
 {
     var sale = saleIds["cx01-arroz-feijao"];
     var feijao = sale.Items.Single(i => i.Description.StartsWith("Feijão"));
-    cx01.Sales.CancelItem(sale.SaleId, feijao.ItemId, "cliente desistiu");
+    cx01.Sales.CancelItem(sale.SaleId, feijao.ItemId, "cliente desistiu", PaymentMethods.Cash);
     return new[] { $"CX01: item {feijao.Description} cancelado ({Metrics.Money(feijao.TotalCents)})", await cx01.PushRoundAsync() };
 });
 
