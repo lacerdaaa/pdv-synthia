@@ -1,0 +1,58 @@
+@page "/retaguarda/inventarios"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject InventoryService Inventories
+@inject NavigationManager Navigation
+
+<PageTitle>Inventário · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Inventário</h1></header>
+
+<section class="card">
+    <h2>Novo inventário</h2>
+    <p class="muted">Por setor (rotativo) conta só o que for bipado. <b>Geral</b> é para a véspera da abertura ou balanço:
+        o que tiver saldo e não for contado vai para zero.</p>
+    <div class="additem">
+        <input class="code" @bind="name" placeholder="Nome (ex.: Mercearia corredor 3, Geral véspera da abertura)" />
+        <label class="check"><input type="checkbox" @bind="fullCount" /> inventário geral</label>
+        <button class="primary" @onclick="CreateAsync">Começar contagem</button>
+    </div>
+</section>
+
+<table class="grid-table">
+    <thead><tr><th>Inventário</th><th>Tipo</th><th>Situação</th><th class="num">Itens</th><th>Aberto por</th><th>Encerrado</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var i in list)
+        {
+            <tr>
+                <td>@i.Name</td>
+                <td>@(i.FullCount ? "Geral" : "Setor")</td>
+                <td><span class="badge @StatusClass(i.Status)">@StatusLabel(i.Status)</span></td>
+                <td class="num">@i.Lines</td>
+                <td>@i.CreatedBy · @Fmt.When(i.CreatedAt)</td>
+                <td>@(i.ClosedAt is { } c ? $"{i.ClosedBy} · {Fmt.When(c)}" : "—")</td>
+                <td class="num"><a href="/retaguarda/inventarios/@i.Id">@(i.Status == InventoryService.Open ? "continuar" : "ver")</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (list.Count == 0) { <p class="empty">Nenhum inventário ainda.</p> }
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> Auth { get; set; } = default!;
+    private IReadOnlyList<Inventory> list = [];
+    private string name = "";
+    private bool fullCount;
+
+    protected override async Task OnInitializedAsync() => list = await Inventories.ListAsync();
+
+    private async Task CreateAsync()
+    {
+        var user = (await Auth).User.FindFirst(ClaimTypes.GivenName)?.Value ?? "retaguarda";
+        var id = await Inventories.CreateAsync(name, fullCount, user);
+        Navigation.NavigateTo($"/retaguarda/inventarios/{id}");
+    }
+
+    internal static string StatusLabel(string s) => s switch { InventoryService.Open => "em contagem", InventoryService.Confirmed => "confirmado", _ => "descartado" };
+    internal static string StatusClass(string s) => s switch { InventoryService.Open => "update", InventoryService.Confirmed => "create", _ => "" };
+}

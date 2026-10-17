@@ -110,3 +110,9 @@ a.tile:hover { border-color: var(--navy); }
 .login-logo { height: 170px; }
 .login .card { width: 100%; display: grid; gap: 6px; }
 .login form { display: grid; gap: 12px; margin-top: 8px; }
+
+input.cell { width: 110px; text-align: right; padding: 4px 8px; font-variant-numeric: tabular-nums; }
+@media (max-width: 860px) {
+  /* Tabelas largas rolam dentro delas mesmas, sem empurrar a página. */
+  .grid-table { display: block; overflow-x: auto; white-space: nowrap; }
+}

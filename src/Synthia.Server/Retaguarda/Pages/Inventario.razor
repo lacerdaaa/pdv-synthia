@@ -1,0 +1,185 @@
+@page "/retaguarda/inventarios/{Id:guid}"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject InventoryService Inventories
+@inject CatalogService Catalog
+
+<PageTitle>@(inventory?.Name ?? "Inventário") · Retaguarda</PageTitle>
+
+@if (inventory is null) { <p class="muted">Carregando…</p> return; }
+
+<header class="page-head">
+    <h1>@inventory.Name</h1>
+    <div class="actions">
+        <span class="badge @Inventarios.StatusClass(inventory.Status)">@Inventarios.StatusLabel(inventory.Status)</span>
+        @if (inventory.FullCount) { <span class="badge error">geral: não contado vai a zero</span> }
+        <a class="button" href="/retaguarda/inventarios">Voltar</a>
+    </div>
+</header>
+
+@if (IsOpen && review is null)
+{
+    <section class="card">
+        <h2>Contagem</h2>
+        <p class="muted">Bipe o produto: cada leitura <b>soma</b> a quantidade (padrão 1). Para caixas fechadas, digite a quantidade antes.
+            Corrija uma linha pelo campo da tabela. Pode continuar depois, em outro aparelho: a contagem fica salva.</p>
+        <form class="additem" @onsubmit="AddAsync">
+            <input @ref="codeInput" class="code" @bind="code" placeholder="Código de barras ou PLU" autocomplete="off" />
+            <input class="qty" @bind="qty" inputmode="decimal" aria-label="Quantidade" />
+            <button type="submit">Somar</button>
+        </form>
+        @if (message is not null) { <p class="@(messageOk ? "flash" : "error")">@message</p> }
+    </section>
+}
+
+@if (review is null)
+{
+    <table class="grid-table">
+        <thead><tr><th>Produto</th><th>Código</th><th class="num">Contado</th><th>Un</th><th>Por</th><th>Quando</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var l in lines)
+            {
+                <tr>
+                    <td>@l.Name</td>
+                    <td class="mono">@(l.Barcode ?? l.Plu?.ToString())</td>
+                    <td class="num">
+                        @if (IsOpen)
+                        {
+                            <input class="cell" value="@Fmt.Qty(l.Quantity)" @onchange="e => SetAsync(l, e.Value?.ToString())" inputmode="decimal" />
+                        }
+                        else { @Fmt.Qty(l.Quantity) }
+                    </td>
+                    <td>@l.Unit</td>
+                    <td>@l.CountedBy</td>
+                    <td>@Fmt.When(l.CountedAt)</td>
+                    <td class="num">@if (IsOpen) { <button class="link" @onclick="() => RemoveAsync(l)">remover</button> }</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (lines.Count == 0) { <p class="empty">Nada contado ainda.</p> }
+
+    @if (IsOpen)
+    {
+        <div class="actions end">
+            <button @onclick="DiscardAsync">Descartar inventário</button>
+            <button class="primary" disabled="@(lines.Count == 0 && !inventory.FullCount)" @onclick="ReviewAsync">Revisar diferenças</button>
+        </div>
+    }
+}
+else
+{
+    <div class="tiles small">
+        <div class="tile"><span>Produtos</span><b>@review.Count</b></div>
+        <div class="tile"><span>Batem com o sistema</span><b>@review.Count(r => r.Difference == 0)</b></div>
+        <div class="tile @(review.Any(r => r.Difference < 0) ? "alert" : "")"><span>Faltando</span><b>@review.Count(r => r.Difference < 0)</b></div>
+        <div class="tile"><span>Sobrando</span><b>@review.Count(r => r.Difference > 0)</b></div>
+        @if (inventory.FullCount) { <div class="tile alert"><span>Não contados (vão a zero)</span><b>@review.Count(r => !r.WasCounted)</b></div> }
+    </div>
+    <table class="grid-table">
+        <thead><tr><th>Produto</th><th class="num">Sistema</th><th class="num">Contado</th><th class="num">Diferença</th><th>Un</th></tr></thead>
+        <tbody>
+            @foreach (var r in review)
+            {
+                <tr class="@(r.WasCounted ? "" : "row-error")">
+                    <td>@r.Name @if (!r.WasCounted) { <span class="badge error">não contado</span> }</td>
+                    <td class="num">@Fmt.Qty(r.Expected)</td>
+                    <td class="num">@Fmt.Qty(r.Counted)</td>
+                    <td class="num @(r.Difference < 0 ? "neg" : r.Difference > 0 ? "pos" : "zero")">@(r.Difference > 0 ? "+" : "")@Fmt.Qty(r.Difference)</td>
+                    <td>@r.Unit</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="actions end">
+        <button @onclick="() => review = null">Voltar à contagem</button>
+        <button class="primary" disabled="@saving" @onclick="ConfirmAsync">Confirmar inventário (@review.Count produtos)</button>
+    </div>
+    <p class="muted" style="text-align:right">Confirmar grava a contagem no estoque. Não dá para desfazer; corrige-se com outra contagem.</p>
+}
+
+@if (error is not null) { <p class="error">@error</p> }
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> Auth { get; set; } = default!;
+    private Inventory? inventory;
+    private IReadOnlyList<InventoryLine> lines = [];
+    private IReadOnlyList<InventoryReviewLine>? review;
+    private IReadOnlyList<ProductData> products = [];
+    private string code = "", qty = "1";
+    private string? message, error;
+    private bool messageOk, saving;
+    private ElementReference codeInput;
+
+    private bool IsOpen => inventory?.Status == InventoryService.Open;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        products = await Catalog.ListProductsAsync();
+        await LoadAsync();
+        if (inventory?.Status == InventoryService.Confirmed) review = await Inventories.ReviewAsync(Id);
+    }
+
+    private async Task LoadAsync()
+    {
+        inventory = await Inventories.GetAsync(Id);
+        lines = await Inventories.LinesAsync(Id);
+    }
+
+    private async Task<string> UserAsync() => (await Auth).User.FindFirst(ClaimTypes.GivenName)?.Value ?? "retaguarda";
+
+    private async Task AddAsync()
+    {
+        var product = ReceiptImport.FindProduct(products, code);
+        if (product is null) { Say($"Produto não encontrado: {code}", false); }
+        else if (!CsvText.TryDecimal(qty, out var q) || q <= 0) { Say("Quantidade inválida.", false); }
+        else if (product.Unit != "KG" && q != decimal.Truncate(q)) { Say($"{product.Name} é por unidade.", false); }
+        else
+        {
+            await Inventories.AddAsync(Id, product.Id, q, await UserAsync());
+            await LoadAsync();
+            var total = lines.First(l => l.ProductId == product.Id).Quantity;
+            Say($"{product.Name}: +{Fmt.Qty(q)} → {Fmt.Qty(total)} {product.Unit}", true);
+            code = ""; qty = "1";
+        }
+        await codeInput.FocusAsync();
+    }
+
+    private async Task SetAsync(InventoryLine line, string? text)
+    {
+        if (!CsvText.TryDecimal(text, out var q) || q < 0) { Say("Quantidade inválida.", false); return; }
+        await Inventories.SetAsync(Id, line.ProductId, q, await UserAsync());
+        await LoadAsync();
+        Say($"{line.Name} corrigido para {Fmt.Qty(q)}.", true);
+    }
+
+    private async Task RemoveAsync(InventoryLine line)
+    {
+        await Inventories.RemoveLineAsync(Id, line.ProductId);
+        await LoadAsync();
+    }
+
+    private async Task ReviewAsync() => review = await Inventories.ReviewAsync(Id);
+
+    private async Task ConfirmAsync()
+    {
+        saving = true; error = null;
+        try
+        {
+            await Inventories.ConfirmAsync(Id, await UserAsync());
+            await LoadAsync();
+            review = await Inventories.ReviewAsync(Id);
+        }
+        catch (InvalidOperationException ex) { error = ex.Message; }
+        finally { saving = false; }
+    }
+
+    private async Task DiscardAsync()
+    {
+        await Inventories.DiscardAsync(Id, await UserAsync());
+        await LoadAsync();
+    }
+
+    private void Say(string text, bool ok) { message = text; messageOk = ok; }
+}
