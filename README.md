@@ -22,6 +22,7 @@ simulador de sync, o catálogo de eventos e um **console de API ao vivo** gerado
 - [Arquitetura](#arquitetura)
 - [Como a sincronização funciona](#como-a-sincronização-funciona)
 - [Stack](#stack)
+- [Hardware do caixa](#hardware-do-caixa)
 - [Começando](#começando)
 - [Documentação e console de API](#documentação-e-console-de-api)
 - [API](#api)
@@ -101,11 +102,35 @@ caixa nunca pede ID ao servidor e uma venda nunca é ordenada depois do próprio
 | Linguagem | C# / .NET 10 (LTS) | Uma linguagem do caixa à nuvem; contratos compartilhados; ACBrLib tem binding .NET. |
 | Caixa · dados | SQLite (Microsoft.Data.Sqlite + Dapper), WAL | Arquivo local e transacional; o worker lê sem bloquear a venda. |
 | Caixa · fiscal | ACBrLib NFC-e *(a integrar)* | Série própria por caixa, certificado A1 local, contingência tpEmis 9. |
+| Caixa · dispositivos | ESC/POS, protocolo Toledo, System.IO.Ports | Padrões de mercado; trocar de modelo é configuração. |
 | Caixa · interface | Avalonia *(proposta)* | Desktop .NET para Windows/Linux sobre o mesmo `Terminal.Core`. |
 | Servidor | ASP.NET Core minimal API | HTTP simples; polling basta para 4 caixas. |
 | Servidor · dados | PostgreSQL 16 (Npgsql + Dapper) | SQL explícito, `jsonb`, projeções reconstruíveis. |
 | Documentação | OpenAPI nativo do .NET + página própria em `/docs` | Console de API ao vivo sem dependências externas. |
 | Testes | xUnit, Postgres real, `FakeTimeProvider` | Integração do servidor e ponta a ponta caixa → servidor. |
+
+## Hardware do caixa
+
+Os drivers seguem padrões de mercado e ficam atrás de contratos em `Terminal.Core/Devices`, com versões
+simuladas para desenvolvimento. Cada caixa escolhe portas e modelos em `terminal.json`
+([exemplo comentado](config/terminal.example.json)).
+
+| Equipamento | Padrão adotado | Implementação |
+|---|---|---|
+| Leitor de código de barras | USB em modo teclado (de fábrica) ou serial | `KeyboardWedgeDetector` (reconhece leitura pela velocidade) · `SerialBarcodeScanner` |
+| Balança de checkout | Serial, protocolo Toledo (ENQ → STX peso ETX) | `SerialScale` + `ToledoProtocol` |
+| Impressora térmica 80 mm | ESC/POS por rede (RAW 9100), serial ou dispositivo | `EscPosPrinter` (CP850, QR Code, corte) |
+| Gaveta | RJ11 na impressora | pulso ESC/POS |
+| Pinpad / TEF | SiTef ou PayGo *(a decidir)* | `IPaymentTerminal` · `SimulatedPaymentTerminal` |
+| Etiqueta da balança (MGV) | EAN-13 `2 + PLU(6) + total(5) + DV` | `ScaleBarcode` + `ScanResolver` |
+
+O leitor resolve qualquer código pelo `ScanResolver`: primeiro o código exato do cadastro; se não houver e for uma
+etiqueta de balança válida, o PLU com o **total impresso** (o cliente paga o da etiqueta e o peso vai para o
+estoque). Formato de etiqueta, tamanho do PLU e "total ou peso" são configuráveis.
+
+Implantação de um caixa: ligar os equipamentos, copiar `config/terminal.example.json` para `terminal.json`, ajustar
+id, servidor, série da NFC-e e portas, conferir o formato da etiqueta no MGV e manter `ambiente: homologacao` até os
+testes fiscais. O passo a passo e um decodificador de etiquetas estão em `/docs#hardware`.
 
 ## Começando
 
@@ -248,11 +273,15 @@ estorno em dinheiro fora da gaveta, já corrigido.
 src/
   Synthia.Contracts        envelope, payloads, mensagens de sync, Uuid7, JSON comum
   Synthia.Terminal.Core    LocalDb, Outbox, LocalCatalog, Cart, SaleService, ShiftService,
-                           OutboxPusher, CatalogPuller, INfceEmitter
+                           OutboxPusher, CatalogPuller, INfceEmitter, ScanResolver,
+                           TerminalConfig, contratos de dispositivos
+  Synthia.Terminal.Devices balança Toledo, ESC/POS, leitor serial, dispositivos simulados
   Synthia.Server           Migrator + SQL, EventStore, Projector, CatalogService, OpenAPI, /docs
 tests/
   Synthia.Terminal.Tests   caixa com SQLite temporário, relógio e servidor falsos
   Synthia.Server.Tests     servidor contra Postgres real, docs/OpenAPI, ponta a ponta
+config/
+  terminal.example.json    configuração comentada de um caixa
 tools/
   Synthia.Simulator        roteiro de um dia de loja
   simulate.sh              executa o simulador contra um servidor descartável
@@ -269,6 +298,8 @@ dotnet test
 
 - **Caixa:** venda, troco, balança, contingência, turno, preço agendado, exclusão lógica, outbox em lotes,
   drenagem após queda, poda de 30 dias, ordem do `Uuid7`.
+- **Dispositivos:** etiqueta EAN-13 e dígito verificador, protocolo Toledo, ESC/POS (acentos, colunas, QR, gaveta),
+  detecção de leitor em modo teclado, `terminal.json` e fábrica de dispositivos.
 - **Servidor:** idempotência, estoque negativo, contagem, cancelamentos e devoluções na gaveta, fila de NFC-e,
   rebuild, delta/snapshot do catálogo, `/docs` e OpenAPI.
 - **Ponta a ponta:** caixa SQLite baixa catálogo, vende e o servidor Postgres projeta estoque e turno.
@@ -278,7 +309,10 @@ O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
 ## Roadmap e decisões em aberto
 
 - [ ] Integração ACBrLib (emissão, contingência, worker de transmissão, inutilização no fim do dia)
+- [x] Camada de dispositivos (leitor, balança, impressora/gaveta, TEF simulado) e etiqueta de balança
 - [ ] Interface do caixa (proposta: Avalonia) e tela de inventário
+- [ ] Campos tributários no produto (CFOP, CST/CSOSN, origem, CEST, alíquotas)
+- [ ] Operadores, login no caixa e permissão de supervisor
 - [ ] Back-office web e fila de NFC-e rejeitadas
 - [ ] Autenticação dos caixas na API de sync (chave por terminal ou mTLS na VLAN)
 - [ ] Outbox servidor → nuvem e serviço da nuvem
