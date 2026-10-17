@@ -26,6 +26,7 @@ simulador de sync, o catálogo de eventos e um **console de API ao vivo** gerado
 - [Stack](#stack)
 - [O caixa](#o-caixa)
 - [Retaguarda](#retaguarda)
+- [Segurança](#segurança)
 - [Hardware do caixa](#hardware-do-caixa)
 - [Começando](#começando)
 - [Documentação e console de API](#documentação-e-console-de-api)
@@ -163,19 +164,48 @@ propósito: outras pessoas (gerente, estoquista), outros lugares (escritório, d
 | Painel | Indicadores e o **roteiro de implantação do mercado novo**, marcando o que já foi feito |
 | Produtos | Busca, cadastro, edição e **importação de planilha** com prévia (novos, atualizados, erros e avisos por linha) |
 | Entradas | **Transferência da loja antiga**, fornecedor sem XML ou outra; itens bipados ou por planilha |
+| Notas (XML) | **XML da NF-e do fornecedor**: vincula itens pelo código de barras, converte caixa/fardo em unidades, aprende o vínculo, cadastra produto novo pela nota e bloqueia nota duplicada |
 | Estoque | Saldo por produto, filtro de negativos e histórico de movimentos de cada produto |
+| Inventário | Contagem por setor ou **geral** (zera o não contado), bipando; rascunho salvo no servidor; revisão sistema × contado antes de confirmar |
+| Perdas e ajustes | Quebra, vencimento, consumo interno, furto, devolução ao fornecedor |
+| Usuários | Papéis **admin**, **gerente** (tudo menos usuários) e **estoquista** (estoque, sem produtos e preços) |
 
 - **Login** por usuário e senha (hash PBKDF2, cookie de 12 h). No primeiro start, o servidor cria o usuário `admin`
   com a senha de `Backoffice:InitialAdminPassword`; sem ela, gera uma senha e mostra uma única vez no log.
   Em desenvolvimento a senha é `synthia`.
 - **Planilhas CSV** como o Excel brasileiro salva (`;`, vírgula decimal, Windows-1252 ou UTF-8). Modelos em
   `/retaguarda/modelos/produtos.csv` e `/retaguarda/modelos/entrada.csv`.
-- **Entradas** viram o evento `StockReceived` (origem `RETAGUARDA`) no mesmo log das vendas: o saldo é sempre
-  última contagem + movimentos, e o rebuild das projeções continua valendo.
+- **Tudo vira evento** no mesmo log das vendas, com origem `RETAGUARDA`: `StockReceived` (entrada e nota),
+  `StockCounted` (inventário, com o horário em que cada item foi contado) e `StockAdjusted` (perdas). O saldo é
+  sempre última contagem + movimentos, e o rebuild das projeções continua valendo.
+- **Inventário com a loja aberta:** como cada item guarda o horário da contagem, vendas feitas depois que o item
+  foi contado continuam baixando o estoque normalmente.
+- **NF-e:** caixa/fardo vira unidade pela própria nota (`qTrib / qCom`); o vínculo código-do-fornecedor → produto
+  fica salvo, e a próxima nota do mesmo fornecedor entra sem intervenção. O custo por unidade vai na entrada.
+- **Usuário desativado perde o acesso na hora** (o login é revalidado a cada requisição); a retaguarda nunca fica
+  sem um admin ativo; cada um troca a própria senha em *Trocar senha*.
 
-| Painel | Nova entrada | Estoque |
+| Painel | Nota (XML) | Inventário |
 |---|---|---|
-| ![](docs/img/retaguarda-1-painel.png) | ![](docs/img/retaguarda-3-entrada.png) | ![](docs/img/retaguarda-4-estoque.png) |
+| ![](docs/img/retaguarda-1-painel.png) | ![](docs/img/retaguarda-7-nota-xml.png) | ![](docs/img/retaguarda-6-inventario.png) |
+| **Nova entrada** | **Estoque** | **Usuários** |
+| ![](docs/img/retaguarda-3-entrada.png) | ![](docs/img/retaguarda-4-estoque.png) | ![](docs/img/retaguarda-9-usuarios.png) |
+
+## Segurança
+
+| Quem | Como se autentica | Configuração no servidor |
+|---|---|---|
+| Caixa → `/sync/*` | `X-Terminal-Id` + `X-Terminal-Key` | `Sync:Terminals:CX01 = <chave>` (uma por caixa). No caixa: `SYNTHIA_TERMINAL_KEY` ou `terminal.apiKey` |
+| Pessoas → `/retaguarda` | Usuário e senha, cookie de 12 h | Usuários na própria retaguarda; admin inicial via `Backoffice:InitialAdminPassword` |
+| Pessoas → `/backoffice/*` | O mesmo login da retaguarda (admin/gerente) | — |
+| Integrações → `/backoffice/*` | `X-Api-Key` | `Backoffice:ApiKeys:0 = <chave>` |
+| Qualquer um | — | `/health`, `/docs` e `/openapi/v1.json` são públicos |
+
+- Um caixa só consegue enviar eventos **em nome dele mesmo**; lote com outro `terminalId` é recusado (403).
+- Chaves comparadas em tempo constante; senhas só como hash (PBKDF2 do ASP.NET Identity).
+- Em **desenvolvimento**, sem chaves de caixa configuradas, o sync aceita qualquer caixa (com aviso no log) para o
+  modo demonstração funcionar. **Em produção, sem chaves, todo sync é recusado.** O back-office nunca é anônimo.
+- API sem credencial responde 401/403 (não redireciona para a tela de login).
 
 ## Hardware do caixa
 
@@ -250,6 +280,9 @@ arquivo, a página mostra a lista estática da API.
 | `POST` | `/backoffice/projections/rebuild` | Apaga as projeções e relê todo o log de eventos. |
 | `GET` | `/health` | Verifica se o servidor está no ar. |
 
+Rotas `/sync/*` exigem a chave do caixa; rotas `/backoffice/*` exigem login da retaguarda ou `X-Api-Key`
+(ver [Segurança](#segurança)).
+
 <details>
 <summary>Exemplo: enviar uma venda</summary>
 
@@ -297,7 +330,9 @@ Todos com o mesmo envelope: `event_id`, `stream_id`, `stream_seq`, `type`, `term
 | `SaleCancelled` | venda | Estorna itens ainda não estornados e o dinheiro ainda na gaveta; sai da fila de NFC-e. |
 | `CashWithdrawal` | turno | Soma em sangrias. |
 | `ShiftClosed` | turno | Guarda o dinheiro declarado para conferência. |
-| `StockCounted` | produto | Saldo passa a ser a contagem + movimentos posteriores. |
+| `StockCounted` | produto | Saldo passa a ser a contagem + movimentos posteriores (inventário guarda o esperado e quem contou). |
+| `StockReceived` | entrada | Soma ao estoque (transferência, fornecedor, nota XML com chave de acesso). |
+| `StockAdjusted` | ajuste | Tira do estoque com motivo (quebra, vencimento, consumo, furto, devolução). |
 | `NfceAuthorized` | venda | Remove da fila de NFC-e. |
 | `NfceRejected` | venda | Fila do back-office com código e motivo. |
 
@@ -398,8 +433,9 @@ O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
 - [ ] Campos tributários no produto (CFOP, CST/CSOSN, origem, CEST, alíquotas)
 - [ ] Operadores, login no caixa e permissão de supervisor
 - [x] Retaguarda: login, produtos com importação, entradas (transferência), estoque e histórico
-- [ ] Retaguarda: importação de XML da NF-e, inventário, ajustes/perdas, usuários, fila de NFC-e rejeitadas
-- [ ] Autenticação dos caixas na API de sync (chave por terminal ou mTLS na VLAN)
+- [x] Retaguarda: importação de XML da NF-e, inventário, perdas e ajustes, usuários e papéis
+- [x] API autenticada: chave por caixa no sync, login ou chave de API no back-office
+- [ ] Retaguarda: fila de NFC-e rejeitadas, relatórios de vendas e conferência de fechamento
 - [ ] Outbox servidor → nuvem e serviço da nuvem
 - [ ] Servidor com standby ou aceitar horas fora? · Edição de preço pela nuvem no MVP?
 - [ ] TEF: PayGo ou SiTef, e fallback offline para cartão
