@@ -85,4 +85,30 @@ public sealed class StockServiceTests(ServerFixture fx) : IClassFixture<ServerFi
 
         Assert.Contains(await catalog.ListProductsAsync(), p => p.Name == $"Lote A {suffix}");
     }
+
+    [Fact]
+    public async Task Perda_sai_do_estoque_com_motivo_e_aparece_no_historico()
+    {
+        var iogurte = await NewProductAsync($"Iogurte {Guid.NewGuid():N}");
+        var stock = Get<StockService>();
+        await stock.ReceiveAsync(StockReceiptSources.Supplier, "Laticínio", "NF 1", [new StockReceiptItem(iogurte.Id, iogurte.Name, 30, 250)], "g", null);
+
+        await stock.AdjustAsync(AdjustmentReasons.Expired, [new StockAdjustmentItem(iogurte.Id, iogurte.Name, 4)], "estoquista", "lote vencido");
+
+        Assert.Equal(26, (await stock.BalancesAsync(iogurte.Name)).Single().Quantity);
+        Assert.Equal("adjusted", (await stock.HistoryAsync(iogurte.Id))[0].Kind);
+        var listed = (await stock.ListAdjustmentsAsync()).First(a => a.Adjustment.Items.Any(i => i.ProductId == iogurte.Id));
+        Assert.Equal(AdjustmentReasons.Expired, listed.Adjustment.Reason);
+        Assert.Equal("lote vencido", listed.Adjustment.Note);
+    }
+
+    [Fact]
+    public async Task Ajuste_invalido_e_recusado()
+    {
+        var stock = Get<StockService>();
+        var item = new StockAdjustmentItem(Guid.NewGuid(), "x", 1);
+        await Assert.ThrowsAsync<ArgumentException>(() => stock.AdjustAsync("inventado", [item], "x", null));
+        await Assert.ThrowsAsync<ArgumentException>(() => stock.AdjustAsync(AdjustmentReasons.Damage, [], "x", null));
+        await Assert.ThrowsAsync<ArgumentException>(() => stock.AdjustAsync(AdjustmentReasons.Damage, [item with { Quantity = -1 }], "x", null));
+    }
 }
