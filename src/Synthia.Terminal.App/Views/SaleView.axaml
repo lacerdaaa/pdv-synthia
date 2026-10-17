@@ -1,0 +1,93 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Synthia.Terminal.App.ViewModels"
+             xmlns:app="using:Synthia.Terminal.App"
+             x:Class="Synthia.Terminal.App.Views.SaleView"
+             x:DataType="vm:SaleViewModel">
+  <Grid ColumnDefinitions="*,380" RowDefinitions="*,Auto" ColumnSpacing="20" RowSpacing="16">
+
+    <!-- Itens -->
+    <Border Classes="card" Padding="0">
+      <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="60,*,110,110,120" Margin="16,12">
+          <TextBlock Classes="label" Text="#" />
+          <TextBlock Classes="label" Grid.Column="1" Text="Descrição" />
+          <TextBlock Classes="label" Grid.Column="2" Text="Qtd" HorizontalAlignment="Right" />
+          <TextBlock Classes="label" Grid.Column="3" Text="Unit. R$" HorizontalAlignment="Right" />
+          <TextBlock Classes="label" Grid.Column="4" Text="Total R$" HorizontalAlignment="Right" />
+        </Grid>
+        <Border DockPanel.Dock="Top" Height="1" Background="#E3E0D8" />
+        <Panel>
+          <ListBox x:Name="ItemList" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" Background="Transparent">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:CartLineViewModel">
+                <Grid ColumnDefinitions="60,*,110,110,120">
+                  <TextBlock Text="{Binding Index}" FontFamily="monospace" Foreground="#6B675F" FontSize="17" />
+                  <TextBlock Grid.Column="1" Text="{Binding Description}" FontSize="18" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="2" Text="{Binding Quantity}" FontSize="18" HorizontalAlignment="Right" />
+                  <TextBlock Grid.Column="3" Text="{Binding UnitPrice}" FontSize="18" HorizontalAlignment="Right" />
+                  <TextBlock Grid.Column="4" Text="{Binding Total}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock Text="Caixa livre" FontSize="34" Foreground="#C9C5BC" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     IsVisible="{Binding !Items.Count}" />
+        </Panel>
+      </DockPanel>
+    </Border>
+
+    <!-- Totais e pagamento -->
+    <StackPanel Grid.Column="1" Spacing="16">
+      <Border Classes="card" Background="#1D1C1A" BorderBrush="#1D1C1A">
+        <StackPanel Spacing="2">
+          <TextBlock Text="TOTAL" Foreground="#A29E95" FontSize="15" FontWeight="SemiBold" />
+          <TextBlock x:Name="TotalText" Text="{Binding Total}" Foreground="White" FontSize="54" FontWeight="Bold" />
+          <TextBlock Text="{Binding ItemCount}" Foreground="#A29E95" FontSize="15" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card" IsVisible="{Binding IsPaying}">
+        <StackPanel Spacing="8">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Pago" FontSize="18" />
+            <TextBlock Grid.Column="1" Text="{Binding Paid}" FontSize="18" FontWeight="SemiBold" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Falta" FontSize="22" FontWeight="SemiBold" Foreground="#C2362B" />
+            <TextBlock Grid.Column="1" Text="{Binding Remaining}" FontSize="22" FontWeight="Bold" Foreground="#C2362B" />
+          </Grid>
+          <UniformGrid Columns="2" Margin="0,8,0,0">
+            <TextBlock Text="F5  Dinheiro" FontSize="16" Margin="0,4" />
+            <TextBlock Text="F6  Débito" FontSize="16" Margin="0,4" />
+            <TextBlock Text="F7  Crédito" FontSize="16" Margin="0,4" />
+            <TextBlock Text="F8  PIX" FontSize="16" Margin="0,4" />
+          </UniformGrid>
+        </StackPanel>
+      </Border>
+      <Border Classes="card" IsVisible="{Binding !IsPaying}">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="label" Text="Último item" />
+          <TextBlock Text="{Binding LastItem}" FontSize="18" TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+      <Border Classes="card">
+        <StackPanel Spacing="6">
+          <TextBlock Classes="label" Text="Atalhos" />
+          <TextBlock FontSize="14" Text="F4 pagamento · Del remove item · Esc volta/descarta" TextWrapping="Wrap" />
+          <TextBlock FontSize="14" Text="F9 sangria · F10 reimprime · F12 fecha turno" TextWrapping="Wrap" />
+          <TextBlock FontSize="14" Text="3*código multiplica · 1,235*PLU informa o peso" TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+
+    <!-- Entrada -->
+    <Border Grid.Row="1" Grid.ColumnSpan="2" Classes="card">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="label" Text="{Binding Prompt}" />
+        <TextBox x:Name="InputBox" Text="{Binding Input}" FontSize="26" FontFamily="monospace" />
+        <TextBlock Text="{Binding Message}" FontSize="18" FontWeight="SemiBold"
+                   Foreground="{Binding MessageKind, Converter={x:Static app:StateBrushConverter.Instance}}" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>
