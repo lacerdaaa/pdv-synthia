@@ -118,6 +118,14 @@ public sealed class Projector(ILogger<Projector> logger)
                 break;
             }
 
+            case EventTypes.StockReceived:
+            {
+                var p = SynthiaJson.FromElement<StockReceived>(e.Payload);
+                foreach (var item in p.Items)
+                    await InsertMovementAsync(conn, tx, e, item.ProductId, null, "received", item.Quantity);
+                break;
+            }
+
             case EventTypes.NfceAuthorized:
             {
                 var p = SynthiaJson.FromElement<NfceAuthorized>(e.Payload);
