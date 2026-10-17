@@ -279,6 +279,10 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
       <button role="tab" data-shot="retaguarda-3-entrada">Nova entrada</button>
       <button role="tab" data-shot="retaguarda-4-estoque">Estoque</button>
       <button role="tab" data-shot="retaguarda-5-historico">Histórico</button>
+      <button role="tab" data-shot="retaguarda-7-nota-xml">Nota (XML)</button>
+      <button role="tab" data-shot="retaguarda-6-inventario">Inventário</button>
+      <button role="tab" data-shot="retaguarda-8-ajustes">Perdas</button>
+      <button role="tab" data-shot="retaguarda-9-usuarios">Usuários</button>
     </div>
     <img id="boShot" class="shot" alt="Tela da retaguarda" width="1366" height="860">
     <div class="tablewrap" style="margin-top:12px"><table>
@@ -287,7 +291,11 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
         <tr><td>Painel</td><td>Produtos ativos, entradas, negativos, vendas do dia e o roteiro de implantação do mercado novo, marcando o que já foi feito.</td></tr>
         <tr><td>Produtos</td><td>Busca, cadastro e edição. Importação de planilha CSV com prévia: novos, atualizados (pelo código de barras ou PLU), sem mudança e linhas com erro ou aviso (NCM ausente, dígito verificador).</td></tr>
         <tr><td>Entradas</td><td>Transferência da loja antiga, fornecedor sem XML ou outra. Itens bipados (Enter adiciona) ou por planilha <code>codigo;quantidade;custo</code>; repetidos são somados. Gera <code>StockReceived</code>.</td></tr>
-        <tr><td>Estoque</td><td>Saldo de cada produto (sem movimento = 0), filtro de negativos e histórico de movimentos: vendas, entradas, contagens e cancelamentos.</td></tr>
+        <tr><td>Estoque</td><td>Saldo de cada produto (sem movimento = 0), filtro de negativos e histórico de movimentos: vendas, entradas, contagens, perdas e cancelamentos.</td></tr>
+        <tr><td>Notas (XML)</td><td>XML da NF-e do fornecedor: vínculo pelo código de barras, caixa/fardo convertido em unidades (<code>qTrib/qCom</code>), vínculo aprendido por fornecedor, cadastro de produto pela nota, bloqueio de nota duplicada.</td></tr>
+        <tr><td>Inventário</td><td>Contagem por setor ou geral, bipando (cada leitura soma). Rascunho salvo no servidor; revisão sistema × contado; ao confirmar gera <code>StockCounted</code> com o horário de cada item.</td></tr>
+        <tr><td>Perdas e ajustes</td><td>Saídas sem venda com motivo: quebra, vencimento, consumo interno, furto, devolução ao fornecedor (<code>StockAdjusted</code>).</td></tr>
+        <tr><td>Usuários</td><td>Admin, gerente e estoquista. Desativar tira o acesso na hora; sempre resta um admin ativo.</td></tr>
       </tbody>
     </table></div>
   </section>
@@ -408,7 +416,6 @@ dotnet test</code></pre>
       <li>Qual TEF (PayGo ou SiTef) e se tem fallback offline para cartão.</li>
       <li>Contador: confirmar CSOSN/CST, NCM do cadastro e regime tributário antes da primeira NFC-e.</li>
       <li>Framework da interface do caixa (proposta: Avalonia).</li>
-      <li>Autenticação dos caixas na API de sync (chave por terminal ou mTLS na VLAN).</li>
       <li>Outbox servidor → nuvem e o serviço da nuvem.</li>
     </ul>
   </section>
