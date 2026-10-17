@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\src\Synthia.Terminal.Core\Synthia.Terminal.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Fixtures\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
