@@ -10,6 +10,8 @@ public sealed record StockBalance(Guid ProductId, string Name, string? Barcode, 
 
 public sealed record StockMovement(DateTime OccurredAt, string Kind, decimal Quantity, string TerminalId, string EventType, Guid StreamId);
 
+public sealed record BackofficeSummary(int ActiveProducts, int NegativeProducts, int Receipts, int TransferReceipts, int SalesToday, long SalesTodayCents);
+
 public sealed record ReceiptSummary(Guid ReceiptId, DateTime ReceivedAt, string Source, string? Supplier, string? Document, int ItemCount, decimal TotalQuantity, string ReceivedBy);
 
 /// <summary>Entradas de mercadoria e consulta de estoque da retaguarda.</summary>
@@ -83,6 +85,22 @@ public sealed class StockService(NpgsqlDataSource dataSource, BackofficeEvents e
             LIMIT @limit
             """,
             new { productId, limit })).ToList();
+    }
+
+    public async Task<BackofficeSummary> SummaryAsync(CancellationToken ct = default)
+    {
+        await using var conn = await dataSource.OpenConnectionAsync(ct);
+        return await conn.QuerySingleAsync<BackofficeSummary>(
+            """
+            SELECT (SELECT count(*)::int FROM products WHERE active) AS ActiveProducts,
+                   (SELECT count(*)::int FROM stock_balances WHERE quantity < 0) AS NegativeProducts,
+                   (SELECT count(*)::int FROM events WHERE type = @received) AS Receipts,
+                   (SELECT count(*)::int FROM events WHERE type = @received AND payload->>'source' = 'transfer') AS TransferReceipts,
+                   (SELECT count(*)::int FROM events WHERE type = @sale AND occurred_at >= date_trunc('day', now())) AS SalesToday,
+                   (SELECT coalesce(sum((payload->>'totalCents')::bigint), 0)::bigint FROM events
+                     WHERE type = @sale AND occurred_at >= date_trunc('day', now())) AS SalesTodayCents
+            """,
+            new { received = EventTypes.StockReceived, sale = EventTypes.SaleCompleted });
     }
 
     private static string? Blank(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();

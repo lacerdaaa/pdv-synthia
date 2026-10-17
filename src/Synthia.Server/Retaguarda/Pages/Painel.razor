@@ -1,0 +1,51 @@
+@page "/retaguarda"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject StockService Stock
+
+<PageTitle>Painel · Retaguarda</PageTitle>
+
+<header class="page-head">
+    <h1>Painel</h1>
+</header>
+
+@if (summary is null)
+{
+    <p class="muted">Carregando…</p>
+}
+else
+{
+    <div class="tiles">
+        <a class="tile" href="/retaguarda/produtos"><span>Produtos ativos</span><b>@summary.ActiveProducts</b></a>
+        <a class="tile" href="/retaguarda/entradas"><span>Entradas lançadas</span><b>@summary.Receipts</b></a>
+        <a class="tile @(summary.NegativeProducts > 0 ? "alert" : "")" href="/retaguarda/estoque?negativos=1">
+            <span>Produtos com estoque negativo</span><b>@summary.NegativeProducts</b></a>
+        <div class="tile"><span>Vendas hoje</span><b>@summary.SalesToday</b><small>@Fmt.Money(summary.SalesTodayCents)</small></div>
+    </div>
+
+    <section class="card">
+        <h2>Implantação do mercado novo</h2>
+        <p class="muted">Ordem recomendada para abrir a loja com o estoque certo.</p>
+        <ol class="steps">
+            <li class="@(summary.ActiveProducts > 0 ? "done" : "")">
+                <b>Cadastrar produtos.</b> Importe a planilha do sistema atual em <a href="/retaguarda/produtos/importar">Produtos › Importar</a>
+                e peça ao contador para conferir NCM e tributação.
+            </li>
+            <li class="@(summary.TransferReceipts > 0 ? "done" : "")">
+                <b>Lançar a mercadoria da loja antiga.</b> Conte ao carregar ou descarregar e lance como
+                <a href="/retaguarda/entradas/nova">Entrada › Transferência</a> (bipando ou por planilha).
+            </li>
+            <li class="@(summary.Receipts > summary.TransferReceipts ? "done" : "")">
+                <b>Lançar as notas dos fornecedores</b> conforme a mercadoria nova chega (importação do XML na próxima etapa).
+            </li>
+            <li><b>Inventário geral na véspera</b>, com a loja fechada, para conferir tudo <small class="muted">(próxima etapa)</small>.</li>
+            <li><b>Abrir os caixas.</b> As vendas baixam o estoque sozinhas; acompanhe negativos e divergências em <a href="/retaguarda/estoque">Estoque</a>.</li>
+        </ol>
+    </section>
+}
+
+@code {
+    private BackofficeSummary? summary;
+
+    protected override async Task OnInitializedAsync() => summary = await Stock.SummaryAsync();
+}
