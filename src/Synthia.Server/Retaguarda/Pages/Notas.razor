@@ -1,0 +1,189 @@
+@page "/retaguarda/notas"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject NfeImport Nfe
+@inject CatalogService Catalog
+@inject NavigationManager Navigation
+
+<PageTitle>Notas (XML) · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Entrada por nota (XML)</h1></header>
+
+<section class="card">
+    <p>Envie o <b>XML da NF-e</b> do fornecedor (vem por e-mail ou pelo portal da SEFAZ). Os itens são vinculados aos nossos
+        produtos pelo código de barras; caixas e fardos são convertidos em unidades. Na primeira nota de cada fornecedor
+        alguns itens podem precisar de vínculo manual; nas próximas, entram sozinhos.</p>
+    <InputFile OnChange="LoadAsync" accept=".xml,text/xml" />
+    @if (error is not null) { <p class="error">@error</p> }
+</section>
+
+@if (plan is not null)
+{
+    var d = plan.Document;
+    <section class="card nfe-head">
+        <div><span class="muted">Fornecedor</span><b>@d.SupplierName</b><small class="mono">CNPJ @FormatCnpj(d.SupplierCnpj)</small></div>
+        <div><span class="muted">Nota</span><b>NF @d.Number / série @d.Series</b><small>emitida @d.IssuedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm", Fmt.PtBr)</small></div>
+        <div><span class="muted">Total da nota</span><b>@Fmt.Money((long)(d.TotalValue * 100))</b><small>@d.Items.Count item(ns)</small></div>
+        <div class="span-all"><span class="muted">Chave</span><small class="mono">@string.Join(' ', d.AccessKey.Chunk(4).Select(c => new string(c)))</small></div>
+    </section>
+    @if (plan.AlreadyImported) { <p class="error">Esta nota já foi lançada. Importar de novo duplicaria o estoque.</p> }
+
+    <table class="grid-table nfe">
+        <thead><tr><th>#</th><th>Item na nota</th><th class="num">Qtd nota</th><th>Nosso produto</th><th class="num">Fator</th><th class="num">Entra</th><th class="num">Custo un.</th><th>Ignorar</th></tr></thead>
+        <tbody>
+            @for (var i = 0; i < lines.Count; i++)
+            {
+                var index = i;
+                var l = lines[i];
+                <tr class="@(l.Ignored ? "inactive" : !l.Ready ? "row-error" : "")">
+                    <td class="mono">@l.Item.Number</td>
+                    <td>@l.Item.Description<br /><small class="muted mono">@l.Item.Code · @(l.Item.TaxEan ?? l.Item.Ean ?? "sem GTIN")</small></td>
+                    <td class="num">@Fmt.Qty(l.Item.Quantity) @l.Item.Unit</td>
+                    <td>
+                        @if (l.Product is not null)
+                        {
+                            <div>@l.Product.Name <span class="badge @(l.MatchedBy == NfeMatch.Manual ? "update" : "create")">@MatchLabel(l.MatchedBy)</span></div>
+                            @if (!l.Ignored && !plan.AlreadyImported) { <button class="link" @onclick="() => Unlink(index)">trocar</button> }
+                        }
+                        else if (!l.Ignored && creating == index)
+                        {
+                            <div class="quick">
+                                <input @bind="newName" placeholder="Descrição" />
+                                <input @bind="newBarcode" placeholder="Código de barras" class="mono" />
+                                <select @bind="newUnit"><option>UN</option><option>KG</option><option>CX</option><option>PCT</option><option>L</option></select>
+                                <input @bind="newPrice" placeholder="Preço de venda" inputmode="decimal" />
+                                <div class="actions">
+                                    <button class="link" @onclick="() => creating = null">cancelar</button>
+                                    <button class="primary" @onclick="() => CreateAsync(index)">Cadastrar e vincular</button>
+                                </div>
+                            </div>
+                        }
+                        else if (!l.Ignored)
+                        {
+                            <ProductPicker Products="products" OnSelected="p => Link(index, p)" Placeholder="Vincular a produto…" />
+                            <button class="link" @onclick="() => StartCreate(index)">cadastrar produto novo</button>
+                        }
+                    </td>
+                    <td class="num">
+                        @if (l.Product is not null && !l.Ignored)
+                        {
+                            <input class="cell small" value="@Fmt.Qty(l.Factor)" inputmode="decimal" @onchange="e => SetFactor(index, e.Value?.ToString())"
+                                   title="Unidades nossas em 1 @l.Item.Unit da nota" />
+                        }
+                    </td>
+                    <td class="num">@(l.Product is null || l.Ignored ? "" : $"{Fmt.Qty(l.Quantity)} {l.Product.Unit}")</td>
+                    <td class="num">@(l.Product is null || l.Ignored || l.UnitCostCents is null ? "" : Fmt.Money(l.UnitCostCents.Value))</td>
+                    <td><input type="checkbox" checked="@l.Ignored" @onchange="e => SetIgnored(index, (bool)e.Value!)" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="actions end">
+        <span class="muted">@lines.Count(l => !l.Ready) item(ns) sem vínculo</span>
+        <button class="primary" disabled="@(!Current.CanReceive || saving)" @onclick="ReceiveAsync">Lançar entrada</button>
+    </div>
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> Auth { get; set; } = default!;
+    private NfePlan? plan;
+    private List<NfeLine> lines = [];
+    private IReadOnlyList<ProductData> products = [];
+    private string? error;
+    private bool saving;
+    private int? creating;
+    private string newName = "", newBarcode = "", newUnit = "UN", newPrice = "";
+
+    private NfePlan Current => plan! with { Lines = lines };
+
+    private async Task LoadAsync(InputFileChangeEventArgs e)
+    {
+        error = null; plan = null;
+        try
+        {
+            using var reader = new StreamReader(e.File.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024));
+            products = await Catalog.ListProductsAsync();
+            plan = await Nfe.PlanAsync(await reader.ReadToEndAsync(), products);
+            lines = [.. plan.Lines];
+        }
+        catch (FormatException ex) { error = ex.Message; }
+    }
+
+    private void Link(int i, ProductData p)
+    {
+        var item = lines[i].Item;
+        // Se o produto escolhido tem o EAN da unidade tributável, a própria nota diz quantas unidades vêm.
+        var factor = p.Barcode is not null && p.Barcode == item.TaxEan && item.Quantity > 0 ? item.TaxQuantity / item.Quantity : 1;
+        lines[i] = lines[i] with { Product = p, Factor = factor, MatchedBy = NfeMatch.Manual };
+    }
+
+    private void Unlink(int i) => lines[i] = lines[i] with { Product = null, MatchedBy = NfeMatch.None };
+
+    private void SetFactor(int i, string? text)
+    {
+        if (CsvText.TryDecimal(text, out var f) && f > 0) lines[i] = lines[i] with { Factor = f, MatchedBy = NfeMatch.Manual };
+    }
+
+    private void SetIgnored(int i, bool ignored) => lines[i] = lines[i] with { Ignored = ignored };
+
+    private void StartCreate(int i)
+    {
+        var item = lines[i].Item;
+        creating = i;
+        newName = System.Globalization.CultureInfo.GetCultureInfo("pt-BR").TextInfo.ToTitleCase(item.Description.ToLowerInvariant());
+        newBarcode = item.TaxEan ?? item.Ean ?? "";
+        newUnit = item.TaxUnit is "UN" or "KG" or "L" ? item.TaxUnit : "UN";
+        newPrice = "";
+    }
+
+    private async Task CreateAsync(int i)
+    {
+        var item = lines[i].Item;
+        if (string.IsNullOrWhiteSpace(newName) || !CsvText.TryMoney(newPrice, out var price) || price <= 0)
+        {
+            error = "Informe descrição e preço de venda do produto novo.";
+            return;
+        }
+
+        var product = new ProductData(Guid.CreateVersion7(), newName.Trim(), newBarcode.Trim().Length > 0 ? newBarcode.Trim() : null, null,
+            newUnit, price, item.Ncm is { Length: 8 } ncm ? ncm : "00000000", true);
+        try
+        {
+            await Catalog.UpsertProductAsync(product);
+        }
+        catch (Npgsql.PostgresException ex) when (ex.SqlState == "23505")
+        {
+            error = "Já existe produto ativo com esse código de barras. Vincule ao existente.";
+            return;
+        }
+
+        products = await Catalog.ListProductsAsync();
+        Link(i, product);
+        creating = null;
+        error = null;
+    }
+
+    private async Task ReceiveAsync()
+    {
+        saving = true;
+        try
+        {
+            var user = (await Auth).User.FindFirst(ClaimTypes.GivenName)?.Value ?? "retaguarda";
+            await Nfe.ReceiveAsync(Current, user);
+            Navigation.NavigateTo("/retaguarda/entradas?salva=1");
+        }
+        catch (InvalidOperationException ex) { error = ex.Message; }
+        finally { saving = false; }
+    }
+
+    private static string MatchLabel(NfeMatch m) => m switch
+    {
+        NfeMatch.Mapping => "vínculo salvo",
+        NfeMatch.TaxEan or NfeMatch.Ean => "pelo código de barras",
+        _ => "manual",
+    };
+
+    private static string FormatCnpj(string c) =>
+        c.Length == 14 ? $"{c[..2]}.{c[2..5]}.{c[5..8]}/{c[8..12]}-{c[12..]}" : c;
+}
