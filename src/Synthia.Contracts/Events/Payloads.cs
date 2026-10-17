@@ -53,7 +53,14 @@ public sealed record SaleCancelled(Guid SaleId, string Reason);
 
 public sealed record CashWithdrawal(Guid ShiftId, long AmountCents, string Reason);
 
-public sealed record StockCounted(Guid ProductId, decimal CountedQuantity);
+/// <param name="InventoryId">Inventário da retaguarda que originou a contagem (nulo quando veio de outro lugar).</param>
+/// <param name="ExpectedQuantity">Saldo do sistema no momento da contagem, para relatório de divergência.</param>
+public sealed record StockCounted(
+    Guid ProductId,
+    decimal CountedQuantity,
+    Guid? InventoryId = null,
+    decimal? ExpectedQuantity = null,
+    string? CountedBy = null);
 
 public static class StockReceiptSources
 {
