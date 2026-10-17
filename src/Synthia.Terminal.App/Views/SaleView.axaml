@@ -16,13 +16,13 @@
           <TextBlock Classes="label" Grid.Column="3" Text="Unit. R$" HorizontalAlignment="Right" />
           <TextBlock Classes="label" Grid.Column="4" Text="Total R$" HorizontalAlignment="Right" />
         </Grid>
-        <Border DockPanel.Dock="Top" Height="1" Background="#E3E0D8" />
+        <Border DockPanel.Dock="Top" Height="1" Background="{StaticResource LineBrush}" />
         <Panel>
           <ListBox x:Name="ItemList" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:CartLineViewModel">
                 <Grid ColumnDefinitions="60,*,110,110,120">
-                  <TextBlock Text="{Binding Index}" FontFamily="monospace" Foreground="#6B675F" FontSize="17" />
+                  <TextBlock Text="{Binding Index}" FontFamily="monospace" Foreground="{StaticResource MutedBrush}" FontSize="17" />
                   <TextBlock Grid.Column="1" Text="{Binding Description}" FontSize="18" TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="2" Text="{Binding Quantity}" FontSize="18" HorizontalAlignment="Right" />
                   <TextBlock Grid.Column="3" Text="{Binding UnitPrice}" FontSize="18" HorizontalAlignment="Right" />
@@ -31,19 +31,21 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <TextBlock Text="Caixa livre" FontSize="34" Foreground="#C9C5BC" HorizontalAlignment="Center" VerticalAlignment="Center"
-                     IsVisible="{Binding !Items.Count}" />
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" IsVisible="{Binding !Items.Count}">
+            <Image Source="/Assets/logo-xandao.png" Height="180" Opacity="0.14" />
+            <TextBlock Text="Caixa livre" FontSize="30" Foreground="{StaticResource SoftBlueBrush}" HorizontalAlignment="Center" />
+          </StackPanel>
         </Panel>
       </DockPanel>
     </Border>
 
     <!-- Totais e pagamento -->
     <StackPanel Grid.Column="1" Spacing="16">
-      <Border Classes="card" Background="#1D1C1A" BorderBrush="#1D1C1A">
+      <Border Classes="card" Background="{StaticResource NavyBrush}" BorderBrush="{StaticResource NavyBrush}">
         <StackPanel Spacing="2">
-          <TextBlock Text="TOTAL" Foreground="#A29E95" FontSize="15" FontWeight="SemiBold" />
+          <TextBlock Text="TOTAL" Foreground="{StaticResource SoftBlueBrush}" FontSize="15" FontWeight="SemiBold" />
           <TextBlock x:Name="TotalText" Text="{Binding Total}" Foreground="White" FontSize="54" FontWeight="Bold" />
-          <TextBlock Text="{Binding ItemCount}" Foreground="#A29E95" FontSize="15" />
+          <TextBlock Text="{Binding ItemCount}" Foreground="{StaticResource SoftBlueBrush}" FontSize="15" />
         </StackPanel>
       </Border>
       <Border Classes="card" IsVisible="{Binding IsPaying}">
@@ -53,14 +55,14 @@
             <TextBlock Grid.Column="1" Text="{Binding Paid}" FontSize="18" FontWeight="SemiBold" />
           </Grid>
           <Grid ColumnDefinitions="*,Auto">
-            <TextBlock Text="Falta" FontSize="22" FontWeight="SemiBold" Foreground="#C2362B" />
-            <TextBlock Grid.Column="1" Text="{Binding Remaining}" FontSize="22" FontWeight="Bold" Foreground="#C2362B" />
+            <TextBlock Text="Falta" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource RedBrush}" />
+            <TextBlock Grid.Column="1" Text="{Binding Remaining}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource RedBrush}" />
           </Grid>
           <UniformGrid Columns="2" Margin="0,8,0,0">
-            <TextBlock Text="F5  Dinheiro" FontSize="16" Margin="0,4" />
-            <TextBlock Text="F6  Débito" FontSize="16" Margin="0,4" />
-            <TextBlock Text="F7  Crédito" FontSize="16" Margin="0,4" />
-            <TextBlock Text="F8  PIX" FontSize="16" Margin="0,4" />
+            <TextBlock Text="F5  Dinheiro" FontSize="16" Margin="0,4" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" />
+            <TextBlock Text="F6  Débito" FontSize="16" Margin="0,4" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" />
+            <TextBlock Text="F7  Crédito" FontSize="16" Margin="0,4" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" />
+            <TextBlock Text="F8  PIX" FontSize="16" Margin="0,4" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" />
           </UniformGrid>
         </StackPanel>
       </Border>

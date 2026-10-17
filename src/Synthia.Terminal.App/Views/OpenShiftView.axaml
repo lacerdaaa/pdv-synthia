@@ -6,9 +6,11 @@
   <UserControl.KeyBindings>
     <KeyBinding Gesture="Enter" Command="{Binding OpenCommand}" />
   </UserControl.KeyBindings>
-  <Border Classes="card" Width="440" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="28">
+  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24">
+  <Image Source="/Assets/logo-xandao.png" Height="200" HorizontalAlignment="Center" />
+  <Border Classes="card" Width="440" Padding="28">
     <StackPanel Spacing="14">
-      <TextBlock Text="Abrir turno" FontSize="26" FontWeight="Bold" />
+      <TextBlock Text="Abrir turno" FontSize="26" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />
       <TextBlock Classes="label" Text="O caixa está fechado. Informe o operador e o fundo de troco." TextWrapping="Wrap" />
       <StackPanel Spacing="4">
         <TextBlock Classes="label" Text="Operador" />
@@ -18,9 +20,9 @@
         <TextBlock Classes="label" Text="Fundo de troco (R$)" />
         <TextBox Text="{Binding OpeningCash}" FontSize="18" />
       </StackPanel>
-      <TextBlock Text="{Binding Error}" Foreground="#C2362B" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
-      <Button Content="Abrir turno (Enter)" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch"
-              HorizontalContentAlignment="Center" Background="#2F6FDB" Foreground="White" FontSize="16" Padding="12" />
+      <TextBlock Text="{Binding Error}" Foreground="{StaticResource RedBrush}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      <Button Classes="primary" Content="Abrir turno (Enter)" Command="{Binding OpenCommand}" />
     </StackPanel>
   </Border>
+  </StackPanel>
 </UserControl>

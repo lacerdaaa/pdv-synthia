@@ -13,8 +13,8 @@ public sealed class StateBrushConverter : IValueConverter
 
     private static readonly IBrush Ok = new SolidColorBrush(Color.Parse("#1F8A4C"));
     private static readonly IBrush Warn = new SolidColorBrush(Color.Parse("#B26B00"));
-    private static readonly IBrush Bad = new SolidColorBrush(Color.Parse("#C2362B"));
-    private static readonly IBrush Neutral = new SolidColorBrush(Color.Parse("#4A4741"));
+    private static readonly IBrush Bad = new SolidColorBrush(Color.Parse("#C8272E"));
+    private static readonly IBrush Neutral = new SolidColorBrush(Color.Parse("#253C70"));
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {

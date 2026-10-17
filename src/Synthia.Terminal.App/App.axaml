@@ -2,23 +2,66 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Synthia.Terminal.App.App"
              RequestedThemeVariant="Light">
+  <Application.Resources>
+    <!-- Paleta da marca (Xandão Supermercados): azul e vermelho tirados da logo. -->
+    <Color x:Key="BrandNavy">#253C70</Color>
+    <Color x:Key="BrandNavyDark">#1A2C55</Color>
+    <Color x:Key="BrandRed">#C8272E</Color>
+    <SolidColorBrush x:Key="NavyBrush" Color="{StaticResource BrandNavy}" />
+    <SolidColorBrush x:Key="NavyDarkBrush" Color="{StaticResource BrandNavyDark}" />
+    <SolidColorBrush x:Key="RedBrush" Color="{StaticResource BrandRed}" />
+    <SolidColorBrush x:Key="PageBrush" Color="#F2F5FA" />
+    <SolidColorBrush x:Key="LineBrush" Color="#DCE3EF" />
+    <SolidColorBrush x:Key="TextBrush" Color="#1B2440" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#5B6785" />
+    <SolidColorBrush x:Key="SoftBlueBrush" Color="#AFC0E3" />
+  </Application.Resources>
+
   <Application.Styles>
-    <FluentTheme />
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <ColorPaletteResources x:Key="Light" Accent="#253C70" RegionColor="White" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
     <Style Selector="TextBlock.label">
-      <Setter Property="Foreground" Value="#6B675F" />
+      <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
       <Setter Property="FontSize" Value="14" />
     </Style>
     <Style Selector="Border.card">
       <Setter Property="Background" Value="White" />
-      <Setter Property="BorderBrush" Value="#E3E0D8" />
+      <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="CornerRadius" Value="12" />
       <Setter Property="Padding" Value="16" />
     </Style>
-    <Style Selector="Border.key">
-      <Setter Property="Background" Value="#F3F1EC" />
-      <Setter Property="CornerRadius" Value="5" />
-      <Setter Property="Padding" Value="6,2" />
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{StaticResource NavyBrush}" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Padding" Value="12" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource NavyDarkBrush}" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="#DCE6F7" />
+    </Style>
+    <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#CFDDF4" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#EEF3FB" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="CornerRadius" Value="8" />
     </Style>
   </Application.Styles>
 </Application>
