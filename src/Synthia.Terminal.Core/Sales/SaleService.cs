@@ -8,7 +8,9 @@ namespace Synthia.Terminal.Core.Sales;
 
 public sealed class SaleService(LocalDb db, Outbox outbox, IOutboxSignal signal, INfceEmitter nfce)
 {
-    public async Task<SaleCompleted> CompleteAsync(Cart cart, IReadOnlyList<SalePayment> payments, CancellationToken ct = default)
+    /// <param name="saleId">Id definido antes, quando o TEF já autorizou pagamentos referenciando a venda.</param>
+    public async Task<SaleCompleted> CompleteAsync(
+        Cart cart, IReadOnlyList<SalePayment> payments, Guid? saleId = null, CancellationToken ct = default)
     {
         if (cart.Items.Count == 0) throw new InvalidOperationException("Carrinho vazio.");
 
@@ -25,7 +27,7 @@ public sealed class SaleService(LocalDb db, Outbox outbox, IOutboxSignal signal,
         using (var tx = conn.BeginTransaction())
             shiftId = ShiftService.RequireOpenShift(conn, tx);
 
-        var sale = new SaleCompleted(Guid.CreateVersion7(), shiftId, [.. cart.Items], payments, total, change, null, null);
+        var sale = new SaleCompleted(saleId ?? Guid.CreateVersion7(), shiftId, [.. cart.Items], payments, total, change, null, null);
 
         // A NFC-e vem antes da gravação porque a chave e o status vão dentro do evento.
         var fiscal = await nfce.EmitAsync(sale, ct);
