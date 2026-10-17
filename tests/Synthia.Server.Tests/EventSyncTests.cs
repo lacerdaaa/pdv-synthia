@@ -49,7 +49,7 @@ public sealed class EventSyncTests(ServerFixture fx) : IClassFixture<ServerFixtu
         var feijao = Guid.CreateVersion7();
         var (saleEvent, sale) = Sale(shift, (arroz, 1, 2899), (feijao, 2, 899));
         var cancel = Make(EventTypes.SaleItemCancelled, sale.SaleId, 2,
-            new SaleItemCancelled(sale.SaleId, sale.Items[1].ItemId, "cliente desistiu"));
+            new SaleItemCancelled(sale.SaleId, sale.Items[1].ItemId, "cliente desistiu", PaymentMethods.Cash));
 
         await PushAsync(saleEvent, cancel);
 
@@ -123,5 +123,54 @@ public sealed class EventSyncTests(ServerFixture fx) : IClassFixture<ServerFixtu
 
         Assert.Equal(-2, before);
         Assert.Equal(before, await StockAsync(product));
+    }
+
+    private async Task<(long Total, long Cash)> ShiftAsync(Guid shiftId)
+    {
+        await using var conn = await fx.Db.OpenConnectionAsync();
+        return await conn.QuerySingleAsync<(long, long)>(
+            "SELECT sales_total_cents, cash_sales_cents FROM shift_totals WHERE shift_id = @shiftId", new { shiftId });
+    }
+
+    [Fact]
+    public async Task Devolucao_em_dinheiro_sai_do_dinheiro_esperado()
+    {
+        var shift = Guid.CreateVersion7();
+        var (saleEvent, sale) = Sale(shift, (Guid.CreateVersion7(), 1, 2000), (Guid.CreateVersion7(), 1, 899));
+        var cancel = Make(EventTypes.SaleItemCancelled, sale.SaleId, 2,
+            new SaleItemCancelled(sale.SaleId, sale.Items[1].ItemId, "desistiu", PaymentMethods.Cash));
+
+        await PushAsync(saleEvent, cancel);
+
+        Assert.Equal((2000L, 2000L), await ShiftAsync(shift));
+    }
+
+    [Fact]
+    public async Task Devolucao_no_cartao_nao_mexe_na_gaveta()
+    {
+        var shift = Guid.CreateVersion7();
+        var (saleEvent, sale) = Sale(shift, (Guid.CreateVersion7(), 1, 2000), (Guid.CreateVersion7(), 1, 899));
+        var cancel = Make(EventTypes.SaleItemCancelled, sale.SaleId, 2,
+            new SaleItemCancelled(sale.SaleId, sale.Items[1].ItemId, "desistiu", PaymentMethods.Debit));
+
+        await PushAsync(saleEvent, cancel);
+
+        Assert.Equal((2000L, 2899L), await ShiftAsync(shift));
+    }
+
+    [Fact]
+    public async Task Cancelar_venda_apos_devolucao_em_dinheiro_nao_desconta_duas_vezes()
+    {
+        var shift = Guid.CreateVersion7();
+        var (saleEvent, sale) = Sale(shift, (Guid.CreateVersion7(), 1, 2000), (Guid.CreateVersion7(), 1, 899));
+        var itemCancel = Make(EventTypes.SaleItemCancelled, sale.SaleId, 2,
+            new SaleItemCancelled(sale.SaleId, sale.Items[1].ItemId, "desistiu", PaymentMethods.Cash));
+        var saleCancel = Make(EventTypes.SaleCancelled, sale.SaleId, 3, new SaleCancelled(sale.SaleId, "desistiu de tudo"));
+
+        await PushAsync(saleEvent, itemCancel, saleCancel);
+        Assert.Equal((0L, 0L), await ShiftAsync(shift));
+
+        (await _http.PostAsync("/backoffice/projections/rebuild", null)).EnsureSuccessStatusCode();
+        Assert.Equal((0L, 0L), await ShiftAsync(shift));
     }
 }
