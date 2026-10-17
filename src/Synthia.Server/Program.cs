@@ -1,3 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.FileProviders;
 using Npgsql;
 using Synthia.Contracts.Catalog;
@@ -19,6 +23,21 @@ builder.Services.AddSingleton<CatalogService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<BackofficeEvents>();
 builder.Services.AddSingleton<StockService>();
+builder.Services.AddSingleton<BackofficeUsers>();
+
+// Retaguarda (Blazor Server) com login por cookie.
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/retaguarda/login";
+        options.Cookie.Name = "synthia.retaguarda";
+        options.ExpireTimeSpan = TimeSpan.FromHours(12);
+        options.SlidingExpiration = true;
+    });
+builder.Services.AddAuthorization();
+
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer((doc, _, _) =>
 {
     doc.Info.Title = "PDV Synthia · Servidor local";
@@ -29,6 +48,7 @@ builder.Services.AddOpenApi(options => options.AddDocumentTransformer((doc, _, _
 var app = builder.Build();
 
 await app.Services.GetRequiredService<Migrator>().MigrateAsync();
+await app.Services.GetRequiredService<BackofficeUsers>().EnsureAdminAsync();
 
 // Documentação interativa (docs/ do repositório, copiada para a saída do build) + OpenAPI.
 var docsPath = Path.Combine(AppContext.BaseDirectory, "docs");
@@ -40,6 +60,25 @@ if (Directory.Exists(docsPath))
     app.MapGet("/", () => Results.Redirect("/docs/")).ExcludeFromDescription();
 }
 app.MapOpenApi();
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseAntiforgery();
+app.MapStaticAssets();
+app.MapRazorComponents<Synthia.Server.Retaguarda.App>().AddInteractiveServerRenderMode();
+
+app.MapPost("/retaguarda/logout", async (HttpContext http, IAntiforgery antiforgery) =>
+{
+    await antiforgery.ValidateRequestAsync(http);
+    await http.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    return Results.Redirect("/retaguarda/login");
+}).ExcludeFromDescription();
+
+// Modelos de planilha (UTF-8 com BOM para o Excel abrir com acentos).
+static IResult Csv(string content, string name) =>
+    Results.File(Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(content)).ToArray(), "text/csv", name);
+app.MapGet("/retaguarda/modelos/produtos.csv", () => Csv(ProductImport.Template, "modelo-produtos.csv")).ExcludeFromDescription();
+app.MapGet("/retaguarda/modelos/entrada.csv", () => Csv(ReceiptImport.Template, "modelo-entrada.csv")).ExcludeFromDescription();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
     .WithTags("Sistema").WithName("Health")

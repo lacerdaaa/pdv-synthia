@@ -1,0 +1,64 @@
+@page "/retaguarda/login"
+@layout EmptyLayout
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject BackofficeUsers Users
+@inject NavigationManager Navigation
+
+<PageTitle>Entrar · Retaguarda</PageTitle>
+
+<div class="login">
+    <img src="retaguarda/logo-xandao.png" alt="Xandão Supermercados" class="login-logo" />
+    <div class="card">
+        <h1>Retaguarda</h1>
+        <p class="muted">Produtos, entradas de mercadoria e estoque.</p>
+        <EditForm Model="Input!" FormName="login" OnValidSubmit="SignInAsync" method="post">
+            <DataAnnotationsValidator />
+            <label>Usuário <InputText @bind-Value="Input!.Username" autocomplete="username" autofocus /></label>
+            <label>Senha <InputText @bind-Value="Input!.Password" type="password" autocomplete="current-password" /></label>
+            @if (error is not null) { <p class="error">@error</p> }
+            <button type="submit" class="primary wide">Entrar</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+    [SupplyParameterFromForm] private LoginInput? Input { get; set; }
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+    private string? error;
+
+    protected override void OnInitialized() => Input ??= new();
+
+    private async Task SignInAsync()
+    {
+        var user = await Users.VerifyAsync(Input!.Username ?? "", Input.Password ?? "");
+        if (user is null)
+        {
+            error = "Usuário ou senha inválidos.";
+            return;
+        }
+
+        var identity = new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.GivenName, user.DisplayName),
+            new Claim(ClaimTypes.Role, user.Role),
+        ], CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+
+        // Só caminhos locais da retaguarda: evita redirecionamento aberto.
+        var target = ReturnUrl is { } r && r.StartsWith("/retaguarda") && !r.StartsWith("//") ? r : "/retaguarda";
+        Navigation.NavigateTo(target, forceLoad: true);
+    }
+
+    private sealed class LoginInput
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Informe o usuário.")]
+        public string? Username { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Informe a senha.")]
+        public string? Password { get; set; }
+    }
+}

@@ -1,0 +1,28 @@
+@inherits LayoutComponentBase
+
+<div class="shell">
+    <aside class="side">
+        <a class="brand" href="/retaguarda"><img src="retaguarda/logo-xandao.png" alt="Xandão Supermercados" /></a>
+        <nav>
+            <NavLink href="/retaguarda" Match="NavLinkMatch.All">Painel</NavLink>
+            <NavLink href="/retaguarda/produtos">Produtos</NavLink>
+            <NavLink href="/retaguarda/entradas">Entradas</NavLink>
+            <NavLink href="/retaguarda/estoque">Estoque</NavLink>
+            <span class="soon" title="Próxima etapa">Inventário <small>em breve</small></span>
+            <span class="soon" title="Próxima etapa">Notas (XML) <small>em breve</small></span>
+        </nav>
+        <div class="side-foot">
+            <AuthorizeView>
+                <div class="who">@context.User.FindFirst(ClaimTypes.GivenName)?.Value</div>
+            </AuthorizeView>
+            <form method="post" action="/retaguarda/logout">
+                <AntiforgeryToken />
+                <button type="submit" class="link">Sair</button>
+            </form>
+            <a href="/docs/" class="link">Documentação</a>
+        </div>
+    </aside>
+    <main class="content">
+        @Body
+    </main>
+</div>
