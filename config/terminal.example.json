@@ -1,0 +1,25 @@
+// Configuração de um caixa. Copie para terminal.json ao lado do executável e ajuste.
+// Valores comentados com "padrão" seguem o mais comum no varejo e podem ser omitidos.
+{
+  "terminal": {
+    "id": "CX01",                                  // CX01..CX04
+    "serverUrl": "http://192.168.10.2:5290",       // servidor local da loja
+    "databasePath": "C:\\Synthia\\caixa.db"
+  },
+  "nfce": {
+    "serie": 1,                                    // uma série por caixa
+    "ambiente": "homologacao",                     // homologacao | producao
+    "certificatePath": "C:\\Synthia\\certificado-a1.pfx" // senha em SYNTHIA_CERT_PASSWORD
+  },
+  "scaleLabel": {                                  // etiqueta da balança etiquetadora (MGV)
+    "codeLength": 6,                               // padrão: 2 + PLU(6) + total(5) + DV
+    "valueLength": 5,
+    "value": "totalPrice"                          // totalPrice | weight
+  },
+  "devices": {
+    "scanner": { "mode": "keyboard" },             // keyboard (padrão de fábrica) | serial | simulated
+    "scale": { "model": "toledo", "port": "COM4", "baudRate": 9600 }, // none | toledo | simulated
+    "printer": { "connection": "network", "address": "192.168.10.51:9100", "columns": 48 },
+    "paymentTerminal": { "provider": "simulated" } // simulated | sitef | paygo (a integrar)
+  }
+}
