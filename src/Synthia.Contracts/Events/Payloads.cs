@@ -43,7 +43,11 @@ public sealed record SaleCompleted(
     string? NfceKey,
     string? NfceStatus);
 
-public sealed record SaleItemCancelled(Guid SaleId, Guid ItemId, string Reason);
+/// <param name="RefundMethod">
+/// Como o valor voltou ao cliente (um de <see cref="PaymentMethods"/>). Em dinheiro, sai da gaveta.
+/// Nulo em eventos antigos: tratado como sem impacto no dinheiro.
+/// </param>
+public sealed record SaleItemCancelled(Guid SaleId, Guid ItemId, string Reason, string? RefundMethod = null);
 
 public sealed record SaleCancelled(Guid SaleId, string Reason);
 
