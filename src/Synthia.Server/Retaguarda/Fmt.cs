@@ -21,6 +21,16 @@ public static class Fmt
         _ => "Outra",
     };
 
+    public static string Reason(string reason) => reason switch
+    {
+        AdjustmentReasons.Damage => "Quebra / avaria",
+        AdjustmentReasons.Expired => "Vencimento",
+        AdjustmentReasons.Consumption => "Consumo interno",
+        AdjustmentReasons.Theft => "Furto / extravio",
+        AdjustmentReasons.SupplierReturn => "Devolução ao fornecedor",
+        _ => "Outro",
+    };
+
     public static string Movement(string kind) => kind switch
     {
         "sale" => "Venda",
@@ -28,6 +38,7 @@ public static class Fmt
         "count" => "Contagem",
         "item_cancelled" => "Item cancelado",
         "sale_cancelled" => "Venda cancelada",
+        "adjusted" => "Perda / ajuste",
         _ => kind,
     };
 }

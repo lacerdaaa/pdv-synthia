@@ -1,0 +1,111 @@
+@page "/retaguarda/ajustes"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject StockService Stock
+@inject CatalogService Catalog
+
+<PageTitle>Perdas e ajustes · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Perdas e ajustes</h1></header>
+
+<section class="card">
+    <h2>Nova saída</h2>
+    <p class="muted">Mercadoria que sai sem ser vendida: quebra, vencimento, consumo da loja, furto, devolução ao fornecedor.
+        Para corrigir o saldo depois de contar, use o <a href="/retaguarda/inventarios">Inventário</a>.</p>
+    <div class="grid">
+        <label>Motivo
+            <select @bind="reason">
+                @foreach (var r in AdjustmentReasons.All) { <option value="@r">@Fmt.Reason(r)</option> }
+            </select>
+        </label>
+        <label class="span2">Observação <input @bind="note" placeholder="ex.: caixa amassada no recebimento" /></label>
+    </div>
+    <form class="additem" @onsubmit="Add">
+        <input @ref="codeInput" class="code" @bind="code" placeholder="Código de barras ou PLU" autocomplete="off" />
+        <input class="qty" @bind="qty" inputmode="decimal" aria-label="Quantidade" />
+        <button type="submit">Adicionar</button>
+    </form>
+    @if (itemError is not null) { <p class="error">@itemError</p> }
+    @if (items.Count > 0)
+    {
+        <table class="grid-table">
+            <thead><tr><th>Produto</th><th class="num">Sai</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var i in items)
+                {
+                    <tr><td>@i.Description</td><td class="num neg">−@Fmt.Qty(i.Quantity)</td>
+                        <td class="num"><button class="link" @onclick="() => items.Remove(i)">remover</button></td></tr>
+                }
+            </tbody>
+        </table>
+        <div class="actions end">
+            <button class="primary" disabled="@saving" @onclick="SaveAsync">Registrar @Fmt.Reason(reason).ToLowerInvariant() (@items.Count item(ns))</button>
+        </div>
+    }
+    @if (saved is not null) { <p class="flash">@saved</p> }
+</section>
+
+<table class="grid-table">
+    <thead><tr><th>Data</th><th>Motivo</th><th>Itens</th><th>Por</th><th>Observação</th></tr></thead>
+    <tbody>
+        @foreach (var a in history)
+        {
+            <tr>
+                <td>@Fmt.When(a.AdjustedAt)</td>
+                <td>@Fmt.Reason(a.Adjustment.Reason)</td>
+                <td>@string.Join(", ", a.Adjustment.Items.Select(i => $"{Fmt.Qty(i.Quantity)} × {i.Description}"))</td>
+                <td>@a.Adjustment.AdjustedBy</td>
+                <td>@a.Adjustment.Note</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (history.Count == 0) { <p class="empty">Nenhuma perda registrada.</p> }
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> Auth { get; set; } = default!;
+    private IReadOnlyList<ProductData> products = [];
+    private IReadOnlyList<AdjustmentSummary> history = [];
+    private readonly List<StockAdjustmentItem> items = [];
+    private string reason = AdjustmentReasons.Damage;
+    private string? note, itemError, saved;
+    private string code = "", qty = "1";
+    private bool saving;
+    private ElementReference codeInput;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await Catalog.ListProductsAsync();
+        history = await Stock.ListAdjustmentsAsync();
+    }
+
+    private async Task Add()
+    {
+        itemError = null; saved = null;
+        var product = ReceiptImport.FindProduct(products, code);
+        if (product is null) { itemError = $"Produto não encontrado: {code}"; return; }
+        if (!CsvText.TryDecimal(qty, out var q) || q <= 0) { itemError = "Quantidade inválida."; return; }
+        if (product.Unit != "KG" && q != decimal.Truncate(q)) { itemError = $"{product.Name} é por unidade."; return; }
+
+        var at = items.FindIndex(i => i.ProductId == product.Id);
+        if (at < 0) items.Add(new StockAdjustmentItem(product.Id, product.Name, q));
+        else items[at] = items[at] with { Quantity = items[at].Quantity + q };
+        code = ""; qty = "1";
+        await codeInput.FocusAsync();
+    }
+
+    private async Task SaveAsync()
+    {
+        saving = true;
+        try
+        {
+            var user = (await Auth).User.FindFirst(ClaimTypes.GivenName)?.Value ?? "retaguarda";
+            await Stock.AdjustAsync(reason, [.. items], user, note);
+            saved = $"{Fmt.Reason(reason)} registrada: {items.Count} item(ns) saíram do estoque.";
+            items.Clear(); note = null;
+            history = await Stock.ListAdjustmentsAsync();
+        }
+        catch (ArgumentException ex) { itemError = ex.Message; }
+        finally { saving = false; }
+    }
+}
