@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.FileProviders;
 using Npgsql;
 using Synthia.Contracts.Catalog;
 using Synthia.Contracts.Sync;
+using Synthia.Server.Auth;
 using Synthia.Server.Backoffice;
 using Synthia.Server.Catalog;
 using Synthia.Server.Data;
@@ -31,6 +33,8 @@ builder.Services.AddSingleton<BackofficeUsers>();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddScheme<AuthenticationSchemeOptions, TerminalKeyHandler>(ApiAuth.TerminalScheme, null)
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyHandler>(ApiAuth.ApiKeyScheme, null)
     .AddCookie(options =>
     {
         options.LoginPath = "/retaguarda/login";
@@ -38,6 +42,20 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.Name = "synthia.retaguarda";
         options.ExpireTimeSpan = TimeSpan.FromHours(12);
         options.SlidingExpiration = true;
+        // API não redireciona para a tela de login: responde 401/403.
+        static bool IsApi(HttpRequest r) => r.Path.StartsWithSegments("/backoffice") || r.Path.StartsWithSegments("/sync");
+        options.Events.OnRedirectToLogin = context =>
+        {
+            if (IsApi(context.Request)) context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            else context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            if (IsApi(context.Request)) context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            else context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
         options.Events.OnValidatePrincipal = async context =>
         {
             // Usuário desativado (ou apagado) perde o acesso na próxima requisição, sem esperar o cookie expirar.
@@ -50,7 +68,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             }
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(ApiAuth.TerminalPolicy, p => p.AddAuthenticationSchemes(ApiAuth.TerminalScheme).RequireClaim(ApiAuth.TerminalClaim));
+    options.AddPolicy(ApiAuth.BackofficeApiPolicy, p => p
+        .AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme, ApiAuth.ApiKeyScheme)
+        .RequireRole(BackofficeRoles.Admin, BackofficeRoles.Manager, ApiAuth.ApiRole));
+});
 
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer((doc, _, _) =>
 {
@@ -99,12 +123,17 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
     .WithSummary("Verifica se o servidor está no ar");
 
 // Caixa → servidor
-var sync = app.MapGroup("").WithTags("Sync");
+var sync = app.MapGroup("").WithTags("Sync").RequireAuthorization(ApiAuth.TerminalPolicy);
 
-sync.MapPost(SyncRoutes.Events, async (PushEventsRequest request, EventStore store, CancellationToken ct) =>
+sync.MapPost(SyncRoutes.Events, async (PushEventsRequest request, EventStore store, ClaimsPrincipal caller, CancellationToken ct) =>
 {
     if (request.Events.Count > 1000)
         return Results.BadRequest("Lote acima de 1000 eventos.");
+
+    // Um caixa só envia os próprios fatos.
+    var terminal = caller.FindFirst(ApiAuth.TerminalClaim)?.Value;
+    if (terminal != ApiAuth.AnyTerminal && request.Events.Any(e => !string.Equals(e.TerminalId, terminal, StringComparison.OrdinalIgnoreCase)))
+        return Results.Problem($"Eventos de outro caixa enviados por {terminal}.", statusCode: StatusCodes.Status403Forbidden);
 
     var accepted = await store.AppendAsync(request.Events, ct);
     return Results.Ok(new PushEventsResponse(accepted));
@@ -130,7 +159,7 @@ sync.MapGet(SyncRoutes.CatalogSnapshot, (CatalogService catalog, CancellationTok
     .WithSummary("Catálogo completo e preços agendados ainda válidos");
 
 // Back-office (mínimo, até existir a interface web)
-var backoffice = app.MapGroup("/backoffice").WithTags("Back-office");
+var backoffice = app.MapGroup("/backoffice").WithTags("Back-office").RequireAuthorization(ApiAuth.BackofficeApiPolicy);
 
 backoffice.MapGet("/products", (CatalogService catalog, CancellationToken ct) => catalog.ListProductsAsync(ct))
     .WithName("ListProducts")
