@@ -168,6 +168,9 @@ propósito: outras pessoas (gerente, estoquista), outros lugares (escritório, d
 | Estoque | Saldo por produto, filtro de negativos e histórico de movimentos de cada produto |
 | Inventário | Contagem por setor ou **geral** (zera o não contado), bipando; rascunho salvo no servidor; revisão sistema × contado antes de confirmar |
 | Perdas e ajustes | Quebra, vencimento, consumo interno, furto, devolução ao fornecedor |
+| NFC-e | Contingências com **prazo de transmissão** (alerta quando vence) e **rejeitadas** com motivo; itens com NCM suspeito e atalho para corrigir o produto |
+| Vendas | Faturamento líquido, ticket médio, cancelamentos; por hora, forma de pagamento, caixa, dia e produtos mais vendidos; exportação CSV |
+| Fechamentos | Conferência de turno: fundo + dinheiro − sangrias = **esperado** × **declarado**, com falta e sobra |
 | Usuários | Papéis **admin**, **gerente** (tudo menos usuários) e **estoquista** (estoque, sem produtos e preços) |
 
 - **Login** por usuário e senha (hash PBKDF2, cookie de 12 h). No primeiro start, o servidor cria o usuário `admin`
@@ -182,12 +185,16 @@ propósito: outras pessoas (gerente, estoquista), outros lugares (escritório, d
   foi contado continuam baixando o estoque normalmente.
 - **NF-e:** caixa/fardo vira unidade pela própria nota (`qTrib / qCom`); o vínculo código-do-fornecedor → produto
   fica salvo, e a próxima nota do mesmo fornecedor entra sem intervenção. O custo por unidade vai na entrada.
+- **Relatórios** vêm do log de eventos: venda cancelada sai do líquido, item devolvido sai pela forma de devolução,
+  e dinheiro conta sem o troco. Datas no fuso da loja (`Store:TimeZone`, padrão `America/Sao_Paulo`).
 - **Usuário desativado perde o acesso na hora** (o login é revalidado a cada requisição); a retaguarda nunca fica
   sem um admin ativo; cada um troca a própria senha em *Trocar senha*.
 
 | Painel | Nota (XML) | Inventário |
 |---|---|---|
 | ![](docs/img/retaguarda-1-painel.png) | ![](docs/img/retaguarda-7-nota-xml.png) | ![](docs/img/retaguarda-6-inventario.png) |
+| **Vendas** | **Fechamentos** | **NFC-e** |
+| ![](docs/img/retaguarda-11-vendas.png) | ![](docs/img/retaguarda-12-fechamentos.png) | ![](docs/img/retaguarda-10-nfce.png) |
 | **Nova entrada** | **Estoque** | **Usuários** |
 | ![](docs/img/retaguarda-3-entrada.png) | ![](docs/img/retaguarda-4-estoque.png) | ![](docs/img/retaguarda-9-usuarios.png) |
 
@@ -435,7 +442,8 @@ O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
 - [x] Retaguarda: login, produtos com importação, entradas (transferência), estoque e histórico
 - [x] Retaguarda: importação de XML da NF-e, inventário, perdas e ajustes, usuários e papéis
 - [x] API autenticada: chave por caixa no sync, login ou chave de API no back-office
-- [ ] Retaguarda: fila de NFC-e rejeitadas, relatórios de vendas e conferência de fechamento
+- [x] Retaguarda: fila de NFC-e, relatório de vendas com exportação e conferência de fechamento
+- [ ] Integração real com ACBr (NFC-e) e TEF; worker de contingência no caixa
 - [ ] Outbox servidor → nuvem e serviço da nuvem
 - [ ] Servidor com standby ou aceitar horas fora? · Edição de preço pela nuvem no MVP?
 - [ ] TEF: PayGo ou SiTef, e fallback offline para cartão
