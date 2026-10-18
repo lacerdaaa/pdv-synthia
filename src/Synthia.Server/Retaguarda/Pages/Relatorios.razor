@@ -1,0 +1,131 @@
+@page "/retaguarda/relatorios"
+@attribute [Authorize(Roles = BackofficeRoles.CatalogEditors)]
+@rendermode InteractiveServer
+@inject ReportService Reports
+@inject TimeProvider Clock
+
+<PageTitle>Vendas · Retaguarda</PageTitle>
+
+<header class="page-head">
+    <h1>Relatório de vendas</h1>
+    <div class="actions"><a class="button" href="@CsvUrl">Exportar CSV</a></div>
+</header>
+
+<div class="toolbar">
+    <label>De <input type="date" @bind="from" @bind:after="LoadAsync" /></label>
+    <label>Até <input type="date" @bind="to" @bind:after="LoadAsync" /></label>
+    <label>Caixa
+        <select @bind="terminal" @bind:after="LoadAsync">
+            <option value="">Todos</option>
+            @foreach (var t in new[] { "CX01", "CX02", "CX03", "CX04" }) { <option value="@t">@t</option> }
+        </select>
+    </label>
+    <div class="actions">
+        <button @onclick="() => SetRangeAsync(0)">Hoje</button>
+        <button @onclick="() => SetRangeAsync(6)">7 dias</button>
+        <button @onclick="() => SetRangeAsync(29)">30 dias</button>
+    </div>
+</div>
+
+@if (report is null) { <p class="muted">Carregando…</p> return; }
+
+<div class="tiles">
+    <div class="tile"><span>Faturamento líquido</span><b>@Fmt.Money(report.NetCents)</b><small>bruto @Fmt.Money(report.GrossCents)</small></div>
+    <div class="tile"><span>Vendas</span><b>@report.Sales</b><small>ticket médio @Fmt.Money(report.AverageTicketCents)</small></div>
+    <div class="tile @(report.CancelledCents > 0 ? "alert" : "")"><span>Cancelamentos e devoluções</span><b>@Fmt.Money(report.CancelledCents)</b>
+        <small>@report.CancelledSales venda(s) inteira(s)</small></div>
+</div>
+
+<section class="card">
+    <h2>Faturamento por hora</h2>
+    @{ var max = Math.Max(1, report.NetByHour.Max()); var first = Math.Min(7, FirstHour()); var last = Math.Max(21, LastHour()); }
+    <div class="hours" role="img" aria-label="Faturamento líquido por hora do dia">
+        @for (var h = first; h <= last; h++)
+        {
+            var v = report.NetByHour[h];
+            <div class="hour" title="@($"{h:00}h · {Fmt.Money(v)}")">
+                <div class="bar" style="height:@((v * 100.0 / max).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                <small>@h.ToString("00")</small>
+            </div>
+        }
+    </div>
+</section>
+
+<div class="two-col">
+    <section class="card">
+        <h2>Por forma de pagamento</h2>
+        <table class="grid-table inner">
+            <thead><tr><th>Forma</th><th class="num">Pagamentos</th><th class="num">Líquido</th><th>Participação</th></tr></thead>
+            <tbody>
+                @foreach (var p in report.Payments)
+                {
+                    <tr><td>@Method(p.Method)</td><td class="num">@p.Count</td><td class="num">@Fmt.Money(p.NetCents)</td>
+                        <td><span class="share"><span style="width:@Share(p.NetCents)%"></span></span> @Share(p.NetCents)%</td></tr>
+                }
+            </tbody>
+        </table>
+    </section>
+    <section class="card">
+        <h2>Por caixa</h2>
+        <table class="grid-table inner">
+            <thead><tr><th>Caixa</th><th class="num">Vendas</th><th class="num">Líquido</th></tr></thead>
+            <tbody>@foreach (var t in report.Terminals) { <tr><td>@t.TerminalId</td><td class="num">@t.Sales</td><td class="num">@Fmt.Money(t.NetCents)</td></tr> }</tbody>
+        </table>
+        @if (report.Days.Count > 1)
+        {
+            <h2 style="margin-top:16px">Por dia</h2>
+            <table class="grid-table inner">
+                <thead><tr><th>Dia</th><th class="num">Vendas</th><th class="num">Líquido</th></tr></thead>
+                <tbody>@foreach (var d in report.Days) { <tr><td>@d.Day.ToString("ddd dd/MM", Fmt.PtBr)</td><td class="num">@d.Sales</td><td class="num">@Fmt.Money(d.NetCents)</td></tr> }</tbody>
+            </table>
+        }
+    </section>
+</div>
+
+<section class="card">
+    <h2>Produtos mais vendidos</h2>
+    <table class="grid-table inner">
+        <thead><tr><th>#</th><th>Produto</th><th class="num">Quantidade</th><th class="num">Líquido</th></tr></thead>
+        <tbody>
+            @for (var i = 0; i < report.TopProducts.Count; i++)
+            {
+                var p = report.TopProducts[i];
+                <tr><td class="mono">@(i + 1)</td><td>@p.Description</td><td class="num">@Fmt.Qty(p.Quantity)</td><td class="num">@Fmt.Money(p.NetCents)</td></tr>
+            }
+        </tbody>
+    </table>
+    @if (report.TopProducts.Count == 0) { <p class="empty">Sem vendas no período.</p> }
+</section>
+
+@code {
+    private DateOnly from, to;
+    private string terminal = "";
+    private SalesReport? report;
+
+    private string CsvUrl => $"/retaguarda/relatorios/vendas.csv?de={from:yyyy-MM-dd}&ate={to:yyyy-MM-dd}&caixa={terminal}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        from = to = Reports.Today(Clock.GetUtcNow());
+        await LoadAsync();
+    }
+
+    private async Task SetRangeAsync(int days)
+    {
+        to = Reports.Today(Clock.GetUtcNow());
+        from = to.AddDays(-days);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync() => report = await Reports.SalesAsync(from, to, terminal.Length == 0 ? null : terminal);
+
+    private int FirstHour() => Array.FindIndex(report!.NetByHour.ToArray(), v => v != 0) is var i and >= 0 ? i : 7;
+    private int LastHour() => Array.FindLastIndex(report!.NetByHour.ToArray(), v => v != 0) is var i and >= 0 ? i : 21;
+
+    private int Share(long cents) => report!.NetCents <= 0 ? 0 : (int)Math.Round(cents * 100.0 / report.NetCents);
+
+    private static string Method(string m) => m switch
+    {
+        PaymentMethods.Cash => "Dinheiro", PaymentMethods.Debit => "Débito", PaymentMethods.Credit => "Crédito", PaymentMethods.Pix => "PIX", _ => m,
+    };
+}
