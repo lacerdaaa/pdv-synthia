@@ -14,7 +14,7 @@ code { font-family: var(--mono); font-size: .9em; background: #e9eef7; padding: 
 .mono { font-family: var(--mono); font-size: 13.5px; }
 .muted { color: var(--muted); }
 
-.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; background: linear-gradient(to right, var(--navy) 240px, transparent 240px); }
 .side { background: var(--navy); color: white; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
 .brand { display: block; background: white; padding: 14px 20px; border-bottom: 4px solid var(--red); text-align: center; }
 .brand img { height: 92px; }
@@ -30,7 +30,7 @@ code { font-family: var(--mono); font-size: .9em; background: #e9eef7; padding: 
 .content { padding: 24px 32px 60px; max-width: 1280px; width: 100%; }
 
 @media (max-width: 860px) {
-  .shell { grid-template-columns: 1fr; }
+  .shell { grid-template-columns: 1fr; background: none; }
   .side { position: static; height: auto; }
   .side nav { flex-direction: row; flex-wrap: wrap; }
   .brand img { height: 60px; }
@@ -134,3 +134,15 @@ input.cell.small { width: 72px; }
 .side-foot .role { color: var(--soft); font-size: 12px; margin-top: -4px; }
 .card.narrow { max-width: 480px; }
 .grid.one { grid-template-columns: 1fr; }
+
+/* Faturamento por hora: série única no azul da marca, topo arredondado, 2px entre barras. */
+.hours { display: flex; align-items: flex-end; gap: 2px; height: 180px; padding-top: 8px; border-bottom: 1px solid var(--line); }
+.hour { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 14px; }
+.hour .bar { width: 70%; max-width: 28px; background: var(--navy); border-radius: 4px 4px 0 0; min-height: 0; }
+.hour:hover .bar { background: var(--navy-dark); }
+.hour small { color: var(--muted); font-size: 11px; margin-top: 4px; }
+.share { display: inline-block; width: 90px; height: 8px; background: #e9eef7; border-radius: 4px; vertical-align: middle; overflow: hidden; }
+.share span { display: block; height: 100%; background: var(--navy); border-radius: 4px; }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; }
+.toolbar label { display: flex; align-items: center; gap: 6px; }
+.toolbar input[type=date], .toolbar select { width: auto; }
