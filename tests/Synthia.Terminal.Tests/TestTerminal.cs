@@ -30,6 +30,8 @@ public sealed class TestTerminal : IDisposable
     public CatalogPuller Puller { get; }
     public ShiftService Shifts { get; }
     public SaleService Sales { get; }
+    public StoreProfileCache Store { get; }
+    public StoreProfilePuller StorePuller { get; }
 
     public TestTerminal()
     {
@@ -44,6 +46,8 @@ public sealed class TestTerminal : IDisposable
         Puller = new CatalogPuller(Catalog, client, NullLogger<CatalogPuller>.Instance);
         Shifts = new ShiftService(Db, Outbox, Pusher);
         Sales = new SaleService(Db, Outbox, Pusher, Nfce);
+        Store = new StoreProfileCache(Db, new StoreSection { Name = "Loja do terminal.json", Cnpj = "11.222.333/0001-81" }, _path + ".logo");
+        StorePuller = new StoreProfilePuller(Store, client, NullLogger<StoreProfilePuller>.Instance);
     }
 
     public ProductData SeedProduct(string name, long cents, string? barcode = null, int? plu = null, long version = 1)
@@ -58,7 +62,7 @@ public sealed class TestTerminal : IDisposable
     public void Dispose()
     {
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-        foreach (var f in new[] { _path, _path + "-wal", _path + "-shm" })
+        foreach (var f in new[] { _path, _path + "-wal", _path + "-shm", _path + ".logo" })
             File.Delete(f);
     }
 }
@@ -79,6 +83,9 @@ public sealed class FakeServer : HttpMessageHandler
     public List<CatalogChange> Changes { get; } = [];
     public bool ForceSnapshot { get; set; }
     public int PushCalls { get; private set; }
+    public StoreProfile? Store { get; set; }
+    public byte[]? StoreLogo { get; set; }
+    public int LogoDownloads { get; private set; }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
@@ -91,6 +98,13 @@ public sealed class FakeServer : HttpMessageHandler
             var body = (await request.Content!.ReadFromJsonAsync<PushEventsRequest>(SynthiaJson.Options, ct))!;
             foreach (var e in body.Events) Events.TryAdd(e.EventId, e);
             return Json(new PushEventsResponse(body.Events.Select(e => e.EventId).ToList()));
+        }
+
+        if (path == SyncRoutes.Store && Store is not null) return Json(Store);
+        if (path == SyncRoutes.StoreLogo && StoreLogo is not null)
+        {
+            LogoDownloads++;
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(StoreLogo) };
         }
 
         var latest = Changes.Count == 0 ? 0 : Changes.Max(c => c.Version);

@@ -9,6 +9,7 @@ public static class Meta
     public const string LastCatalogVersion = "last_catalog_version";
     public const string OpenShiftId = "open_shift_id";
     public const string OpenShiftOperator = "open_shift_operator";
+    public const string StoreProfile = "store_profile";
 
     public static string? Get(IDbConnection conn, string key, IDbTransaction? tx = null) =>
         conn.QuerySingleOrDefault<string>("SELECT value FROM meta WHERE key = @key", new { key }, tx);

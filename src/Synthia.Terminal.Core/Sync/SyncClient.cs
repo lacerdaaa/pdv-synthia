@@ -20,6 +20,19 @@ public sealed class SyncClient(HttpClient http)
         await http.GetFromJsonAsync<CatalogDeltaResponse>($"{SyncRoutes.Catalog}?since={since}", SynthiaJson.Options, ct)
         ?? throw new InvalidOperationException("Resposta vazia do catálogo.");
 
+    public async Task<StoreProfile> GetStoreProfileAsync(CancellationToken ct) =>
+        await http.GetFromJsonAsync<StoreProfile>(SyncRoutes.Store, SynthiaJson.Options, ct)
+        ?? throw new InvalidOperationException("Resposta vazia dos dados da loja.");
+
+    /// <summary>Bytes da logo, ou nulo quando a loja não cadastrou uma.</summary>
+    public async Task<byte[]?> GetStoreLogoAsync(CancellationToken ct)
+    {
+        using var res = await http.GetAsync(SyncRoutes.StoreLogo, ct);
+        if (res.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+        res.EnsureSuccessStatusCode();
+        return await res.Content.ReadAsByteArrayAsync(ct);
+    }
+
     public async Task<CatalogSnapshotResponse> GetCatalogSnapshotAsync(CancellationToken ct) =>
         await http.GetFromJsonAsync<CatalogSnapshotResponse>(SyncRoutes.CatalogSnapshot, SynthiaJson.Options, ct)
         ?? throw new InvalidOperationException("Resposta vazia do snapshot.");
