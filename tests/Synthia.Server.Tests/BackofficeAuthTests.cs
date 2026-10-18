@@ -172,4 +172,23 @@ public sealed partial class BackofficeAuthTests(ServerFixture fx) : IClassFixtur
         await Assert.ThrowsAsync<ArgumentException>(() => users.SetRoleAsync(u.Id, "dono"));
         await Assert.ThrowsAsync<ArgumentException>(() => users.CreateAsync(u.Username, "Duplicado", "segredo5"));
     }
+
+    [Fact]
+    public async Task Exportacao_de_vendas_exige_gerente_e_entrega_csv()
+    {
+        var anon = await Client().GetAsync("/retaguarda/relatorios/vendas.csv?de=2026-01-01&ate=2026-01-31");
+        Assert.Equal(HttpStatusCode.Redirect, anon.StatusCode);
+
+        var users = fx.Factory.Services.GetRequiredService<BackofficeUsers>();
+        var est = await users.CreateAsync($"e{Guid.NewGuid():N}"[..12], "Estoquista", "segredo6", BackofficeRoles.Stock);
+        var asStock = await (await LoginAsync(est.Username, "segredo6")).GetAsync("/retaguarda/relatorios/vendas.csv?de=2026-01-01&ate=2026-01-31");
+        Assert.Equal(HttpStatusCode.Redirect, asStock.StatusCode);
+        Assert.Equal("/retaguarda/sem-permissao", asStock.Headers.Location!.AbsolutePath);
+
+        var manager = await UserAsync("segredo7");
+        var res = await (await LoginAsync(manager.Username, "segredo7")).GetAsync("/retaguarda/relatorios/vendas.csv?de=2026-01-01&ate=2026-01-31");
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        Assert.Equal("text/csv", res.Content.Headers.ContentType?.MediaType);
+        Assert.Contains("produto;quantidade;liquido", await res.Content.ReadAsStringAsync());
+    }
 }
