@@ -1,0 +1,140 @@
+@page "/retaguarda/loja"
+@attribute [Authorize(Roles = BackofficeRoles.Admin)]
+@rendermode InteractiveServer
+@inject StoreProfileService Store
+@inject NavigationManager Navigation
+
+<PageTitle>Loja · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Loja</h1></header>
+
+<p class="muted">Nome, endereço e rodapé saem no cupom; logo e cores aparecem nos caixas e aqui. Os caixas recebem as mudanças
+    em até um minuto e guardam a última versão para trabalhar sem servidor.</p>
+
+<div class="store-layout">
+    <section class="card">
+        <h2>Dados</h2>
+        <div class="grid">
+            <label>Nome fantasia (cupom) <input @bind="input.TradeName" maxlength="@StoreProfileService.MaxTradeName" /></label>
+            <label>Razão social <input @bind="input.LegalName" /></label>
+            <label>CNPJ <input @bind="input.Cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" /></label>
+            <label>Inscrição estadual <input @bind="input.StateRegistration" /></label>
+        </div>
+        <div class="grid one top-gap">
+            <label>Endereço (uma linha no cupom) <input @bind="input.Address" placeholder="Rua, número - bairro - cidade/UF" /></label>
+            <label>Rodapé do cupom <input @bind="input.ReceiptFooter" placeholder="Obrigado pela preferência!" /></label>
+        </div>
+        <h2 class="top-gap">Cores</h2>
+        <div class="grid">
+            <label>Principal (menus, botões) <input type="color" @bind="input.PrimaryColor" /></label>
+            <label>Destaque (detalhes, alertas) <input type="color" @bind="input.AccentColor" /></label>
+        </div>
+        <p class="muted">O CNPJ que vale na NFC-e é o do certificado digital configurado em cada caixa; o daqui serve para
+            conferência e o caixa avisa se os dois forem diferentes.</p>
+        @if (message is not null) { <p class="@(ok ? "flash" : "error")">@message</p> }
+        <div class="actions end"><button class="primary" @onclick="SaveAsync">Salvar</button></div>
+    </section>
+
+    <aside>
+        <section class="card">
+            <h2>Logo</h2>
+            <div class="logo-preview"><img src="retaguarda/marca/logo?v=@profile?.LogoHash" alt="Logo atual" /></div>
+            <p class="muted">PNG com fundo transparente fica melhor. Até 512 KB.</p>
+            <InputFile OnChange="UploadAsync" accept="image/png,image/jpeg" />
+            @if (profile?.LogoHash is not null)
+            {
+                <div class="actions top-gap"><button class="link" @onclick="RemoveLogoAsync">Voltar para a logo padrão</button></div>
+            }
+            @if (logoError is not null) { <p class="error">@logoError</p> }
+        </section>
+
+        <section class="card">
+            <h2>Cabeçalho do cupom</h2>
+            <pre class="receipt-preview">@ReceiptPreview()</pre>
+        </section>
+
+        @if (profile is not null)
+        {
+            <p class="muted small">Identificador da loja: <code>@profile.StoreId</code> · versão @profile.Version</p>
+        }
+    </aside>
+</div>
+
+@code {
+    private Synthia.Contracts.Sync.StoreProfile? profile;
+    private Form input = new();
+    private string? message, logoError;
+    private bool ok;
+    [SupplyParameterFromQuery] private int? Salvo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Load(await Store.GetAsync());
+        if (Salvo == 1) (message, ok) = ("Dados da loja salvos.", true);
+    }
+
+    private void Load(Synthia.Contracts.Sync.StoreProfile p)
+    {
+        profile = p;
+        input = new Form
+        {
+            TradeName = p.TradeName, LegalName = p.LegalName, Cnpj = Synthia.Contracts.Cnpj.Format(p.Cnpj),
+            StateRegistration = p.StateRegistration, Address = p.Address, ReceiptFooter = p.ReceiptFooter,
+            PrimaryColor = p.PrimaryColor.ToLowerInvariant(), AccentColor = p.AccentColor.ToLowerInvariant(),
+        };
+    }
+
+    private async Task SaveAsync()
+    {
+        ok = false;
+        try
+        {
+            var colorsChanged = !string.Equals(input.PrimaryColor, profile?.PrimaryColor, StringComparison.OrdinalIgnoreCase)
+                                || !string.Equals(input.AccentColor, profile?.AccentColor, StringComparison.OrdinalIgnoreCase);
+            Load(await Store.UpdateAsync(new StoreProfileInput(input.TradeName, input.LegalName, input.Cnpj, input.StateRegistration,
+                input.Address, input.ReceiptFooter, input.PrimaryColor, input.AccentColor)));
+            message = "Dados da loja salvos."; ok = true;
+            // Cores novas: recarrega para o menu e os botões pegarem a paleta.
+            if (colorsChanged) Navigation.NavigateTo("/retaguarda/loja?salvo=1", forceLoad: true);
+        }
+        catch (ArgumentException ex) { message = ex.Message; }
+    }
+
+    private async Task UploadAsync(InputFileChangeEventArgs e)
+    {
+        logoError = null;
+        try
+        {
+            if (e.File.Size > StoreProfileService.MaxLogoBytes) throw new ArgumentException("Logo acima de 512 KB.");
+            using var ms = new MemoryStream();
+            await e.File.OpenReadStream(StoreProfileService.MaxLogoBytes).CopyToAsync(ms);
+            profile = await Store.SetLogoAsync(ms.ToArray());
+        }
+        catch (ArgumentException ex) { logoError = ex.Message; }
+    }
+
+    private async Task RemoveLogoAsync() => profile = await Store.RemoveLogoAsync();
+
+    private string ReceiptPreview()
+    {
+        var lines = new List<string> { input.TradeName.ToUpperInvariant(), $"CNPJ {input.Cnpj}" };
+        if (!string.IsNullOrWhiteSpace(input.StateRegistration)) lines.Add($"IE {input.StateRegistration}");
+        if (!string.IsNullOrWhiteSpace(input.Address)) lines.Add(input.Address);
+        lines.Add(new string('-', 32));
+        lines.Add("...");
+        if (!string.IsNullOrWhiteSpace(input.ReceiptFooter)) lines.Add(input.ReceiptFooter);
+        return string.Join('\n', lines);
+    }
+
+    private sealed class Form
+    {
+        public string TradeName { get; set; } = "";
+        public string LegalName { get; set; } = "";
+        public string Cnpj { get; set; } = "";
+        public string StateRegistration { get; set; } = "";
+        public string Address { get; set; } = "";
+        public string ReceiptFooter { get; set; } = "";
+        public string PrimaryColor { get; set; } = "";
+        public string AccentColor { get; set; } = "";
+    }
+}
