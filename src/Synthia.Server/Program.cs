@@ -11,6 +11,7 @@ using Synthia.Server.Auth;
 using Synthia.Server.Backoffice;
 using Synthia.Server.Catalog;
 using Synthia.Server.Data;
+using Synthia.Server.Retaguarda;
 using Synthia.Server.Sync;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -120,6 +121,21 @@ static IResult Csv(string content, string name) =>
     Results.File(Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(content)).ToArray(), "text/csv", name);
 app.MapGet("/retaguarda/modelos/produtos.csv", () => Csv(ProductImport.Template, "modelo-produtos.csv")).ExcludeFromDescription();
 app.MapGet("/retaguarda/modelos/entrada.csv", () => Csv(ReceiptImport.Template, "modelo-entrada.csv")).ExcludeFromDescription();
+
+// Marca da loja na retaguarda (logo e cores cadastradas em Loja). Pública: aparece na tela de login.
+app.MapGet("/retaguarda/marca/logo", async (StoreProfileService store, IWebHostEnvironment env, HttpContext http, CancellationToken ct) =>
+{
+    http.Response.Headers.CacheControl = "no-cache";
+    if (await store.GetLogoAsync(ct) is { } logo)
+        return Results.File(logo.Bytes, logo.ContentType, entityTag: new Microsoft.Net.Http.Headers.EntityTagHeaderValue($"\"{logo.Hash}\""));
+    return Results.File(env.WebRootFileProvider.GetFileInfo("retaguarda/logo-padrao.png").CreateReadStream(), "image/png");
+}).ExcludeFromDescription();
+app.MapGet("/retaguarda/marca.css", async (StoreProfileService store, HttpContext http, CancellationToken ct) =>
+{
+    var p = await store.GetAsync(ct);
+    http.Response.Headers.CacheControl = "no-cache";
+    return Results.Text(BrandCss.Render(p), "text/css");
+}).ExcludeFromDescription();
 
 // Exportação do relatório de vendas (produtos) para planilha.
 app.MapGet("/retaguarda/relatorios/vendas.csv", async (DateOnly de, DateOnly ate, string? caixa, ReportService reports, CancellationToken ct) =>

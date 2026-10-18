@@ -4,11 +4,12 @@
 @using Microsoft.AspNetCore.Authentication.Cookies
 @inject BackofficeUsers Users
 @inject NavigationManager Navigation
+@inject StoreProfileService Store
 
 <PageTitle>Entrar · Retaguarda</PageTitle>
 
 <div class="login">
-    <img src="retaguarda/logo-xandao.png" alt="Xandão Supermercados" class="login-logo" />
+    <img src="retaguarda/marca/logo?v=@profile?.LogoHash" alt="@profile?.TradeName" class="login-logo" />
     <div class="card">
         <h1>Retaguarda</h1>
         <p class="muted">Produtos, entradas de mercadoria e estoque.</p>
@@ -27,8 +28,13 @@
     [SupplyParameterFromForm] private LoginInput? Input { get; set; }
     [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
     private string? error;
+    private Synthia.Contracts.Sync.StoreProfile? profile;
 
-    protected override void OnInitialized() => Input ??= new();
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        profile = await Store.GetAsync();
+    }
 
     private async Task SignInAsync()
     {
