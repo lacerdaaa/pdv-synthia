@@ -37,6 +37,7 @@ public sealed class Projector(ILogger<Projector> logger)
                 var p = SynthiaJson.FromElement<SaleCompleted>(e.Payload);
                 foreach (var item in p.Items)
                     await InsertMovementAsync(conn, tx, e, levels, item.ProductId, item.ItemId, "sale", -item.Quantity);
+                await InsertSaleAsync(conn, tx, e, p);
 
                 var cash = p.Payments.Where(x => x.Method == PaymentMethods.Cash).Sum(x => x.AmountCents) - p.ChangeCents;
                 await AddToShiftAsync(conn, tx, p.ShiftId, e.TerminalId, salesCount: 1, p.TotalCents, cash, withdrawals: 0);
@@ -59,6 +60,9 @@ public sealed class Projector(ILogger<Projector> logger)
 
                 if (await IsItemReturnedAsync(conn, tx, item.ItemId)) break;
                 await InsertMovementAsync(conn, tx, e, levels, item.ProductId, item.ItemId, "item_cancelled", item.Quantity);
+                await conn.ExecuteAsync(
+                    "UPDATE sale_items SET refunded = true, refund_method = @method WHERE sale_id = @SaleId AND item_id = @ItemId",
+                    new { p.SaleId, p.ItemId, method = p.RefundMethod ?? sale.Payments.FirstOrDefault()?.Method }, tx);
                 var cashRefund = p.RefundMethod == PaymentMethods.Cash ? item.TotalCents : 0;
                 await AddToShiftAsync(conn, tx, sale.ShiftId, e.TerminalId, 0, -item.TotalCents, -cashRefund, 0);
                 break;
@@ -74,6 +78,7 @@ public sealed class Projector(ILogger<Projector> logger)
                     break;
                 }
 
+                await conn.ExecuteAsync("UPDATE sales SET cancelled = true WHERE sale_id = @SaleId", new { p.SaleId }, tx);
                 long returnedCents = 0;
                 foreach (var item in sale.Items)
                 {
@@ -167,6 +172,33 @@ public sealed class Projector(ILogger<Projector> logger)
             """,
             new { e.EventId, ProductId = productId, ItemId = itemId, Kind = kind, Quantity = quantity, At = e.OccurredAt.UtcDateTime },
             tx);
+    }
+
+    /// <summary>Venda em colunas para os relatórios (ver migração 0009).</summary>
+    private static async Task InsertSaleAsync(NpgsqlConnection conn, IDbTransaction tx, EventEnvelope e, SaleCompleted p)
+    {
+        await conn.ExecuteAsync(
+            """
+            INSERT INTO sales (sale_id, terminal_id, occurred_at, total_cents, change_cents)
+            VALUES (@SaleId, @TerminalId, @At, @TotalCents, @ChangeCents) ON CONFLICT DO NOTHING;
+
+            INSERT INTO sale_items (sale_id, item_id, product_id, description, quantity, total_cents)
+            SELECT @SaleId, * FROM unnest(@itemIds, @productIds, @descriptions, @quantities, @totals) ON CONFLICT DO NOTHING;
+
+            INSERT INTO sale_payments (sale_id, seq, method, amount_cents)
+            SELECT @SaleId, n::int, m, a FROM unnest(@methods, @amounts) WITH ORDINALITY AS x(m, a, n) ON CONFLICT DO NOTHING;
+            """,
+            new
+            {
+                p.SaleId, e.TerminalId, At = e.OccurredAt.UtcDateTime, p.TotalCents, p.ChangeCents,
+                itemIds = p.Items.Select(i => i.ItemId).ToArray(),
+                productIds = p.Items.Select(i => i.ProductId).ToArray(),
+                descriptions = p.Items.Select(i => i.Description).ToArray(),
+                quantities = p.Items.Select(i => i.Quantity).ToArray(),
+                totals = p.Items.Select(i => i.TotalCents).ToArray(),
+                methods = p.Payments.Select(x => x.Method).ToArray(),
+                amounts = p.Payments.Select(x => x.AmountCents).ToArray(),
+            }, tx);
     }
 
     private static async Task<bool> IsItemReturnedAsync(NpgsqlConnection conn, IDbTransaction tx, Guid itemId) =>
