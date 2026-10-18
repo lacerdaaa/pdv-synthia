@@ -267,6 +267,7 @@ O servidor serve a pasta [`docs/`](docs) e o documento OpenAPI:
 |---|---|
 | `/` | Redireciona para `/docs/` |
 | [`/docs/`](docs/index.html) | Arquitetura, topologia clicável, simulador de sync, eventos, **console de API ao vivo**, falhas, decisões |
+| [`/docs/sistema.html`](docs/sistema.html) | **Visão geral animada**: arquitetura, infra, fluxo da venda, caixa, sync, estoque, retaguarda, falhas e implantação numa página só |
 | [`/docs/simulacao.html`](docs/simulacao.html) | Execução real de um dia de loja, passo a passo |
 | `/openapi/v1.json` | Documento OpenAPI 3 com todas as rotas, tags, resumos e schemas |
 
@@ -409,6 +410,7 @@ tools/
 docs/
   index.html               documentação interativa + console de API
   simulacao.html           visualizador da simulação
+  sistema.html             visão geral animada do sistema inteiro (arquivo único)
 ```
 
 ## Testes
