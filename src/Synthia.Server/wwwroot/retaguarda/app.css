@@ -1,6 +1,6 @@
-/* Retaguarda. Cores padrão; as da loja chegam por /retaguarda/marca.css (cadastro em Loja). */
+/* Retaguarda · Xandão Supermercados. Azul e vermelho tirados da logo. */
 :root {
-  --navy: #2b4c7e; --navy-dark: #1e3558; --red: #e07a1f; --page: #f2f5fa; --line: #dce3ef;
+  --navy: #253c70; --navy-dark: #1a2c55; --red: #c8272e; --page: #f2f5fa; --line: #dce3ef;
   --text: #1b2440; --muted: #5b6785; --soft: #afc0e3; --ok: #1f8a4c; --warn: #b26b00;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -146,13 +146,3 @@ input.cell.small { width: 72px; }
 .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; }
 .toolbar label { display: flex; align-items: center; gap: 6px; }
 .toolbar input[type=date], .toolbar select { width: auto; }
-
-/* Loja */
-.store-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
-@media (max-width: 960px) { .store-layout { grid-template-columns: 1fr; } }
-.top-gap { margin-top: 14px; }
-input[type=color] { height: 42px; padding: 4px; cursor: pointer; }
-.logo-preview { background: #f7f9fd; border: 1px dashed var(--line); border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 8px; }
-.logo-preview img { max-height: 120px; max-width: 100%; }
-.receipt-preview { font-family: var(--mono); font-size: 12.5px; background: #fffef8; border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 0; white-space: pre-wrap; text-align: center; }
-.small { font-size: 12.5px; }

@@ -1,8 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
-using Synthia.Contracts.Sync;
-using Synthia.Terminal.Core.Sync;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -49,7 +45,7 @@ public sealed class CashierScreenTests : IDisposable
         _window.Close();
         _host.DisposeAsync().AsTask().GetAwaiter().GetResult();
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-        foreach (var f in new[] { _db, _db + "-wal", _db + "-shm", _db + ".logo" }) File.Delete(f);
+        foreach (var f in new[] { _db, _db + "-wal", _db + "-shm" }) File.Delete(f);
     }
 
     private static void Pump()
@@ -86,22 +82,6 @@ public sealed class CashierScreenTests : IDisposable
         Snapshot("caixa-1-abrir-turno");
         Press(Key.Enter);
         return Assert.IsType<SaleViewModel>(_vm.Screen);
-    }
-
-    [AvaloniaFact]
-    public void Nome_logo_e_cores_da_loja_chegam_na_tela_quando_o_cadastro_sincroniza()
-    {
-        var png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
-        var defaultLogo = StoreBrand.Current.Logo;
-        var profile = new StoreProfile(Guid.NewGuid(), "Mercado da Esquina", "", "", "", "", "", "#114477", "#AA2200", "hash1", 1);
-
-        _host.Get<StoreProfileCache>().Apply(profile, png);
-        Pump();
-
-        Assert.Equal("Mercado da Esquina", StoreBrand.Current.StoreName);
-        Assert.NotSame(defaultLogo, StoreBrand.Current.Logo);
-        Assert.Equal(Color.Parse("#114477"), ((SolidColorBrush)Application.Current!.Resources["NavyBrush"]!).Color);
-        Assert.Equal(Color.Parse("#AA2200"), ((SolidColorBrush)Application.Current!.Resources["RedBrush"]!).Color);
     }
 
     [AvaloniaFact]

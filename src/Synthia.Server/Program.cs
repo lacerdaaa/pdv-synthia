@@ -11,7 +11,6 @@ using Synthia.Server.Auth;
 using Synthia.Server.Backoffice;
 using Synthia.Server.Catalog;
 using Synthia.Server.Data;
-using Synthia.Server.Retaguarda;
 using Synthia.Server.Sync;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +30,6 @@ builder.Services.AddSingleton<NfeImport>();
 builder.Services.AddSingleton<NfceQueueService>();
 builder.Services.AddSingleton<ReportService>();
 builder.Services.AddSingleton<BackofficeUsers>();
-builder.Services.AddSingleton<StoreProfileService>();
 
 // Retaguarda (Blazor Server) com login por cookie.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -122,21 +120,6 @@ static IResult Csv(string content, string name) =>
 app.MapGet("/retaguarda/modelos/produtos.csv", () => Csv(ProductImport.Template, "modelo-produtos.csv")).ExcludeFromDescription();
 app.MapGet("/retaguarda/modelos/entrada.csv", () => Csv(ReceiptImport.Template, "modelo-entrada.csv")).ExcludeFromDescription();
 
-// Marca da loja na retaguarda (logo e cores cadastradas em Loja). Pública: aparece na tela de login.
-app.MapGet("/retaguarda/marca/logo", async (StoreProfileService store, IWebHostEnvironment env, HttpContext http, CancellationToken ct) =>
-{
-    http.Response.Headers.CacheControl = "no-cache";
-    if (await store.GetLogoAsync(ct) is { } logo)
-        return Results.File(logo.Bytes, logo.ContentType, entityTag: new Microsoft.Net.Http.Headers.EntityTagHeaderValue($"\"{logo.Hash}\""));
-    return Results.File(env.WebRootFileProvider.GetFileInfo("retaguarda/logo-padrao.png").CreateReadStream(), "image/png");
-}).ExcludeFromDescription();
-app.MapGet("/retaguarda/marca.css", async (StoreProfileService store, HttpContext http, CancellationToken ct) =>
-{
-    var p = await store.GetAsync(ct);
-    http.Response.Headers.CacheControl = "no-cache";
-    return Results.Text(BrandCss.Render(p), "text/css");
-}).ExcludeFromDescription();
-
 // Exportação do relatório de vendas (produtos) para planilha.
 app.MapGet("/retaguarda/relatorios/vendas.csv", async (DateOnly de, DateOnly ate, string? caixa, ReportService reports, CancellationToken ct) =>
 {
@@ -188,16 +171,6 @@ sync.MapGet(SyncRoutes.CatalogSnapshot, (CatalogService catalog, CancellationTok
     catalog.GetSnapshotAsync(ct))
     .WithName("GetCatalogSnapshot")
     .WithSummary("Catálogo completo e preços agendados ainda válidos");
-
-sync.MapGet(SyncRoutes.Store, (StoreProfileService store, CancellationToken ct) => store.GetAsync(ct))
-    .WithName("GetStoreProfile")
-    .WithSummary("Dados da loja: nome, CNPJ, endereço, rodapé do cupom e marca")
-    .WithDescription("O caixa guarda a última cópia e usa offline. logoHash muda quando a logo muda.");
-
-sync.MapGet(SyncRoutes.StoreLogo, async (StoreProfileService store, CancellationToken ct) =>
-    await store.GetLogoAsync(ct) is { } logo ? Results.File(logo.Bytes, logo.ContentType) : Results.NotFound())
-    .WithName("GetStoreLogo")
-    .WithSummary("Logo da loja (PNG ou JPEG); 404 sem logo cadastrada");
 
 // Back-office (mínimo, até existir a interface web)
 var backoffice = app.MapGroup("/backoffice").WithTags("Back-office").RequireAuthorization(ApiAuth.BackofficeApiPolicy);

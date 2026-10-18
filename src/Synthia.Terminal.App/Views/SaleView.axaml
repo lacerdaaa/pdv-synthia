@@ -32,7 +32,7 @@
             </ListBox.ItemTemplate>
           </ListBox>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" IsVisible="{Binding !Items.Count}">
-            <Image Source="{Binding Logo, Source={x:Static app:StoreBrand.Current}}" Height="180" Opacity="0.14" />
+            <Image Source="/Assets/logo-xandao.png" Height="180" Opacity="0.14" />
             <TextBlock Text="Caixa livre" FontSize="30" Foreground="{StaticResource SoftBlueBrush}" HorizontalAlignment="Center" />
           </StackPanel>
         </Panel>

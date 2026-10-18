@@ -1,6 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:app="using:Synthia.Terminal.App"
              xmlns:vm="using:Synthia.Terminal.App.ViewModels"
              x:Class="Synthia.Terminal.App.Views.OpenShiftView"
              x:DataType="vm:OpenShiftViewModel">
@@ -8,7 +7,7 @@
     <KeyBinding Gesture="Enter" Command="{Binding OpenCommand}" />
   </UserControl.KeyBindings>
   <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="24">
-  <Image Source="{Binding Logo, Source={x:Static app:StoreBrand.Current}}" Height="200" HorizontalAlignment="Center" />
+  <Image Source="/Assets/logo-xandao.png" Height="200" HorizontalAlignment="Center" />
   <Border Classes="card" Width="440" Padding="28">
     <StackPanel Spacing="14">
       <TextBlock Text="Abrir turno" FontSize="26" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />

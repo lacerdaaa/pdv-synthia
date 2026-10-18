@@ -21,11 +21,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         _host = host;
         TerminalId = host.Config.Terminal.Id;
-        var store = host.Get<StoreProfileCache>();
-        StoreBrand.Current.Attach(store);
+        StoreName = host.Config.Store.Name;
         Banner = host.Demo ? "DEMONSTRAÇÃO · dispositivos simulados"
             : host.Config.Nfce.Ambiente == NfceEnvironment.Homologacao ? "HOMOLOGAÇÃO · NFC-e sem valor fiscal" : null;
-        if (store.CnpjMismatch) Banner = "CNPJ do cadastro da loja difere do configurado neste caixa: confira o certificado.";
         if (host.ConfigErrors.Count > 0) Banner = "Configuração: " + string.Join(" · ", host.ConfigErrors);
 
         ShowCurrentScreen();
@@ -35,6 +33,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public string TerminalId { get; }
+    public string StoreName { get; }
     public string? Banner { get; }
 
     [ObservableProperty]

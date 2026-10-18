@@ -1,13 +1,11 @@
-@inject StoreProfileService Store
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <link rel="icon" href="retaguarda/marca/logo?v=@profile?.LogoHash" />
+    <link rel="icon" href="@Assets["retaguarda/logo-xandao.png"]" />
     <link rel="stylesheet" href="@Assets["retaguarda/app.css"]" />
-    <link rel="stylesheet" href="retaguarda/marca.css?v=@profile?.Version" />
     <HeadOutlet />
 </head>
 <body>
@@ -15,9 +13,3 @@
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>
-
-@code {
-    private Synthia.Contracts.Sync.StoreProfile? profile;
-
-    protected override async Task OnInitializedAsync() => profile = await Store.GetAsync();
-}
