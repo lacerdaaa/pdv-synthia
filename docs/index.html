@@ -283,6 +283,9 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
       <button role="tab" data-shot="retaguarda-6-inventario">Inventário</button>
       <button role="tab" data-shot="retaguarda-8-ajustes">Perdas</button>
       <button role="tab" data-shot="retaguarda-9-usuarios">Usuários</button>
+      <button role="tab" data-shot="retaguarda-10-nfce">NFC-e</button>
+      <button role="tab" data-shot="retaguarda-11-vendas">Vendas</button>
+      <button role="tab" data-shot="retaguarda-12-fechamentos">Fechamentos</button>
     </div>
     <img id="boShot" class="shot" alt="Tela da retaguarda" width="1366" height="860">
     <div class="tablewrap" style="margin-top:12px"><table>
@@ -296,6 +299,9 @@ footer { color: var(--muted); font-size: 13px; margin-top: 48px; }
         <tr><td>Inventário</td><td>Contagem por setor ou geral, bipando (cada leitura soma). Rascunho salvo no servidor; revisão sistema × contado; ao confirmar gera <code>StockCounted</code> com o horário de cada item.</td></tr>
         <tr><td>Perdas e ajustes</td><td>Saídas sem venda com motivo: quebra, vencimento, consumo interno, furto, devolução ao fornecedor (<code>StockAdjusted</code>).</td></tr>
         <tr><td>Usuários</td><td>Admin, gerente e estoquista. Desativar tira o acesso na hora; sempre resta um admin ativo.</td></tr>
+        <tr><td>NFC-e</td><td>Contingências com prazo de transmissão e alerta de vencimento; rejeitadas com motivo, itens com NCM suspeito e atalho para corrigir o produto.</td></tr>
+        <tr><td>Vendas</td><td>Faturamento líquido, ticket médio, cancelamentos; por hora, forma de pagamento, caixa, dia e produto; exportação CSV.</td></tr>
+        <tr><td>Fechamentos</td><td>Turno a turno: fundo + dinheiro − sangrias = esperado, comparado ao declarado, com falta e sobra.</td></tr>
       </tbody>
     </table></div>
   </section>
