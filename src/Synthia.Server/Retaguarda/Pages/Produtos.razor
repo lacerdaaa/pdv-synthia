@@ -89,7 +89,18 @@
                     || p.Barcode == search.Trim()
                     || p.Plu?.ToString() == search.Trim());
 
-    protected override async Task OnInitializedAsync() => products = [.. await Catalog.ListProductsAsync()];
+    [SupplyParameterFromQuery(Name = "editar")] private Guid? EditId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = [.. await Catalog.ListProductsAsync()];
+        // Vindo da fila de NFC-e: abre direto a edição do produto a corrigir.
+        if (EditId is { } id && products.FirstOrDefault(p => p.Id == id) is { } target)
+        {
+            Edit(target);
+            showInactive = !target.Active;
+        }
+    }
 
     private void New() { editing = new ProductForm(); isNew = true; error = null; }
 
