@@ -1,0 +1,66 @@
+@page "/retaguarda/fechamentos"
+@attribute [Authorize(Roles = BackofficeRoles.CatalogEditors)]
+@rendermode InteractiveServer
+@inject ReportService Reports
+@inject TimeProvider Clock
+
+<PageTitle>Fechamentos · Retaguarda</PageTitle>
+
+<header class="page-head"><h1>Conferência de fechamento</h1></header>
+
+<div class="toolbar">
+    <label>De <input type="date" @bind="from" @bind:after="LoadAsync" /></label>
+    <label>Até <input type="date" @bind="to" @bind:after="LoadAsync" /></label>
+    <span class="muted">Turnos ainda abertos aparecem sempre.</span>
+</div>
+
+<div class="tiles small">
+    <div class="tile"><span>Turnos fechados</span><b>@shifts.Count(s => s.Closed)</b></div>
+    <div class="tile"><span>Batem com o esperado</span><b>@shifts.Count(s => s.DifferenceCents == 0)</b></div>
+    <div class="tile @(Missing < 0 ? "alert" : "")"><span>Falta total</span><b>@Fmt.Money(Missing)</b></div>
+    <div class="tile"><span>Sobra total</span><b>@Fmt.Money(Surplus)</b></div>
+</div>
+
+<table class="grid-table">
+    <thead><tr><th>Caixa</th><th>Operador</th><th>Aberto</th><th>Fechado</th><th class="num">Vendas</th><th class="num">Fundo</th>
+        <th class="num">Dinheiro</th><th class="num">Sangrias</th><th class="num">Esperado</th><th class="num">Declarado</th><th class="num">Diferença</th></tr></thead>
+    <tbody>
+        @foreach (var s in shifts)
+        {
+            <tr class="@(s.DifferenceCents is < 0 ? "row-error" : "")">
+                <td>@s.TerminalId</td>
+                <td>@s.Operator</td>
+                <td>@(s.OpenedAt is { } o ? Fmt.When(o) : "—")</td>
+                <td>@(s.ClosedAt is { } c ? Fmt.When(c) : "")@if (!s.Closed) { <span class="badge update">aberto</span> }</td>
+                <td class="num">@s.Sales · @Fmt.Money(s.SalesCents)</td>
+                <td class="num">@Fmt.Money(s.OpeningCashCents)</td>
+                <td class="num">@Fmt.Money(s.CashSalesCents)</td>
+                <td class="num">@Fmt.Money(s.WithdrawalsCents)</td>
+                <td class="num"><b>@Fmt.Money(s.ExpectedCashCents)</b></td>
+                <td class="num">@(s.DeclaredCashCents is { } d ? Fmt.Money(d) : "—")</td>
+                <td class="num @(s.DifferenceCents is < 0 ? "neg" : s.DifferenceCents is > 0 ? "pos" : "zero")">
+                    @(s.DifferenceCents is { } diff ? (diff > 0 ? "+" : "") + Fmt.Money(diff) : "")
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (shifts.Count == 0) { <p class="empty">Nenhum turno no período.</p> }
+<p class="muted">Esperado = fundo de troco + vendas em dinheiro (já sem troco e devoluções) − sangrias. Diferença = declarado − esperado.</p>
+
+@code {
+    private DateOnly from, to;
+    private IReadOnlyList<ShiftReview> shifts = [];
+
+    private long Missing => shifts.Where(s => s.DifferenceCents < 0).Sum(s => s.DifferenceCents!.Value);
+    private long Surplus => shifts.Where(s => s.DifferenceCents > 0).Sum(s => s.DifferenceCents!.Value);
+
+    protected override async Task OnInitializedAsync()
+    {
+        to = Reports.Today(Clock.GetUtcNow());
+        from = to.AddDays(-6);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync() => shifts = await Reports.ShiftsAsync(from, to);
+}
