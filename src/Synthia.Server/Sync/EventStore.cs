@@ -15,6 +15,7 @@ public sealed class EventStore(NpgsqlDataSource dataSource, Projector projector)
     {
         await using var conn = await dataSource.OpenConnectionAsync(ct);
         await using var tx = await conn.BeginTransactionAsync(ct);
+        var levels = new StockLevelChanges();
 
         foreach (var e in events.OrderBy(e => e.EventId))
         {
@@ -38,9 +39,10 @@ public sealed class EventStore(NpgsqlDataSource dataSource, Projector projector)
                 tx);
 
             if (inserted == 1)
-                await projector.ApplyAsync(conn, tx, e);
+                await projector.ApplyAsync(conn, tx, e, levels);
         }
 
+        await StockLevels.ApplyAsync(conn, tx, levels);
         await tx.CommitAsync(ct);
         return events.Select(e => e.EventId).ToList();
     }
@@ -51,14 +53,16 @@ public sealed class EventStore(NpgsqlDataSource dataSource, Projector projector)
         await using var conn = await dataSource.OpenConnectionAsync(ct);
         await using var tx = await conn.BeginTransactionAsync(ct);
 
-        await conn.ExecuteAsync("TRUNCATE stock_movements, shift_totals, nfce_queue", transaction: tx);
+        await conn.ExecuteAsync("TRUNCATE stock_movements, stock_levels, shift_totals, nfce_queue", transaction: tx);
 
         var rows = await conn.QueryAsync<EventRow>(
             "SELECT event_id, stream_id, stream_seq, type, terminal_id, occurred_at, catalog_version, payload::text AS payload FROM events ORDER BY event_id",
             transaction: tx);
 
+        // Os saldos saem de uma vez no fim, direto do ledger reconstruído.
         foreach (var row in rows)
-            await projector.ApplyAsync(conn, tx, row.ToEnvelope());
+            await projector.ApplyAsync(conn, tx, row.ToEnvelope(), new StockLevelChanges());
+        await StockLevels.RebuildAsync(conn, tx);
 
         await tx.CommitAsync(ct);
     }

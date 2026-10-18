@@ -10,7 +10,8 @@ namespace Synthia.Server.Sync;
 /// <summary>Deriva estoque, totais de turno e fila de NFC-e a partir de cada evento.</summary>
 public sealed class Projector(ILogger<Projector> logger)
 {
-    public async Task ApplyAsync(NpgsqlConnection conn, IDbTransaction tx, EventEnvelope e)
+    /// <param name="levels">Recebe os movimentos de estoque gravados; o chamador atualiza os saldos antes do commit.</param>
+    public async Task ApplyAsync(NpgsqlConnection conn, IDbTransaction tx, EventEnvelope e, StockLevelChanges levels)
     {
         var at = e.OccurredAt.UtcDateTime;
 
@@ -35,7 +36,7 @@ public sealed class Projector(ILogger<Projector> logger)
             {
                 var p = SynthiaJson.FromElement<SaleCompleted>(e.Payload);
                 foreach (var item in p.Items)
-                    await InsertMovementAsync(conn, tx, e, item.ProductId, item.ItemId, "sale", -item.Quantity);
+                    await InsertMovementAsync(conn, tx, e, levels, item.ProductId, item.ItemId, "sale", -item.Quantity);
 
                 var cash = p.Payments.Where(x => x.Method == PaymentMethods.Cash).Sum(x => x.AmountCents) - p.ChangeCents;
                 await AddToShiftAsync(conn, tx, p.ShiftId, e.TerminalId, salesCount: 1, p.TotalCents, cash, withdrawals: 0);
@@ -57,7 +58,7 @@ public sealed class Projector(ILogger<Projector> logger)
                 }
 
                 if (await IsItemReturnedAsync(conn, tx, item.ItemId)) break;
-                await InsertMovementAsync(conn, tx, e, item.ProductId, item.ItemId, "item_cancelled", item.Quantity);
+                await InsertMovementAsync(conn, tx, e, levels, item.ProductId, item.ItemId, "item_cancelled", item.Quantity);
                 var cashRefund = p.RefundMethod == PaymentMethods.Cash ? item.TotalCents : 0;
                 await AddToShiftAsync(conn, tx, sale.ShiftId, e.TerminalId, 0, -item.TotalCents, -cashRefund, 0);
                 break;
@@ -77,7 +78,7 @@ public sealed class Projector(ILogger<Projector> logger)
                 foreach (var item in sale.Items)
                 {
                     if (await IsItemReturnedAsync(conn, tx, item.ItemId)) continue;
-                    await InsertMovementAsync(conn, tx, e, item.ProductId, item.ItemId, "sale_cancelled", item.Quantity);
+                    await InsertMovementAsync(conn, tx, e, levels, item.ProductId, item.ItemId, "sale_cancelled", item.Quantity);
                     returnedCents += item.TotalCents;
                 }
 
@@ -114,7 +115,7 @@ public sealed class Projector(ILogger<Projector> logger)
             case EventTypes.StockCounted:
             {
                 var p = SynthiaJson.FromElement<StockCounted>(e.Payload);
-                await InsertMovementAsync(conn, tx, e, p.ProductId, null, "count", p.CountedQuantity);
+                await InsertMovementAsync(conn, tx, e, levels, p.ProductId, null, "count", p.CountedQuantity);
                 break;
             }
 
@@ -122,7 +123,7 @@ public sealed class Projector(ILogger<Projector> logger)
             {
                 var p = SynthiaJson.FromElement<StockReceived>(e.Payload);
                 foreach (var item in p.Items)
-                    await InsertMovementAsync(conn, tx, e, item.ProductId, null, "received", item.Quantity);
+                    await InsertMovementAsync(conn, tx, e, levels, item.ProductId, null, "received", item.Quantity);
                 break;
             }
 
@@ -130,7 +131,7 @@ public sealed class Projector(ILogger<Projector> logger)
             {
                 var p = SynthiaJson.FromElement<StockAdjusted>(e.Payload);
                 foreach (var item in p.Items)
-                    await InsertMovementAsync(conn, tx, e, item.ProductId, null, "adjusted", -item.Quantity);
+                    await InsertMovementAsync(conn, tx, e, levels, item.ProductId, null, "adjusted", -item.Quantity);
                 break;
             }
 
@@ -156,14 +157,17 @@ public sealed class Projector(ILogger<Projector> logger)
     }
 
     private static Task InsertMovementAsync(
-        NpgsqlConnection conn, IDbTransaction tx, EventEnvelope e, Guid productId, Guid? itemId, string kind, decimal quantity) =>
-        conn.ExecuteAsync(
+        NpgsqlConnection conn, IDbTransaction tx, EventEnvelope e, StockLevelChanges levels, Guid productId, Guid? itemId, string kind, decimal quantity)
+    {
+        levels.Add(productId, kind, quantity, e.OccurredAt.UtcDateTime);
+        return conn.ExecuteAsync(
             """
             INSERT INTO stock_movements (event_id, product_id, item_id, kind, quantity, occurred_at)
             VALUES (@EventId, @ProductId, @ItemId, @Kind, @Quantity, @At)
             """,
             new { e.EventId, ProductId = productId, ItemId = itemId, Kind = kind, Quantity = quantity, At = e.OccurredAt.UtcDateTime },
             tx);
+    }
 
     private static async Task<bool> IsItemReturnedAsync(NpgsqlConnection conn, IDbTransaction tx, Guid itemId) =>
         await conn.ExecuteScalarAsync<bool>(

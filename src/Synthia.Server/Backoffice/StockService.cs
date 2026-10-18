@@ -87,7 +87,7 @@ public sealed class StockService(NpgsqlDataSource dataSource, BackofficeEvents e
             """
             SELECT p.id AS ProductId, p.name AS Name, p.barcode AS Barcode, p.plu AS Plu, p.unit AS Unit,
                    coalesce(b.quantity, 0) AS Quantity,
-                   (SELECT max(m.occurred_at) FROM stock_movements m WHERE m.product_id = p.id) AS LastMovementAt,
+                   b.last_movement_at AS LastMovementAt,
                    p.active AS Active
             FROM products p
             LEFT JOIN stock_balances b ON b.product_id = p.id
