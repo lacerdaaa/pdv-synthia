@@ -40,7 +40,8 @@ public sealed class ReportService(NpgsqlDataSource dataSource, IConfiguration co
 
     public DateOnly Today(DateTimeOffset now) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, Zone).DateTime);
 
-    public async Task<SalesReport> SalesAsync(DateOnly from, DateOnly to, string? terminalId = null, CancellationToken ct = default)
+    /// <param name="topProducts">Quantos produtos listar (exportação usa todos).</param>
+    public async Task<SalesReport> SalesAsync(DateOnly from, DateOnly to, string? terminalId = null, CancellationToken ct = default, int topProducts = 20)
     {
         var (start, end) = Range(from, to);
         await using var conn = await dataSource.OpenConnectionAsync(ct);
@@ -118,7 +119,7 @@ public sealed class ReportService(NpgsqlDataSource dataSource, IConfiguration co
             terminals.Select(t => new TerminalTotal(t.Key, t.Value.Sales, t.Value.Cents)).ToList(),
             byHour,
             products.Select(p => new ProductTotal(p.Key, p.Value.Description, p.Value.Qty, p.Value.Cents))
-                .OrderByDescending(p => p.NetCents).Take(20).ToList());
+                .OrderByDescending(p => p.NetCents).Take(topProducts).ToList());
     }
 
     public async Task<IReadOnlyList<ShiftReview>> ShiftsAsync(DateOnly from, DateOnly to, CancellationToken ct = default)

@@ -120,6 +120,18 @@ static IResult Csv(string content, string name) =>
 app.MapGet("/retaguarda/modelos/produtos.csv", () => Csv(ProductImport.Template, "modelo-produtos.csv")).ExcludeFromDescription();
 app.MapGet("/retaguarda/modelos/entrada.csv", () => Csv(ReceiptImport.Template, "modelo-entrada.csv")).ExcludeFromDescription();
 
+// Exportação do relatório de vendas (produtos) para planilha.
+app.MapGet("/retaguarda/relatorios/vendas.csv", async (DateOnly de, DateOnly ate, string? caixa, ReportService reports, CancellationToken ct) =>
+{
+    var r = await reports.SalesAsync(de, ate, string.IsNullOrWhiteSpace(caixa) ? null : caixa, ct, topProducts: int.MaxValue);
+    var pt = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+    var sb = new StringBuilder("produto;quantidade;liquido\n");
+    foreach (var p in r.TopProducts)
+        sb.Append($"\"{p.Description.Replace("\"", "\"\"")}\";{p.Quantity.ToString(pt)};{(p.NetCents / 100m).ToString("0.00", pt)}\n");
+    sb.Append($"TOTAL;;{(r.NetCents / 100m).ToString("0.00", pt)}\n");
+    return Csv(sb.ToString(), $"vendas-{de:yyyyMMdd}-{ate:yyyyMMdd}.csv");
+}).RequireAuthorization(p => p.RequireRole(BackofficeRoles.Admin, BackofficeRoles.Manager)).ExcludeFromDescription();
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
     .WithTags("Sistema").WithName("Health")
     .WithSummary("Verifica se o servidor está no ar");
