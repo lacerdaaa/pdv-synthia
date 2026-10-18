@@ -13,6 +13,9 @@
             <NavLink href="/retaguarda/estoque">Estoque</NavLink>
             <NavLink href="/retaguarda/inventarios">Inventário</NavLink>
             <NavLink href="/retaguarda/ajustes">Perdas e ajustes</NavLink>
+            <AuthorizeView Roles="@BackofficeRoles.CatalogEditors">
+                <NavLink href="/retaguarda/nfce">NFC-e</NavLink>
+            </AuthorizeView>
             <AuthorizeView Roles="@BackofficeRoles.Admin">
                 <NavLink href="/retaguarda/usuarios">Usuários</NavLink>
             </AuthorizeView>

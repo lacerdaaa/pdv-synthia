@@ -1,0 +1,83 @@
+@page "/retaguarda/nfce"
+@attribute [Authorize(Roles = BackofficeRoles.CatalogEditors)]
+@rendermode InteractiveServer
+@inject NfceQueueService Queue
+@inject TimeProvider Clock
+
+<PageTitle>NFC-e · Retaguarda</PageTitle>
+
+<header class="page-head">
+    <h1>NFC-e pendentes e rejeitadas</h1>
+    <div class="actions"><button @onclick="LoadAsync">Atualizar</button></div>
+</header>
+
+<div class="tiles small">
+    <div class="tile"><span>Em contingência</span><b>@list.Count(e => e.Status == NfceStatus.Pending)</b></div>
+    <div class="tile @(Overdue > 0 ? "alert" : "")"><span>Contingência com prazo vencido</span><b>@Overdue</b></div>
+    <div class="tile @(Rejected > 0 ? "alert" : "")"><span>Rejeitadas</span><b>@Rejected</b></div>
+</div>
+
+<section class="card">
+    <p class="muted">
+        <b>Contingência:</b> NFC-e emitida sem internet. O caixa transmite sozinho quando a internet volta; o prazo legal é curto
+        (em geral 24 h, confirme com a SEFAZ-SP). Se vencer, verifique a internet e o caixa indicado.<br />
+        <b>Rejeitada:</b> a SEFAZ recusou a nota. O motivo mais comum é cadastro (NCM, tributação). Corrija o produto e o caixa reenvia.
+    </p>
+</section>
+
+<table class="grid-table">
+    <thead><tr><th>Situação</th><th>Caixa</th><th>Venda</th><th class="num">Valor</th><th>Motivo / prazo</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var e in list)
+        {
+            var overdue = e.Overdue(Now);
+            <tr class="@(e.Status == NfceStatus.Rejected || overdue ? "row-error" : "")">
+                <td><span class="badge @(e.Status == NfceStatus.Rejected ? "error" : "update")">@(e.Status == NfceStatus.Rejected ? "rejeitada" : "contingência")</span></td>
+                <td>@e.TerminalId</td>
+                <td>@(e.SoldAt is { } s ? Fmt.When(s) : "—")</td>
+                <td class="num">@Fmt.Money(e.TotalCents)</td>
+                <td>
+                    @if (e.Status == NfceStatus.Rejected) { <span class="error">@e.Reason</span> }
+                    else if (e.DeadlineAt is { } d) { <span class="@(overdue ? "error" : "muted")">@(overdue ? "venceu" : "transmitir até") @Fmt.When(d)</span> }
+                </td>
+                <td class="num"><button class="link" @onclick="() => open = open == e.SaleId ? null : e.SaleId">@(open == e.SaleId ? "fechar" : "itens")</button></td>
+            </tr>
+            @if (open == e.SaleId)
+            {
+                <tr class="detail"><td colspan="6">
+                    @if (e.Key is not null) { <p class="mono muted">Chave @string.Join(' ', e.Key.Chunk(4).Select(c => new string(c)))</p> }
+                    <table class="grid-table inner">
+                        <thead><tr><th>Item</th><th class="num">Qtd</th><th class="num">Total</th><th>NCM no cadastro</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var l in e.Lines)
+                            {
+                                var suspect = e.SuspectLines.Contains(l);
+                                <tr>
+                                    <td>@l.Description</td>
+                                    <td class="num">@Fmt.Qty(l.Quantity)</td>
+                                    <td class="num">@Fmt.Money(l.TotalCents)</td>
+                                    <td class="mono @(suspect ? "warn" : "")">@(l.Ncm ?? "—") @if (suspect) { <span class="badge error">verificar</span> }</td>
+                                    <td class="num"><a href="/retaguarda/produtos?editar=@l.ProductId">corrigir produto</a></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </td></tr>
+            }
+        }
+    </tbody>
+</table>
+@if (list.Count == 0) { <p class="empty">Nenhuma NFC-e pendente ou rejeitada. Tudo autorizado.</p> }
+
+@code {
+    private IReadOnlyList<NfceQueueEntry> list = [];
+    private Guid? open;
+
+    private DateTime Now => Clock.GetUtcNow().UtcDateTime;
+    private int Overdue => list.Count(e => e.Overdue(Now));
+    private int Rejected => list.Count(e => e.Status == NfceStatus.Rejected);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync() => list = await Queue.ListAsync();
+}
