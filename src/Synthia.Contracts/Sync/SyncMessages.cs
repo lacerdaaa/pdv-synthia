@@ -8,6 +8,8 @@ public static class SyncRoutes
     public const string Events = "/sync/events";
     public const string Catalog = "/sync/catalog";
     public const string CatalogSnapshot = "/sync/catalog/snapshot";
+    public const string Store = "/sync/store";
+    public const string StoreLogo = "/sync/store/logo";
 }
 
 public sealed record PushEventsRequest(IReadOnlyList<EventEnvelope> Events);

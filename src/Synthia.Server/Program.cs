@@ -30,6 +30,7 @@ builder.Services.AddSingleton<NfeImport>();
 builder.Services.AddSingleton<NfceQueueService>();
 builder.Services.AddSingleton<ReportService>();
 builder.Services.AddSingleton<BackofficeUsers>();
+builder.Services.AddSingleton<StoreProfileService>();
 
 // Retaguarda (Blazor Server) com login por cookie.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -171,6 +172,16 @@ sync.MapGet(SyncRoutes.CatalogSnapshot, (CatalogService catalog, CancellationTok
     catalog.GetSnapshotAsync(ct))
     .WithName("GetCatalogSnapshot")
     .WithSummary("Catálogo completo e preços agendados ainda válidos");
+
+sync.MapGet(SyncRoutes.Store, (StoreProfileService store, CancellationToken ct) => store.GetAsync(ct))
+    .WithName("GetStoreProfile")
+    .WithSummary("Dados da loja: nome, CNPJ, endereço, rodapé do cupom e marca")
+    .WithDescription("O caixa guarda a última cópia e usa offline. logoHash muda quando a logo muda.");
+
+sync.MapGet(SyncRoutes.StoreLogo, async (StoreProfileService store, CancellationToken ct) =>
+    await store.GetLogoAsync(ct) is { } logo ? Results.File(logo.Bytes, logo.ContentType) : Results.NotFound())
+    .WithName("GetStoreLogo")
+    .WithSummary("Logo da loja (PNG ou JPEG); 404 sem logo cadastrada");
 
 // Back-office (mínimo, até existir a interface web)
 var backoffice = app.MapGroup("/backoffice").WithTags("Back-office").RequireAuthorization(ApiAuth.BackofficeApiPolicy);
