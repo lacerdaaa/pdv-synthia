@@ -1,6 +1,6 @@
 // Gerado por tools/Synthia.Simulator. Não editar à mão.
 window.SIMULACAO = {
-  "generatedAt": "2026-10-17T21:01:55.1176485+00:00",
+  "generatedAt": "2026-10-18T16:08:46.7165681+00:00",
   "terminals": [
     "CX01",
     "CX02"
@@ -11,12 +11,12 @@ window.SIMULACAO = {
       "phase": "Abertura",
       "situation": "Gerente cadastra o mix inicial no back-office",
       "routes": [
-        "PUT /backoffice/products/01a14bab-d1c4-7fc7-974b-248934d1c0fd",
-        "PUT /backoffice/products/01a14bab-d25e-7bd2-85cb-5efdf7750de5",
-        "PUT /backoffice/products/01a14bab-d26a-7ec3-ab16-2d6d6abb9fbe",
-        "PUT /backoffice/products/01a14bab-d273-7fdf-8efc-e121c5c33b7a",
-        "PUT /backoffice/products/01a14bab-d277-704e-b7ba-c5c97ad6803d",
-        "PUT /backoffice/products/01a14bab-d27c-7221-a0d7-9d29405127be"
+        "PUT /backoffice/products/01a14fc5-cbc8-7827-ba0a-925605495c4c",
+        "PUT /backoffice/products/01a14fc5-ccff-709b-aebb-ce62297551b7",
+        "PUT /backoffice/products/01a14fc5-cd0f-7fba-af69-45ff1a6ad7b9",
+        "PUT /backoffice/products/01a14fc5-cd1b-79ac-aeb3-e1c518974bbe",
+        "PUT /backoffice/products/01a14fc5-cd20-7c5f-81ef-309a39590bb3",
+        "PUT /backoffice/products/01a14fc5-cd26-75f7-a1bf-8099d0660f36"
       ],
       "process": [
         "Back-office: PUT /backoffice/products/{id} para cada produto.",
@@ -27,8 +27,8 @@ window.SIMULACAO = {
         {
           "actor": "Back-office",
           "method": "PUT",
-          "path": "/backoffice/products/01a14bab-d1c4-7fc7-974b-248934d1c0fd",
-          "request": "{\n  \"id\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n  \"name\": \"Arroz 5kg\",\n  \"barcode\": \"7891000100103\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 2899,\n  \"ncm\": \"10063021\",\n  \"active\": true\n}",
+          "path": "/backoffice/products/01a14fc5-cbc8-7827-ba0a-925605495c4c",
+          "request": "{\n  \"id\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n  \"name\": \"Arroz 5kg\",\n  \"barcode\": \"7891000100103\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 2899,\n  \"ncm\": \"10063021\",\n  \"active\": true\n}",
           "status": 200,
           "response": "{\n  \"version\": 1\n}",
           "note": null
@@ -36,8 +36,8 @@ window.SIMULACAO = {
         {
           "actor": "Back-office",
           "method": "PUT",
-          "path": "/backoffice/products/01a14bab-d25e-7bd2-85cb-5efdf7750de5",
-          "request": "{\n  \"id\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n  \"name\": \"Feij\\u00E3o 1kg\",\n  \"barcode\": \"7891000200209\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 899,\n  \"ncm\": \"07133399\",\n  \"active\": true\n}",
+          "path": "/backoffice/products/01a14fc5-ccff-709b-aebb-ce62297551b7",
+          "request": "{\n  \"id\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n  \"name\": \"Feij\\u00E3o 1kg\",\n  \"barcode\": \"7891000200209\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 899,\n  \"ncm\": \"07133399\",\n  \"active\": true\n}",
           "status": 200,
           "response": "{\n  \"version\": 2\n}",
           "note": null
@@ -45,8 +45,8 @@ window.SIMULACAO = {
         {
           "actor": "Back-office",
           "method": "PUT",
-          "path": "/backoffice/products/01a14bab-d26a-7ec3-ab16-2d6d6abb9fbe",
-          "request": "{\n  \"id\": \"01a14bab-d26a-7ec3-ab16-2d6d6abb9fbe\",\n  \"name\": \"Banana prata\",\n  \"barcode\": null,\n  \"plu\": 1001,\n  \"unit\": \"KG\",\n  \"priceCents\": 599,\n  \"ncm\": \"08039000\",\n  \"active\": true\n}",
+          "path": "/backoffice/products/01a14fc5-cd0f-7fba-af69-45ff1a6ad7b9",
+          "request": "{\n  \"id\": \"01a14fc5-cd0f-7fba-af69-45ff1a6ad7b9\",\n  \"name\": \"Banana prata\",\n  \"barcode\": null,\n  \"plu\": 1001,\n  \"unit\": \"KG\",\n  \"priceCents\": 599,\n  \"ncm\": \"08039000\",\n  \"active\": true\n}",
           "status": 200,
           "response": "{\n  \"version\": 3\n}",
           "note": null
@@ -54,8 +54,8 @@ window.SIMULACAO = {
         {
           "actor": "Back-office",
           "method": "PUT",
-          "path": "/backoffice/products/01a14bab-d273-7fdf-8efc-e121c5c33b7a",
-          "request": "{\n  \"id\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n  \"name\": \"Leite 1L\",\n  \"barcode\": \"7891000300305\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 549,\n  \"ncm\": \"04012010\",\n  \"active\": true\n}",
+          "path": "/backoffice/products/01a14fc5-cd1b-79ac-aeb3-e1c518974bbe",
+          "request": "{\n  \"id\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n  \"name\": \"Leite 1L\",\n  \"barcode\": \"7891000300305\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 549,\n  \"ncm\": \"04012010\",\n  \"active\": true\n}",
           "status": 200,
           "response": "{\n  \"version\": 4\n}",
           "note": null
@@ -63,8 +63,8 @@ window.SIMULACAO = {
         {
           "actor": "Back-office",
           "method": "PUT",
-          "path": "/backoffice/products/01a14bab-d277-704e-b7ba-c5c97ad6803d",
-          "request": "{\n  \"id\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n  \"name\": \"Caf\\u00E9 500g\",\n  \"barcode\": \"7891000400401\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 1899,\n  \"ncm\": \"09012100\",\n  \"active\": true\n}",
+          "path": "/backoffice/products/01a14fc5-cd20-7c5f-81ef-309a39590bb3",
+          "request": "{\n  \"id\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n  \"name\": \"Caf\\u00E9 500g\",\n  \"barcode\": \"7891000400401\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 1899,\n  \"ncm\": \"09012100\",\n  \"active\": true\n}",
           "status": 200,
           "response": "{\n  \"version\": 5\n}",
           "note": null
@@ -72,8 +72,8 @@ window.SIMULACAO = {
         {
           "actor": "Back-office",
           "method": "PUT",
-          "path": "/backoffice/products/01a14bab-d27c-7221-a0d7-9d29405127be",
-          "request": "{\n  \"id\": \"01a14bab-d27c-7221-a0d7-9d29405127be\",\n  \"name\": \"Azeite 500ml\",\n  \"barcode\": \"7891000500507\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 3490,\n  \"ncm\": \"15091000\",\n  \"active\": true\n}",
+          "path": "/backoffice/products/01a14fc5-cd26-75f7-a1bf-8099d0660f36",
+          "request": "{\n  \"id\": \"01a14fc5-cd26-75f7-a1bf-8099d0660f36\",\n  \"name\": \"Azeite 500ml\",\n  \"barcode\": \"7891000500507\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 3490,\n  \"ncm\": \"15091000\",\n  \"active\": true\n}",
           "status": 200,
           "response": "{\n  \"version\": 6\n}",
           "note": null
@@ -142,7 +142,7 @@ window.SIMULACAO = {
           "actor": "Back-office",
           "method": "POST",
           "path": "/backoffice/scheduled-prices",
-          "request": "{\n  \"id\": \"01a14bab-d297-780f-817c-5d3e89c99213\",\n  \"productId\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n  \"priceCents\": 1599,\n  \"effectiveAt\": \"2026-10-17T23:07:53.0971699\\u002B00:00\"\n}",
+          "request": "{\n  \"id\": \"01a14fc5-cd45-736f-9742-dd1a09d4d755\",\n  \"productId\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n  \"priceCents\": 1599,\n  \"effectiveAt\": \"2026-10-18T18:14:44.4109337\\u002B00:00\"\n}",
           "status": 200,
           "response": "{\n  \"version\": 7\n}",
           "note": null
@@ -156,7 +156,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "Café 500g: R$ 15,99 a partir de 23:07 UTC"
+        "Café 500g: R$ 15,99 a partir de 18:14 UTC"
       ]
     },
     {
@@ -189,7 +189,7 @@ window.SIMULACAO = {
           "path": "/sync/catalog/snapshot",
           "request": null,
           "status": 200,
-          "response": "{\n  \"version\": 7,\n  \"products\": [\n    {\n      \"id\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n      \"name\": \"Arroz 5kg\",\n      \"barcode\": \"7891000100103\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 2899,\n      \"ncm\": \"10063021\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d27c-7221-a0d7-9d29405127be\",\n      \"name\": \"Azeite 500ml\",\n      \"barcode\": \"7891000500507\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 3490,\n      \"ncm\": \"15091000\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d26a-7ec3-ab16-2d6d6abb9fbe\",\n      \"name\": \"Banana prata\",\n      \"barcode\": null,\n      \"plu\": 1001,\n      \"unit\": \"KG\",\n      \"priceCents\": 599,\n      \"ncm\": \"08039000\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n      \"name\": \"Caf\\u00E9 500g\",\n      \"barcode\": \"7891000400401\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 1899,\n      \"ncm\": \"09012100\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n      \"name\": \"Feij\\u00E3o 1kg\",\n      \"barcode\": \"7891000200209\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 899,\n      \"ncm\": \"07133399\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n      \"name\": \"Leite 1L\",\n      \"barcode\": \"7891000300305\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 549,\n      \"ncm\": \"04012010\",\n      \"active\": true\n    }\n  ],\n  \"scheduledPrices\": [\n    {\n      \"id\": \"01a14bab-d297-780f-817c-5d3e89c99213\",\n      \"productId\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n      \"priceCents\": 1599,\n      \"effectiveAt\": \"2026-10-17T23:07:53.097169\\u002B00:00\"\n    }\n  ]\n}",
+          "response": "{\n  \"version\": 7,\n  \"products\": [\n    {\n      \"id\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n      \"name\": \"Arroz 5kg\",\n      \"barcode\": \"7891000100103\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 2899,\n      \"ncm\": \"10063021\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-cd26-75f7-a1bf-8099d0660f36\",\n      \"name\": \"Azeite 500ml\",\n      \"barcode\": \"7891000500507\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 3490,\n      \"ncm\": \"15091000\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-cd0f-7fba-af69-45ff1a6ad7b9\",\n      \"name\": \"Banana prata\",\n      \"barcode\": null,\n      \"plu\": 1001,\n      \"unit\": \"KG\",\n      \"priceCents\": 599,\n      \"ncm\": \"08039000\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n      \"name\": \"Caf\\u00E9 500g\",\n      \"barcode\": \"7891000400401\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 1899,\n      \"ncm\": \"09012100\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n      \"name\": \"Feij\\u00E3o 1kg\",\n      \"barcode\": \"7891000200209\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 899,\n      \"ncm\": \"07133399\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n      \"name\": \"Leite 1L\",\n      \"barcode\": \"7891000300305\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 549,\n      \"ncm\": \"04012010\",\n      \"active\": true\n    }\n  ],\n  \"scheduledPrices\": [\n    {\n      \"id\": \"01a14fc5-cd45-736f-9742-dd1a09d4d755\",\n      \"productId\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n      \"priceCents\": 1599,\n      \"effectiveAt\": \"2026-10-18T18:14:44.410933\\u002B00:00\"\n    }\n  ]\n}",
           "note": null
         }
       ],
@@ -231,7 +231,7 @@ window.SIMULACAO = {
           "path": "/sync/catalog/snapshot",
           "request": null,
           "status": 200,
-          "response": "{\n  \"version\": 7,\n  \"products\": [\n    {\n      \"id\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n      \"name\": \"Arroz 5kg\",\n      \"barcode\": \"7891000100103\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 2899,\n      \"ncm\": \"10063021\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d27c-7221-a0d7-9d29405127be\",\n      \"name\": \"Azeite 500ml\",\n      \"barcode\": \"7891000500507\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 3490,\n      \"ncm\": \"15091000\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d26a-7ec3-ab16-2d6d6abb9fbe\",\n      \"name\": \"Banana prata\",\n      \"barcode\": null,\n      \"plu\": 1001,\n      \"unit\": \"KG\",\n      \"priceCents\": 599,\n      \"ncm\": \"08039000\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n      \"name\": \"Caf\\u00E9 500g\",\n      \"barcode\": \"7891000400401\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 1899,\n      \"ncm\": \"09012100\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n      \"name\": \"Feij\\u00E3o 1kg\",\n      \"barcode\": \"7891000200209\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 899,\n      \"ncm\": \"07133399\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n      \"name\": \"Leite 1L\",\n      \"barcode\": \"7891000300305\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 549,\n      \"ncm\": \"04012010\",\n      \"active\": true\n    }\n  ],\n  \"scheduledPrices\": [\n    {\n      \"id\": \"01a14bab-d297-780f-817c-5d3e89c99213\",\n      \"productId\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n      \"priceCents\": 1599,\n      \"effectiveAt\": \"2026-10-17T23:07:53.097169\\u002B00:00\"\n    }\n  ]\n}",
+          "response": "{\n  \"version\": 7,\n  \"products\": [\n    {\n      \"id\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n      \"name\": \"Arroz 5kg\",\n      \"barcode\": \"7891000100103\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 2899,\n      \"ncm\": \"10063021\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-cd26-75f7-a1bf-8099d0660f36\",\n      \"name\": \"Azeite 500ml\",\n      \"barcode\": \"7891000500507\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 3490,\n      \"ncm\": \"15091000\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-cd0f-7fba-af69-45ff1a6ad7b9\",\n      \"name\": \"Banana prata\",\n      \"barcode\": null,\n      \"plu\": 1001,\n      \"unit\": \"KG\",\n      \"priceCents\": 599,\n      \"ncm\": \"08039000\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n      \"name\": \"Caf\\u00E9 500g\",\n      \"barcode\": \"7891000400401\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 1899,\n      \"ncm\": \"09012100\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n      \"name\": \"Feij\\u00E3o 1kg\",\n      \"barcode\": \"7891000200209\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 899,\n      \"ncm\": \"07133399\",\n      \"active\": true\n    },\n    {\n      \"id\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n      \"name\": \"Leite 1L\",\n      \"barcode\": \"7891000300305\",\n      \"plu\": null,\n      \"unit\": \"UN\",\n      \"priceCents\": 549,\n      \"ncm\": \"04012010\",\n      \"active\": true\n    }\n  ],\n  \"scheduledPrices\": [\n    {\n      \"id\": \"01a14fc5-cd45-736f-9742-dd1a09d4d755\",\n      \"productId\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n      \"priceCents\": 1599,\n      \"effectiveAt\": \"2026-10-18T18:14:44.410933\\u002B00:00\"\n    }\n  ]\n}",
           "note": null
         }
       ],
@@ -265,9 +265,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bb9-89e9-7c28-be60-6c0e8d83052e\",\n      \"streamId\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:16:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n        \"countedQuantity\": 50,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14bb9-89e9-7c28-be60-6c0e8d83052f\",\n      \"streamId\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:16:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n        \"countedQuantity\": 40,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14bb9-89e9-7c28-be60-6c0e8d830530\",\n      \"streamId\": \"01a14bab-d26a-7ec3-ab16-2d6d6abb9fbe\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:16:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14bab-d26a-7ec3-ab16-2d6d6abb9fbe\",\n        \"countedQuantity\": 30,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14bb9-89e9-7f92-9aba-d72db32e80a0\",\n      \"streamId\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:16:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n        \"countedQuantity\": 24,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14bb9-89e9-7f92-9aba-d72db32e80a1\",\n      \"streamId\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:16:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n        \"countedQuantity\": 20,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14bb9-89e9-7f92-9aba-d72db32e80a2\",\n      \"streamId\": \"01a14bab-d27c-7221-a0d7-9d29405127be\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:16:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14bab-d27c-7221-a0d7-9d29405127be\",\n        \"countedQuantity\": 1,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fd3-841a-7096-a686-6ef44678e646\",\n      \"streamId\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:23:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n        \"countedQuantity\": 50,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14fd3-841a-7be9-8938-97248d34618c\",\n      \"streamId\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:23:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n        \"countedQuantity\": 40,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14fd3-841a-7be9-8938-97248d34618d\",\n      \"streamId\": \"01a14fc5-cd0f-7fba-af69-45ff1a6ad7b9\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:23:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14fc5-cd0f-7fba-af69-45ff1a6ad7b9\",\n        \"countedQuantity\": 30,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14fd3-841a-7be9-8938-97248d34618e\",\n      \"streamId\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:23:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n        \"countedQuantity\": 24,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14fd3-841a-7e2e-afa9-49ebb5419fdd\",\n      \"streamId\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:23:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n        \"countedQuantity\": 20,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    },\n    {\n      \"eventId\": \"01a14fd3-841a-7e2e-afa9-49ebb5419fde\",\n      \"streamId\": \"01a14fc5-cd26-75f7-a1bf-8099d0660f36\",\n      \"streamSeq\": 1,\n      \"type\": \"StockCounted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:23:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"productId\": \"01a14fc5-cd26-75f7-a1bf-8099d0660f36\",\n        \"countedQuantity\": 1,\n        \"inventoryId\": null,\n        \"expectedQuantity\": null,\n        \"countedBy\": null\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bb9-89e9-7c28-be60-6c0e8d83052e\",\n    \"01a14bb9-89e9-7c28-be60-6c0e8d83052f\",\n    \"01a14bb9-89e9-7c28-be60-6c0e8d830530\",\n    \"01a14bb9-89e9-7f92-9aba-d72db32e80a0\",\n    \"01a14bb9-89e9-7f92-9aba-d72db32e80a1\",\n    \"01a14bb9-89e9-7f92-9aba-d72db32e80a2\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fd3-841a-7096-a686-6ef44678e646\",\n    \"01a14fd3-841a-7be9-8938-97248d34618c\",\n    \"01a14fd3-841a-7be9-8938-97248d34618d\",\n    \"01a14fd3-841a-7be9-8938-97248d34618e\",\n    \"01a14fd3-841a-7e2e-afa9-49ebb5419fdd\",\n    \"01a14fd3-841a-7e2e-afa9-49ebb5419fde\"\n  ]\n}",
           "note": null
         }
       ],
@@ -314,12 +314,12 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX01: evento StockCounted gravado na outbox (event_id 01a14bb9-89e9…, seq 1) · Arroz 5kg = 50",
-        "CX01: evento StockCounted gravado na outbox (event_id 01a14bb9-89e9…, seq 1) · Feijão 1kg = 40",
-        "CX01: evento StockCounted gravado na outbox (event_id 01a14bb9-89e9…, seq 1) · Banana prata = 30",
-        "CX01: evento StockCounted gravado na outbox (event_id 01a14bb9-89e9…, seq 1) · Leite 1L = 24",
-        "CX01: evento StockCounted gravado na outbox (event_id 01a14bb9-89e9…, seq 1) · Café 500g = 20",
-        "CX01: evento StockCounted gravado na outbox (event_id 01a14bb9-89e9…, seq 1) · Azeite 500ml = 1",
+        "CX01: evento StockCounted gravado na outbox (event_id 01a14fd3-841a…, seq 1) · Arroz 5kg = 50",
+        "CX01: evento StockCounted gravado na outbox (event_id 01a14fd3-841a…, seq 1) · Feijão 1kg = 40",
+        "CX01: evento StockCounted gravado na outbox (event_id 01a14fd3-841a…, seq 1) · Banana prata = 30",
+        "CX01: evento StockCounted gravado na outbox (event_id 01a14fd3-841a…, seq 1) · Leite 1L = 24",
+        "CX01: evento StockCounted gravado na outbox (event_id 01a14fd3-841a…, seq 1) · Café 500g = 20",
+        "CX01: evento StockCounted gravado na outbox (event_id 01a14fd3-841a…, seq 1) · Azeite 500ml = 1",
         "CX01: worker enviou 6 evento(s)"
       ]
     },
@@ -341,9 +341,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bbc-4909-7ad0-98a6-b7bef533c3f8\",\n      \"streamId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n      \"streamSeq\": 1,\n      \"type\": \"ShiftOpened\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:19:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"operator\": \"Maria\",\n        \"openingCashCents\": 10000\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fd6-433a-7a87-839b-4653961f50a1\",\n      \"streamId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n      \"streamSeq\": 1,\n      \"type\": \"ShiftOpened\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:26:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"operator\": \"Maria\",\n        \"openingCashCents\": 10000\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bbc-4909-7ad0-98a6-b7bef533c3f8\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fd6-433a-7a87-839b-4653961f50a1\"\n  ]\n}",
           "note": null
         }
       ],
@@ -404,9 +404,9 @@ window.SIMULACAO = {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bbf-0829-7bb1-af35-54d0403aa662\",\n      \"streamId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n      \"streamSeq\": 1,\n      \"type\": \"ShiftOpened\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T21:22:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"shiftId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n        \"operator\": \"Jo\\u00E3o\",\n        \"openingCashCents\": 10000\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fd9-025a-798c-a4cd-ef467e1b9b15\",\n      \"streamId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n      \"streamSeq\": 1,\n      \"type\": \"ShiftOpened\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T16:29:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"shiftId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n        \"operator\": \"Jo\\u00E3o\",\n        \"openingCashCents\": 10000\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bbf-0829-7bb1-af35-54d0403aa662\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fd9-025a-798c-a4cd-ef467e1b9b15\"\n  ]\n}",
           "note": null
         }
       ],
@@ -472,9 +472,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bc1-c749-7928-a771-a017738c31c9\",\n      \"streamId\": \"01a14bab-d416-7765-b89b-6d313118e9c6\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:25:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d416-7765-b89b-6d313118e9c6\",\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d412-7c1a-991e-756ad2d4d9fc\",\n            \"productId\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n            \"description\": \"Arroz 5kg\",\n            \"quantity\": 2,\n            \"unitPriceCents\": 2899,\n            \"totalCents\": 5798\n          },\n          {\n            \"itemId\": \"01a14bab-d412-7189-aa2a-1718fa19024f\",\n            \"productId\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n            \"description\": \"Feij\\u00E3o 1kg\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 899,\n            \"totalCents\": 899\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 7000,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 6697,\n        \"changeCents\": 303,\n        \"nfceKey\": \"3526100000000000000065001000000001100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fdb-c17a-7fb3-b547-e9f734efe619\",\n      \"streamId\": \"01a14fc5-cf0c-7890-bd37-d80ea246f55a\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:32:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf0c-7890-bd37-d80ea246f55a\",\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cf08-7b04-b467-562608043770\",\n            \"productId\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n            \"description\": \"Arroz 5kg\",\n            \"quantity\": 2,\n            \"unitPriceCents\": 2899,\n            \"totalCents\": 5798\n          },\n          {\n            \"itemId\": \"01a14fc5-cf08-7562-b037-0151d33ec0fb\",\n            \"productId\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n            \"description\": \"Feij\\u00E3o 1kg\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 899,\n            \"totalCents\": 899\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 7000,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 6697,\n        \"changeCents\": 303,\n        \"nfceKey\": \"3526100000000000000065001000000001100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bc1-c749-7928-a771-a017738c31c9\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fdb-c17a-7fb3-b547-e9f734efe619\"\n  ]\n}",
           "note": null
         }
       ],
@@ -511,7 +511,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX01: venda 18e9c6 · 2 × Arroz 5kg a R$ 28,99 = R$ 57,98; 1 × Feijão 1kg a R$ 8,99 = R$ 8,99 · total R$ 66,97 · troco R$ 3,03 · NFC-e authorized",
+        "CX01: venda 46f55a · 2 × Arroz 5kg a R$ 28,99 = R$ 57,98; 1 × Feijão 1kg a R$ 8,99 = R$ 8,99 · total R$ 66,97 · troco R$ 3,03 · NFC-e authorized",
         "CX01: worker enviou 1 evento(s)"
       ]
     },
@@ -533,9 +533,9 @@ window.SIMULACAO = {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bc4-8669-7143-8c0b-b15cb4c3e2ca\",\n      \"streamId\": \"01a14bab-d442-7b5d-965a-4de2a9e2888f\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T21:28:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d442-7b5d-965a-4de2a9e2888f\",\n        \"shiftId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d442-7577-9647-aca90a35a86f\",\n            \"productId\": \"01a14bab-d26a-7ec3-ab16-2d6d6abb9fbe\",\n            \"description\": \"Banana prata\",\n            \"quantity\": 1.235,\n            \"unitPriceCents\": 599,\n            \"totalCents\": 740\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"pix\",\n            \"amountCents\": 740,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 740,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000001100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fde-809a-70f2-ac00-fdd5b1754595\",\n      \"streamId\": \"01a14fc5-cf3f-713d-8a35-181b9ef9f6f0\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T16:35:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 7,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf3f-713d-8a35-181b9ef9f6f0\",\n        \"shiftId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cf3f-7ee9-88d2-21c657521da6\",\n            \"productId\": \"01a14fc5-cd0f-7fba-af69-45ff1a6ad7b9\",\n            \"description\": \"Banana prata\",\n            \"quantity\": 1.235,\n            \"unitPriceCents\": 599,\n            \"totalCents\": 740\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"pix\",\n            \"amountCents\": 740,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 740,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000001100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bc4-8669-7143-8c0b-b15cb4c3e2ca\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fde-809a-70f2-ac00-fdd5b1754595\"\n  ]\n}",
           "note": null
         }
       ],
@@ -562,7 +562,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX02: venda e2888f · 1,235 × Banana prata a R$ 5,99 = R$ 7,40 · total R$ 7,40 · troco R$ 0,00 · NFC-e authorized",
+        "CX02: venda f9f6f0 · 1,235 × Banana prata a R$ 5,99 = R$ 7,40 · total R$ 7,40 · troco R$ 0,00 · NFC-e authorized",
         "CX02: worker enviou 1 evento(s)"
       ]
     },
@@ -571,7 +571,7 @@ window.SIMULACAO = {
       "phase": "Vendas",
       "situation": "Gerente reajusta o feijão para R$ 9,49 no back-office",
       "routes": [
-        "PUT /backoffice/products/01a14bab-d25e-7bd2-85cb-5efdf7750de5",
+        "PUT /backoffice/products/01a14fc5-ccff-709b-aebb-ce62297551b7",
         "GET /sync/catalog"
       ],
       "process": [
@@ -583,8 +583,8 @@ window.SIMULACAO = {
         {
           "actor": "Back-office",
           "method": "PUT",
-          "path": "/backoffice/products/01a14bab-d25e-7bd2-85cb-5efdf7750de5",
-          "request": "{\n  \"id\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n  \"name\": \"Feij\\u00E3o 1kg\",\n  \"barcode\": \"7891000200209\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 949,\n  \"ncm\": \"07133399\",\n  \"active\": true\n}",
+          "path": "/backoffice/products/01a14fc5-ccff-709b-aebb-ce62297551b7",
+          "request": "{\n  \"id\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n  \"name\": \"Feij\\u00E3o 1kg\",\n  \"barcode\": \"7891000200209\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 949,\n  \"ncm\": \"07133399\",\n  \"active\": true\n}",
           "status": 200,
           "response": "{\n  \"version\": 8\n}",
           "note": null
@@ -595,7 +595,7 @@ window.SIMULACAO = {
           "path": "/sync/catalog?since=7",
           "request": null,
           "status": 200,
-          "response": "{\n  \"since\": 7,\n  \"latestVersion\": 8,\n  \"snapshotRequired\": false,\n  \"changes\": [\n    {\n      \"version\": 8,\n      \"entity\": \"product\",\n      \"entityId\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n      \"data\": {\n        \"id\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n        \"ncm\": \"07133399\",\n        \"plu\": null,\n        \"name\": \"Feij\\u00E3o 1kg\",\n        \"unit\": \"UN\",\n        \"active\": true,\n        \"barcode\": \"7891000200209\",\n        \"priceCents\": 949\n      }\n    }\n  ]\n}",
+          "response": "{\n  \"since\": 7,\n  \"latestVersion\": 8,\n  \"snapshotRequired\": false,\n  \"changes\": [\n    {\n      \"version\": 8,\n      \"entity\": \"product\",\n      \"entityId\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n      \"data\": {\n        \"id\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n        \"ncm\": \"07133399\",\n        \"plu\": null,\n        \"name\": \"Feij\\u00E3o 1kg\",\n        \"unit\": \"UN\",\n        \"active\": true,\n        \"barcode\": \"7891000200209\",\n        \"priceCents\": 949\n      }\n    }\n  ]\n}",
           "note": null
         },
         {
@@ -604,7 +604,7 @@ window.SIMULACAO = {
           "path": "/sync/catalog?since=7",
           "request": null,
           "status": 200,
-          "response": "{\n  \"since\": 7,\n  \"latestVersion\": 8,\n  \"snapshotRequired\": false,\n  \"changes\": [\n    {\n      \"version\": 8,\n      \"entity\": \"product\",\n      \"entityId\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n      \"data\": {\n        \"id\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n        \"ncm\": \"07133399\",\n        \"plu\": null,\n        \"name\": \"Feij\\u00E3o 1kg\",\n        \"unit\": \"UN\",\n        \"active\": true,\n        \"barcode\": \"7891000200209\",\n        \"priceCents\": 949\n      }\n    }\n  ]\n}",
+          "response": "{\n  \"since\": 7,\n  \"latestVersion\": 8,\n  \"snapshotRequired\": false,\n  \"changes\": [\n    {\n      \"version\": 8,\n      \"entity\": \"product\",\n      \"entityId\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n      \"data\": {\n        \"id\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n        \"ncm\": \"07133399\",\n        \"plu\": null,\n        \"name\": \"Feij\\u00E3o 1kg\",\n        \"unit\": \"UN\",\n        \"active\": true,\n        \"barcode\": \"7891000200209\",\n        \"priceCents\": 949\n      }\n    }\n  ]\n}",
           "note": null
         }
       ],
@@ -654,9 +654,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bca-04a9-7c65-9fa8-31d99475c9ae\",\n      \"streamId\": \"01a14bab-d47a-7550-b8a3-c4cbd433f0d1\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:34:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d47a-7550-b8a3-c4cbd433f0d1\",\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d47a-7792-9bf2-a4e182d1309d\",\n            \"productId\": \"01a14bab-d25e-7bd2-85cb-5efdf7750de5\",\n            \"description\": \"Feij\\u00E3o 1kg\",\n            \"quantity\": 3,\n            \"unitPriceCents\": 949,\n            \"totalCents\": 2847\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"debit\",\n            \"amountCents\": 2847,\n            \"tefNsu\": \"004512\"\n          }\n        ],\n        \"totalCents\": 2847,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000002100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fe3-feda-74ed-a615-8c833a3c4a34\",\n      \"streamId\": \"01a14fc5-cf81-71f9-a9f1-74827093d76d\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:41:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf81-71f9-a9f1-74827093d76d\",\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cf81-7837-937c-b88915ecac7f\",\n            \"productId\": \"01a14fc5-ccff-709b-aebb-ce62297551b7\",\n            \"description\": \"Feij\\u00E3o 1kg\",\n            \"quantity\": 3,\n            \"unitPriceCents\": 949,\n            \"totalCents\": 2847\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"debit\",\n            \"amountCents\": 2847,\n            \"tefNsu\": \"004512\"\n          }\n        ],\n        \"totalCents\": 2847,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000002100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bca-04a9-7c65-9fa8-31d99475c9ae\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fe3-feda-74ed-a615-8c833a3c4a34\"\n  ]\n}",
           "note": null
         }
       ],
@@ -683,7 +683,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX01: venda 33f0d1 · 3 × Feijão 1kg a R$ 9,49 = R$ 28,47 · total R$ 28,47 · troco R$ 0,00 · NFC-e authorized",
+        "CX01: venda 93d76d · 3 × Feijão 1kg a R$ 9,49 = R$ 28,47 · total R$ 28,47 · troco R$ 0,00 · NFC-e authorized",
         "CX01: worker enviou 1 evento(s)"
       ]
     },
@@ -705,7 +705,7 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bcc-c3c9-70be-bbd4-89b17a72e6c4\",\n      \"streamId\": \"01a14bab-d489-7296-abd1-b3c3fb8ebbec\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:37:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d489-7296-abd1-b3c3fb8ebbec\",\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d489-72f5-a74c-464dec0425c8\",\n            \"productId\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n            \"description\": \"Arroz 5kg\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 2899,\n            \"totalCents\": 2899\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 2899,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 2899,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000003100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fe6-bdfa-7440-9757-43c11cfb0d0a\",\n      \"streamId\": \"01a14fc5-cf93-7611-9143-640a241c4562\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:44:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf93-7611-9143-640a241c4562\",\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cf93-79c7-bebd-e30d5eba4c71\",\n            \"productId\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n            \"description\": \"Arroz 5kg\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 2899,\n            \"totalCents\": 2899\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 2899,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 2899,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000003100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": null,
           "response": null,
           "note": "sem conexão com o servidor"
@@ -724,7 +724,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX01: venda 8ebbec · 1 × Arroz 5kg a R$ 28,99 = R$ 28,99 · total R$ 28,99 · troco R$ 0,00 · NFC-e authorized",
+        "CX01: venda 1c4562 · 1 × Arroz 5kg a R$ 28,99 = R$ 28,99 · total R$ 28,99 · troco R$ 0,00 · NFC-e authorized",
         "CX01: envio falhou (sem conexão com o servidor (simulado)); eventos continuam na outbox, próxima tentativa com backoff"
       ]
     },
@@ -747,7 +747,7 @@ window.SIMULACAO = {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bcf-82e9-770c-98de-a334f0d5d4fe\",\n      \"streamId\": \"01a14bab-d494-7f81-98cd-ddf5f8456f35\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T21:40:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d494-7f81-98cd-ddf5f8456f35\",\n        \"shiftId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d494-7d9a-955b-e98ba344e638\",\n            \"productId\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n            \"description\": \"Caf\\u00E9 500g\",\n            \"quantity\": 2,\n            \"unitPriceCents\": 1899,\n            \"totalCents\": 3798\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"credit\",\n            \"amountCents\": 3798,\n            \"tefNsu\": \"009931\"\n          }\n        ],\n        \"totalCents\": 3798,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000002100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fe9-7d1a-7e0c-bbe5-7c9c6e871269\",\n      \"streamId\": \"01a14fc5-cfa1-7c6d-9d32-36e691f3a019\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T16:47:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cfa1-7c6d-9d32-36e691f3a019\",\n        \"shiftId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cfa0-7055-88b1-61e4bc2f106d\",\n            \"productId\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n            \"description\": \"Caf\\u00E9 500g\",\n            \"quantity\": 2,\n            \"unitPriceCents\": 1899,\n            \"totalCents\": 3798\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"credit\",\n            \"amountCents\": 3798,\n            \"tefNsu\": \"009931\"\n          }\n        ],\n        \"totalCents\": 3798,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000002100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": null,
           "response": null,
           "note": "sem conexão com o servidor"
@@ -775,7 +775,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX02: venda 456f35 · 2 × Café 500g a R$ 18,99 = R$ 37,98 · total R$ 37,98 · troco R$ 0,00 · NFC-e authorized",
+        "CX02: venda f3a019 · 2 × Café 500g a R$ 18,99 = R$ 37,98 · total R$ 37,98 · troco R$ 0,00 · NFC-e authorized",
         "CX02: envio falhou (sem conexão com o servidor (simulado)); eventos continuam na outbox, próxima tentativa com backoff",
         "CX02: catálogo não atualizado (sem conexão com o servidor (simulado)); segue na versão 8"
       ]
@@ -798,9 +798,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bcc-c3c9-70be-bbd4-89b17a72e6c4\",\n      \"streamId\": \"01a14bab-d489-7296-abd1-b3c3fb8ebbec\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:37:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d489-7296-abd1-b3c3fb8ebbec\",\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d489-72f5-a74c-464dec0425c8\",\n            \"productId\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n            \"description\": \"Arroz 5kg\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 2899,\n            \"totalCents\": 2899\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 2899,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 2899,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000003100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fe6-bdfa-7440-9757-43c11cfb0d0a\",\n      \"streamId\": \"01a14fc5-cf93-7611-9143-640a241c4562\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:44:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf93-7611-9143-640a241c4562\",\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cf93-79c7-bebd-e30d5eba4c71\",\n            \"productId\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n            \"description\": \"Arroz 5kg\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 2899,\n            \"totalCents\": 2899\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 2899,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 2899,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000003100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bcc-c3c9-70be-bbd4-89b17a72e6c4\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fe6-bdfa-7440-9757-43c11cfb0d0a\"\n  ]\n}",
           "note": "o servidor processou, mas a resposta se perdeu no caminho"
         }
       ],
@@ -849,18 +849,18 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bcc-c3c9-70be-bbd4-89b17a72e6c4\",\n      \"streamId\": \"01a14bab-d489-7296-abd1-b3c3fb8ebbec\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:37:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d489-7296-abd1-b3c3fb8ebbec\",\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d489-72f5-a74c-464dec0425c8\",\n            \"productId\": \"01a14bab-d1c4-7fc7-974b-248934d1c0fd\",\n            \"description\": \"Arroz 5kg\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 2899,\n            \"totalCents\": 2899\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 2899,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 2899,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000003100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fe6-bdfa-7440-9757-43c11cfb0d0a\",\n      \"streamId\": \"01a14fc5-cf93-7611-9143-640a241c4562\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T16:44:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf93-7611-9143-640a241c4562\",\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cf93-79c7-bebd-e30d5eba4c71\",\n            \"productId\": \"01a14fc5-cbc8-7827-ba0a-925605495c4c\",\n            \"description\": \"Arroz 5kg\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 2899,\n            \"totalCents\": 2899\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 2899,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 2899,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000003100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bcc-c3c9-70be-bbd4-89b17a72e6c4\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fe6-bdfa-7440-9757-43c11cfb0d0a\"\n  ]\n}",
           "note": null
         },
         {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bcf-82e9-770c-98de-a334f0d5d4fe\",\n      \"streamId\": \"01a14bab-d494-7f81-98cd-ddf5f8456f35\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T21:40:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d494-7f81-98cd-ddf5f8456f35\",\n        \"shiftId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d494-7d9a-955b-e98ba344e638\",\n            \"productId\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n            \"description\": \"Caf\\u00E9 500g\",\n            \"quantity\": 2,\n            \"unitPriceCents\": 1899,\n            \"totalCents\": 3798\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"credit\",\n            \"amountCents\": 3798,\n            \"tefNsu\": \"009931\"\n          }\n        ],\n        \"totalCents\": 3798,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000002100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fe9-7d1a-7e0c-bbe5-7c9c6e871269\",\n      \"streamId\": \"01a14fc5-cfa1-7c6d-9d32-36e691f3a019\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T16:47:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cfa1-7c6d-9d32-36e691f3a019\",\n        \"shiftId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cfa0-7055-88b1-61e4bc2f106d\",\n            \"productId\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n            \"description\": \"Caf\\u00E9 500g\",\n            \"quantity\": 2,\n            \"unitPriceCents\": 1899,\n            \"totalCents\": 3798\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"credit\",\n            \"amountCents\": 3798,\n            \"tefNsu\": \"009931\"\n          }\n        ],\n        \"totalCents\": 3798,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000002100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bcf-82e9-770c-98de-a334f0d5d4fe\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fe9-7d1a-7e0c-bbe5-7c9c6e871269\"\n  ]\n}",
           "note": null
         },
         {
@@ -924,9 +924,9 @@ window.SIMULACAO = {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bd7-c049-7438-b9fe-8d73fb783fb1\",\n      \"streamId\": \"01a14bab-d4c5-76fa-9243-b4c26d53bfdc\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T21:49:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d4c5-76fa-9243-b4c26d53bfdc\",\n        \"shiftId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d4c5-7d31-b024-ca68a5087c33\",\n            \"productId\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n            \"description\": \"Leite 1L\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 549,\n            \"totalCents\": 549\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 549,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 549,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000003900000000\",\n        \"nfceStatus\": \"pending\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14ff1-ba7a-7528-95bc-7d46ce4dfcee\",\n      \"streamId\": \"01a14fc5-cfd4-7a92-945f-fca977aedd09\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T16:56:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cfd4-7a92-945f-fca977aedd09\",\n        \"shiftId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-cfd4-700e-b1c4-107b95036387\",\n            \"productId\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n            \"description\": \"Leite 1L\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 549,\n            \"totalCents\": 549\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 549,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 549,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000003900000000\",\n        \"nfceStatus\": \"pending\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bd7-c049-7438-b9fe-8d73fb783fb1\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14ff1-ba7a-7528-95bc-7d46ce4dfcee\"\n  ]\n}",
           "note": null
         }
       ],
@@ -963,7 +963,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX02: venda 53bfdc · 1 × Leite 1L a R$ 5,49 = R$ 5,49 · total R$ 5,49 · troco R$ 0,00 · NFC-e pending",
+        "CX02: venda aedd09 · 1 × Leite 1L a R$ 5,49 = R$ 5,49 · total R$ 5,49 · troco R$ 0,00 · NFC-e pending",
         "CX02: worker enviou 1 evento(s)"
       ]
     },
@@ -985,9 +985,9 @@ window.SIMULACAO = {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bda-7f69-709a-9e0d-873d734b9ef9\",\n      \"streamId\": \"01a14bab-d4c5-76fa-9243-b4c26d53bfdc\",\n      \"streamSeq\": 2,\n      \"type\": \"NfceAuthorized\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T21:52:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d4c5-76fa-9243-b4c26d53bfdc\",\n        \"nfceKey\": \"3526100000000000000065001000000003900000000\",\n        \"protocol\": \"135260004417788\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14ff4-799a-7e02-9a53-861dc9c5feed\",\n      \"streamId\": \"01a14fc5-cfd4-7a92-945f-fca977aedd09\",\n      \"streamSeq\": 2,\n      \"type\": \"NfceAuthorized\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T16:59:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cfd4-7a92-945f-fca977aedd09\",\n        \"nfceKey\": \"3526100000000000000065001000000003900000000\",\n        \"protocol\": \"135260004417788\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bda-7f69-709a-9e0d-873d734b9ef9\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14ff4-799a-7e02-9a53-861dc9c5feed\"\n  ]\n}",
           "note": null
         }
       ],
@@ -1009,7 +1009,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX02: evento NfceAuthorized gravado na outbox (event_id 01a14bda-7f69…, seq 2)",
+        "CX02: evento NfceAuthorized gravado na outbox (event_id 01a14ff4-799a…, seq 2)",
         "CX02: worker enviou 1 evento(s)"
       ]
     },
@@ -1030,9 +1030,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bdd-3e89-73ea-a52a-54c1dc7a161a\",\n      \"streamId\": \"01a14bab-d47a-7550-b8a3-c4cbd433f0d1\",\n      \"streamSeq\": 2,\n      \"type\": \"NfceRejected\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T21:55:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d47a-7550-b8a3-c4cbd433f0d1\",\n        \"nfceKey\": \"3526100000000000000065001000000002100000000\",\n        \"code\": \"778\",\n        \"reason\": \"Informado NCM inexistente\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14ff7-38ba-7fca-8836-c451989d4452\",\n      \"streamId\": \"01a14fc5-cf81-71f9-a9f1-74827093d76d\",\n      \"streamSeq\": 2,\n      \"type\": \"NfceRejected\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T17:02:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf81-71f9-a9f1-74827093d76d\",\n        \"nfceKey\": \"3526100000000000000065001000000002100000000\",\n        \"code\": \"778\",\n        \"reason\": \"Informado NCM inexistente\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bdd-3e89-73ea-a52a-54c1dc7a161a\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14ff7-38ba-7fca-8836-c451989d4452\"\n  ]\n}",
           "note": null
         }
       ],
@@ -1054,7 +1054,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX01: evento NfceRejected gravado na outbox (event_id 01a14bdd-3e89…, seq 2)",
+        "CX01: evento NfceRejected gravado na outbox (event_id 01a14ff7-38ba…, seq 2)",
         "CX01: worker enviou 1 evento(s)"
       ]
     },
@@ -1063,7 +1063,7 @@ window.SIMULACAO = {
       "phase": "Conflitos",
       "situation": "Gerente tira o leite de linha enquanto o CX02 está sem rede",
       "routes": [
-        "PUT /backoffice/products/01a14bab-d273-7fdf-8efc-e121c5c33b7a",
+        "PUT /backoffice/products/01a14fc5-cd1b-79ac-aeb3-e1c518974bbe",
         "GET /sync/catalog"
       ],
       "process": [
@@ -1075,8 +1075,8 @@ window.SIMULACAO = {
         {
           "actor": "Back-office",
           "method": "PUT",
-          "path": "/backoffice/products/01a14bab-d273-7fdf-8efc-e121c5c33b7a",
-          "request": "{\n  \"id\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n  \"name\": \"Leite 1L\",\n  \"barcode\": \"7891000300305\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 549,\n  \"ncm\": \"04012010\",\n  \"active\": false\n}",
+          "path": "/backoffice/products/01a14fc5-cd1b-79ac-aeb3-e1c518974bbe",
+          "request": "{\n  \"id\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n  \"name\": \"Leite 1L\",\n  \"barcode\": \"7891000300305\",\n  \"plu\": null,\n  \"unit\": \"UN\",\n  \"priceCents\": 549,\n  \"ncm\": \"04012010\",\n  \"active\": false\n}",
           "status": 200,
           "response": "{\n  \"version\": 9\n}",
           "note": null
@@ -1087,7 +1087,7 @@ window.SIMULACAO = {
           "path": "/sync/catalog?since=8",
           "request": null,
           "status": 200,
-          "response": "{\n  \"since\": 8,\n  \"latestVersion\": 9,\n  \"snapshotRequired\": false,\n  \"changes\": [\n    {\n      \"version\": 9,\n      \"entity\": \"product\",\n      \"entityId\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n      \"data\": {\n        \"id\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n        \"ncm\": \"04012010\",\n        \"plu\": null,\n        \"name\": \"Leite 1L\",\n        \"unit\": \"UN\",\n        \"active\": false,\n        \"barcode\": \"7891000300305\",\n        \"priceCents\": 549\n      }\n    }\n  ]\n}",
+          "response": "{\n  \"since\": 8,\n  \"latestVersion\": 9,\n  \"snapshotRequired\": false,\n  \"changes\": [\n    {\n      \"version\": 9,\n      \"entity\": \"product\",\n      \"entityId\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n      \"data\": {\n        \"id\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n        \"ncm\": \"04012010\",\n        \"plu\": null,\n        \"name\": \"Leite 1L\",\n        \"unit\": \"UN\",\n        \"active\": false,\n        \"barcode\": \"7891000300305\",\n        \"priceCents\": 549\n      }\n    }\n  ]\n}",
           "note": null
         },
         {
@@ -1143,9 +1143,9 @@ window.SIMULACAO = {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14be2-bcc9-760d-b045-f041933ab5e3\",\n      \"streamId\": \"01a14bab-d522-7e94-995d-9da54dcebd6e\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T22:01:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d522-7e94-995d-9da54dcebd6e\",\n        \"shiftId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d522-749c-aefb-aa20ba1cfc03\",\n            \"productId\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n            \"description\": \"Leite 1L\",\n            \"quantity\": 2,\n            \"unitPriceCents\": 549,\n            \"totalCents\": 1098\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 1098,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 1098,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000004100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14ffc-b6fa-7011-a32a-f4d8c0fb88e3\",\n      \"streamId\": \"01a14fc5-d048-72f7-8ad5-3bf3b2aede9d\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T17:08:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 8,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-d048-72f7-8ad5-3bf3b2aede9d\",\n        \"shiftId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-d047-7d30-ac90-2c604528a0aa\",\n            \"productId\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n            \"description\": \"Leite 1L\",\n            \"quantity\": 2,\n            \"unitPriceCents\": 549,\n            \"totalCents\": 1098\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 1098,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 1098,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000004100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14be2-bcc9-760d-b045-f041933ab5e3\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14ffc-b6fa-7011-a32a-f4d8c0fb88e3\"\n  ]\n}",
           "note": null
         },
         {
@@ -1154,7 +1154,7 @@ window.SIMULACAO = {
           "path": "/sync/catalog?since=8",
           "request": null,
           "status": 200,
-          "response": "{\n  \"since\": 8,\n  \"latestVersion\": 9,\n  \"snapshotRequired\": false,\n  \"changes\": [\n    {\n      \"version\": 9,\n      \"entity\": \"product\",\n      \"entityId\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n      \"data\": {\n        \"id\": \"01a14bab-d273-7fdf-8efc-e121c5c33b7a\",\n        \"ncm\": \"04012010\",\n        \"plu\": null,\n        \"name\": \"Leite 1L\",\n        \"unit\": \"UN\",\n        \"active\": false,\n        \"barcode\": \"7891000300305\",\n        \"priceCents\": 549\n      }\n    }\n  ]\n}",
+          "response": "{\n  \"since\": 8,\n  \"latestVersion\": 9,\n  \"snapshotRequired\": false,\n  \"changes\": [\n    {\n      \"version\": 9,\n      \"entity\": \"product\",\n      \"entityId\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n      \"data\": {\n        \"id\": \"01a14fc5-cd1b-79ac-aeb3-e1c518974bbe\",\n        \"ncm\": \"04012010\",\n        \"plu\": null,\n        \"name\": \"Leite 1L\",\n        \"unit\": \"UN\",\n        \"active\": false,\n        \"barcode\": \"7891000300305\",\n        \"priceCents\": 549\n      }\n    }\n  ]\n}",
           "note": null
         }
       ],
@@ -1191,7 +1191,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX02: venda cebd6e · 2 × Leite 1L a R$ 5,49 = R$ 10,98 · total R$ 10,98 · troco R$ 0,00 · NFC-e authorized",
+        "CX02: venda aede9d · 2 × Leite 1L a R$ 5,49 = R$ 10,98 · total R$ 10,98 · troco R$ 0,00 · NFC-e authorized",
         "CX02: worker enviou 1 evento(s)",
         "CX02: catálogo local na versão 9"
       ]
@@ -1212,18 +1212,18 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14be5-7be9-74b5-830f-ca3beb34d146\",\n      \"streamId\": \"01a14bab-d538-7c24-859d-9825fb3de796\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T22:04:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d538-7c24-859d-9825fb3de796\",\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d538-7307-9b03-54cf9bfc51a1\",\n            \"productId\": \"01a14bab-d27c-7221-a0d7-9d29405127be\",\n            \"description\": \"Azeite 500ml\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 3490,\n            \"totalCents\": 3490\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"debit\",\n            \"amountCents\": 3490,\n            \"tefNsu\": \"004513\"\n          }\n        ],\n        \"totalCents\": 3490,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000004100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fff-761a-7523-9da6-350f57b8aa95\",\n      \"streamId\": \"01a14fc5-d064-7c68-bf54-9388a4e579d0\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T17:11:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-d064-7c68-bf54-9388a4e579d0\",\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-d064-71d6-a3ec-9749704176a6\",\n            \"productId\": \"01a14fc5-cd26-75f7-a1bf-8099d0660f36\",\n            \"description\": \"Azeite 500ml\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 3490,\n            \"totalCents\": 3490\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"debit\",\n            \"amountCents\": 3490,\n            \"tefNsu\": \"004513\"\n          }\n        ],\n        \"totalCents\": 3490,\n        \"changeCents\": 0,\n        \"nfceKey\": \"3526100000000000000065001000000004100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14be5-7be9-74b5-830f-ca3beb34d146\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fff-761a-7523-9da6-350f57b8aa95\"\n  ]\n}",
           "note": null
         },
         {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14be5-7be9-78f2-91b9-0c945f10edce\",\n      \"streamId\": \"01a14bab-d539-7b3e-9327-c56175cd932f\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T22:04:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d539-7b3e-9327-c56175cd932f\",\n        \"shiftId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d539-7d4c-9fb4-8bc40c01c9ca\",\n            \"productId\": \"01a14bab-d27c-7221-a0d7-9d29405127be\",\n            \"description\": \"Azeite 500ml\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 3490,\n            \"totalCents\": 3490\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 3500,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 3490,\n        \"changeCents\": 10,\n        \"nfceKey\": \"3526100000000000000065001000000005100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14fff-761a-7523-9da6-350f57b8aa96\",\n      \"streamId\": \"01a14fc5-d066-7dc5-bae5-a155687ceb80\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T17:11:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-d066-7dc5-bae5-a155687ceb80\",\n        \"shiftId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-d066-7547-b056-55bfe14c3b7a\",\n            \"productId\": \"01a14fc5-cd26-75f7-a1bf-8099d0660f36\",\n            \"description\": \"Azeite 500ml\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 3490,\n            \"totalCents\": 3490\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 3500,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 3490,\n        \"changeCents\": 10,\n        \"nfceKey\": \"3526100000000000000065001000000005100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14be5-7be9-78f2-91b9-0c945f10edce\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a14fff-761a-7523-9da6-350f57b8aa96\"\n  ]\n}",
           "note": null
         }
       ],
@@ -1265,8 +1265,8 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX01: venda 3de796 · 1 × Azeite 500ml a R$ 34,90 = R$ 34,90 · total R$ 34,90 · troco R$ 0,00 · NFC-e authorized",
-        "CX02: venda cd932f · 1 × Azeite 500ml a R$ 34,90 = R$ 34,90 · total R$ 34,90 · troco R$ 0,10 · NFC-e authorized",
+        "CX01: venda e579d0 · 1 × Azeite 500ml a R$ 34,90 = R$ 34,90 · total R$ 34,90 · troco R$ 0,00 · NFC-e authorized",
+        "CX02: venda 7ceb80 · 1 × Azeite 500ml a R$ 34,90 = R$ 34,90 · total R$ 34,90 · troco R$ 0,10 · NFC-e authorized",
         "CX01: worker enviou 1 evento(s)",
         "CX02: worker enviou 1 evento(s)"
       ]
@@ -1288,9 +1288,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14be8-3b09-744b-bc4f-0776ba6678f6\",\n      \"streamId\": \"01a14bab-d416-7765-b89b-6d313118e9c6\",\n      \"streamSeq\": 2,\n      \"type\": \"SaleItemCancelled\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-17T22:07:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d416-7765-b89b-6d313118e9c6\",\n        \"itemId\": \"01a14bab-d412-7189-aa2a-1718fa19024f\",\n        \"reason\": \"cliente desistiu\",\n        \"refundMethod\": \"cash\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a15002-353a-7f96-9c21-695681c5fcbb\",\n      \"streamId\": \"01a14fc5-cf0c-7890-bd37-d80ea246f55a\",\n      \"streamSeq\": 2,\n      \"type\": \"SaleItemCancelled\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T17:14:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf0c-7890-bd37-d80ea246f55a\",\n        \"itemId\": \"01a14fc5-cf08-7562-b037-0151d33ec0fb\",\n        \"reason\": \"cliente desistiu\",\n        \"refundMethod\": \"cash\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14be8-3b09-744b-bc4f-0776ba6678f6\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a15002-353a-7f96-9c21-695681c5fcbb\"\n  ]\n}",
           "note": null
         }
       ],
@@ -1343,9 +1343,9 @@ window.SIMULACAO = {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14bea-fa29-7b04-88f9-edd01ff774cb\",\n      \"streamId\": \"01a14bab-d442-7b5d-965a-4de2a9e2888f\",\n      \"streamSeq\": 2,\n      \"type\": \"SaleCancelled\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-17T22:10:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d442-7b5d-965a-4de2a9e2888f\",\n        \"reason\": \"pagamento PIX estornado\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a15004-f45a-7ce0-8a35-d326b98b5971\",\n      \"streamId\": \"01a14fc5-cf3f-713d-8a35-181b9ef9f6f0\",\n      \"streamSeq\": 2,\n      \"type\": \"SaleCancelled\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T17:17:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-cf3f-713d-8a35-181b9ef9f6f0\",\n        \"reason\": \"pagamento PIX estornado\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14bea-fa29-7b04-88f9-edd01ff774cb\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a15004-f45a-7ce0-8a35-d326b98b5971\"\n  ]\n}",
           "note": null
         }
       ],
@@ -1393,9 +1393,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14c5b-9649-760b-9d2c-7c7fe1662991\",\n      \"streamId\": \"01a14bab-d593-7cf0-9661-5ffbd80e634a\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T00:13:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14bab-d593-7cf0-9661-5ffbd80e634a\",\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14bab-d593-7688-b4f6-8bd6f8bff803\",\n            \"productId\": \"01a14bab-d277-704e-b7ba-c5c97ad6803d\",\n            \"description\": \"Caf\\u00E9 500g\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 1599,\n            \"totalCents\": 1599\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 2000,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 1599,\n        \"changeCents\": 401,\n        \"nfceKey\": \"3526100000000000000065001000000005100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a15075-907a-7ac2-8a9c-e6cef699ce3a\",\n      \"streamId\": \"01a14fc5-d0d8-7325-bbb3-93e259ba82b3\",\n      \"streamSeq\": 1,\n      \"type\": \"SaleCompleted\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T19:20:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"saleId\": \"01a14fc5-d0d8-7325-bbb3-93e259ba82b3\",\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"items\": [\n          {\n            \"itemId\": \"01a14fc5-d0d8-7dc3-abea-e86b27a5b66c\",\n            \"productId\": \"01a14fc5-cd20-7c5f-81ef-309a39590bb3\",\n            \"description\": \"Caf\\u00E9 500g\",\n            \"quantity\": 1,\n            \"unitPriceCents\": 1599,\n            \"totalCents\": 1599\n          }\n        ],\n        \"payments\": [\n          {\n            \"method\": \"cash\",\n            \"amountCents\": 2000,\n            \"tefNsu\": null\n          }\n        ],\n        \"totalCents\": 1599,\n        \"changeCents\": 401,\n        \"nfceKey\": \"3526100000000000000065001000000005100000000\",\n        \"nfceStatus\": \"authorized\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14c5b-9649-760b-9d2c-7c7fe1662991\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a15075-907a-7ac2-8a9c-e6cef699ce3a\"\n  ]\n}",
           "note": null
         }
       ],
@@ -1427,7 +1427,7 @@ window.SIMULACAO = {
         }
       ],
       "notes": [
-        "CX01: venda 0e634a · 1 × Café 500g a R$ 15,99 = R$ 15,99 · total R$ 15,99 · troco R$ 4,01 · NFC-e authorized",
+        "CX01: venda ba82b3 · 1 × Café 500g a R$ 15,99 = R$ 15,99 · total R$ 15,99 · troco R$ 4,01 · NFC-e authorized",
         "CX01: worker enviou 1 evento(s)"
       ]
     },
@@ -1448,9 +1448,9 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14c5e-5569-78d5-b031-82e9b8b5aa83\",\n      \"streamId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n      \"streamSeq\": 2,\n      \"type\": \"CashWithdrawal\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T00:16:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"amountCents\": 5000,\n        \"reason\": \"sangria para o cofre\"\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a15078-4f9a-7f4d-8fea-ba1f1e1003ee\",\n      \"streamId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n      \"streamSeq\": 2,\n      \"type\": \"CashWithdrawal\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T19:23:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"amountCents\": 5000,\n        \"reason\": \"sangria para o cofre\"\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14c5e-5569-78d5-b031-82e9b8b5aa83\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a15078-4f9a-7f4d-8fea-ba1f1e1003ee\"\n  ]\n}",
           "note": null
         }
       ],
@@ -1498,18 +1498,18 @@ window.SIMULACAO = {
           "actor": "CX01",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14c61-1489-7e4a-9057-967bfe2550cb\",\n      \"streamId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n      \"streamSeq\": 3,\n      \"type\": \"ShiftClosed\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T00:19:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"shiftId\": \"01a14bab-d3d7-7d46-b803-bf1a40e0bc2e\",\n        \"declaredCashCents\": 15296\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a1507b-0eba-7b66-a8aa-1eb81cad5b69\",\n      \"streamId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n      \"streamSeq\": 3,\n      \"type\": \"ShiftClosed\",\n      \"terminalId\": \"CX01\",\n      \"occurredAt\": \"2026-10-18T19:26:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"shiftId\": \"01a14fc5-ceba-7d3e-b7c9-71c067b28d33\",\n        \"declaredCashCents\": 15296\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14c61-1489-7e4a-9057-967bfe2550cb\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a1507b-0eba-7b66-a8aa-1eb81cad5b69\"\n  ]\n}",
           "note": null
         },
         {
           "actor": "CX02",
           "method": "POST",
           "path": "/sync/events",
-          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a14c61-1489-7e4a-9057-967bfe2550cc\",\n      \"streamId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n      \"streamSeq\": 2,\n      \"type\": \"ShiftClosed\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T00:19:53.0971699\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"shiftId\": \"01a14bab-d3f0-7340-a247-58eb08a1cbdd\",\n        \"declaredCashCents\": 15137\n      }\n    }\n  ]\n}",
+          "request": "{\n  \"events\": [\n    {\n      \"eventId\": \"01a1507b-0eba-7b66-a8aa-1eb81cad5b6a\",\n      \"streamId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n      \"streamSeq\": 2,\n      \"type\": \"ShiftClosed\",\n      \"terminalId\": \"CX02\",\n      \"occurredAt\": \"2026-10-18T19:26:44.4109337\\u002B00:00\",\n      \"catalogVersion\": 9,\n      \"payload\": {\n        \"shiftId\": \"01a14fc5-cede-71f2-9a63-2f182e6e0391\",\n        \"declaredCashCents\": 15137\n      }\n    }\n  ]\n}",
           "status": 200,
-          "response": "{\n  \"accepted\": [\n    \"01a14c61-1489-7e4a-9057-967bfe2550cc\"\n  ]\n}",
+          "response": "{\n  \"accepted\": [\n    \"01a1507b-0eba-7b66-a8aa-1eb81cad5b6a\"\n  ]\n}",
           "note": null
         }
       ],
