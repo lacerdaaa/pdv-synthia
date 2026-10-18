@@ -7,8 +7,9 @@
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791)
 ![SQLite](https://img.shields.io/badge/SQLite-WAL-003B57)
 
-PDV offline-first para o **Xandão Supermercados** (projeto Market SP): quatro caixas que vendem sozinhos, um
-servidor local que consolida e uma nuvem que é só cópia.
+PDV offline-first para supermercados: caixas que vendem sozinhos, um servidor local que consolida e uma nuvem que
+é só cópia. Nasceu para o **Xandão Supermercados** (projeto Market SP), o cliente zero, e é um produto multi-loja:
+nome, logo, cores e dados do cupom de cada loja ficam no cadastro da retaguarda, não no código.
 
 > **O caixa vende sem depender de nada além dele mesmo**, do pinpad e (para NFC-e normal) da internet.
 > Servidor e nuvem são para consolidar, não para vender.
@@ -172,6 +173,7 @@ propósito: outras pessoas (gerente, estoquista), outros lugares (escritório, d
 | Vendas | Faturamento líquido, ticket médio, cancelamentos; por hora, forma de pagamento, caixa, dia e produtos mais vendidos; exportação CSV |
 | Fechamentos | Conferência de turno: fundo + dinheiro − sangrias = **esperado** × **declarado**, com falta e sobra |
 | Usuários | Papéis **admin**, **gerente** (tudo menos usuários) e **estoquista** (estoque, sem produtos e preços) |
+| Loja | Nome fantasia, razão social, CNPJ, IE, endereço, **rodapé do cupom**, **logo** e **cores** (só admin) |
 
 - **Login** por usuário e senha (hash PBKDF2, cookie de 12 h). No primeiro start, o servidor cria o usuário `admin`
   com a senha de `Backoffice:InitialAdminPassword`; sem ela, gera uma senha e mostra uma única vez no log.
@@ -282,6 +284,8 @@ arquivo, a página mostra a lista estática da API.
 | `POST` | `/sync/events` | Caixa envia lote (até 1000) de eventos. Devolve todos os `event_id` aceitos, inclusive os já existentes. |
 | `GET` | `/sync/catalog?since={versão}` | Delta do catálogo em páginas de 500; `snapshotRequired` quando o caixa é novo, está à frente ou muito atrás. |
 | `GET` | `/sync/catalog/snapshot` | Catálogo completo + preços agendados ainda válidos, numa leitura consistente. |
+| `GET` | `/sync/store` | Cadastro da loja (nome, CNPJ, IE, endereço, rodapé, cores, `logoHash`, `version`). |
+| `GET` | `/sync/store/logo` | Logo da loja (PNG/JPEG); `404` sem logo cadastrada. |
 | `GET` | `/backoffice/products` | Cadastro atual. |
 | `PUT` | `/backoffice/products/{id}` | Cria/altera produto e gera nova versão. Exclusão é `active = false`. |
 | `POST` | `/backoffice/scheduled-prices` | Agenda preço para `effectiveAt`. |
@@ -378,9 +382,21 @@ tools/simulate.sh          # sobe servidor descartável, roda o roteiro e gera d
 O resultado fica em [`/docs/simulacao.html`](docs/simulacao.html). Foi essa simulação que encontrou o bug do
 estorno em dinheiro fora da gaveta, já corrigido.
 
-## Marca
+## Marca e dados da loja
 
-A logo com fundo transparente ([`docs/img/logo-xandao.png`](docs/img/logo-xandao.png)) e a variante com contorno
+Nada da loja fica no código. Em **retaguarda > Loja** o admin cadastra nome, razão social, CNPJ, IE, endereço,
+rodapé do cupom, logo e duas cores (principal e destaque):
+
+- **Retaguarda:** a logo sai de `/retaguarda/marca/logo` e as cores de `/retaguarda/marca.css`; sem cadastro, vale a
+  logo padrão do produto ([`tools/branding/make_default_logo.py`](tools/branding/make_default_logo.py)).
+- **Caixa:** puxa `/sync/store` a cada minuto, guarda a cópia no SQLite e a logo num arquivo ao lado do banco, e
+  funciona com ela offline. A logo só é baixada de novo quando o `logoHash` muda. Nome, logo e cores trocam na tela
+  sem reiniciar.
+- **Cupom:** nome, IE, endereço e rodapé vêm do cadastro; o **CNPJ é sempre o do `terminal.json`**, porque é o do
+  certificado e compõe a chave da NFC-e. Se os dois divergirem, o caixa mostra um aviso.
+- Cada loja tem um `storeId` (UUID gerado na instalação): é a chave dela quando a nuvem atender várias lojas.
+
+O Xandão é o cliente zero. A logo dele com fundo transparente ([`docs/img/logo-xandao.png`](docs/img/logo-xandao.png)) e a variante com contorno
 branco para fundos coloridos ([`logo-xandao-contorno.png`](docs/img/logo-xandao-contorno.png)) foram extraídas de um
 print por [`tools/branding/make_logo.py`](tools/branding/make_logo.py), que mantém os brancos do desenho (olhos,
 luvas, contorno do X) e vaza o miolo das letras. Com a arte original em vetor, basta trocar os PNGs.
@@ -446,7 +462,10 @@ O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
 - [x] API autenticada: chave por caixa no sync, login ou chave de API no back-office
 - [x] Retaguarda: fila de NFC-e, relatório de vendas com exportação e conferência de fechamento
 - [ ] Integração real com ACBr (NFC-e) e TEF; worker de contingência no caixa
-- [ ] Outbox servidor → nuvem e serviço da nuvem
+- [x] Multi-loja: identidade, cupom e marca da loja no cadastro da retaguarda, sincronizados com os caixas
+- [ ] Outbox servidor → nuvem e serviço da nuvem (multi-tenant por `storeId`)
+- [ ] Assinatura: ativação do caixa por chave, licença com tolerância offline, atualização automática
+- [ ] NFC-e fora de SP: URLs de consulta/QR Code por UF (a ACBr já tem a tabela) e responsável técnico
 - [ ] Servidor com standby ou aceitar horas fora? · Edição de preço pela nuvem no MVP?
 - [ ] TEF: PayGo ou SiTef, e fallback offline para cartão
 - [ ] Contador: CSOSN/CST, NCM e regime tributário antes da primeira NFC-e em produção
