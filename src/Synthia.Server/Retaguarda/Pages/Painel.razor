@@ -2,6 +2,7 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inject StockService Stock
+@inject NfceQueueService Nfce
 
 <PageTitle>Painel · Retaguarda</PageTitle>
 
@@ -21,6 +22,12 @@ else
         <a class="tile @(summary.NegativeProducts > 0 ? "alert" : "")" href="/retaguarda/estoque?negativos=1">
             <span>Produtos com estoque negativo</span><b>@summary.NegativeProducts</b></a>
         <div class="tile"><span>Vendas hoje</span><b>@summary.SalesToday</b><small>@Fmt.Money(summary.SalesTodayCents)</small></div>
+        <AuthorizeView Roles="@BackofficeRoles.CatalogEditors">
+            <a class="tile @(nfce!.Rejected + nfce.Overdue > 0 ? "alert" : "")" href="/retaguarda/nfce">
+                <span>NFC-e pendentes / rejeitadas</span><b>@nfce.Pending / @nfce.Rejected</b>
+                @if (nfce.Overdue > 0) { <small>@nfce.Overdue contingência(s) com prazo vencido</small> }
+            </a>
+        </AuthorizeView>
     </div>
 
     <section class="card">
@@ -47,6 +54,11 @@ else
 
 @code {
     private BackofficeSummary? summary;
+    private NfceQueueSummary? nfce;
 
-    protected override async Task OnInitializedAsync() => summary = await Stock.SummaryAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        nfce = await Nfce.SummaryAsync();
+        summary = await Stock.SummaryAsync();
+    }
 }
