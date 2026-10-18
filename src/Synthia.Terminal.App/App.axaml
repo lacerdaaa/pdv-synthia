@@ -3,10 +3,10 @@
              x:Class="Synthia.Terminal.App.App"
              RequestedThemeVariant="Light">
   <Application.Resources>
-    <!-- Paleta da marca (Xandão Supermercados): azul e vermelho tirados da logo. -->
-    <Color x:Key="BrandNavy">#253C70</Color>
-    <Color x:Key="BrandNavyDark">#1A2C55</Color>
-    <Color x:Key="BrandRed">#C8272E</Color>
+    <!-- Cores padrão; StoreBrand troca pelas cores cadastradas da loja assim que o caixa sincroniza. -->
+    <Color x:Key="BrandNavy">#2B4C7E</Color>
+    <Color x:Key="BrandNavyDark">#1E3558</Color>
+    <Color x:Key="BrandRed">#E07A1F</Color>
     <SolidColorBrush x:Key="NavyBrush" Color="{StaticResource BrandNavy}" />
     <SolidColorBrush x:Key="NavyDarkBrush" Color="{StaticResource BrandNavyDark}" />
     <SolidColorBrush x:Key="RedBrush" Color="{StaticResource BrandRed}" />
@@ -20,7 +20,7 @@
   <Application.Styles>
     <FluentTheme>
       <FluentTheme.Palettes>
-        <ColorPaletteResources x:Key="Light" Accent="#253C70" RegionColor="White" />
+        <ColorPaletteResources x:Key="Light" Accent="#2B4C7E" RegionColor="White" />
       </FluentTheme.Palettes>
     </FluentTheme>
     <Style Selector="TextBlock">
