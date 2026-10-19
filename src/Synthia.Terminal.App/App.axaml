@@ -3,24 +3,33 @@
              x:Class="Synthia.Terminal.App.App"
              RequestedThemeVariant="Light">
   <Application.Resources>
-    <!-- Cores padrão; StoreBrand troca pelas cores cadastradas da loja assim que o caixa sincroniza. -->
-    <Color x:Key="BrandNavy">#2B4C7E</Color>
-    <Color x:Key="BrandNavyDark">#1E3558</Color>
-    <Color x:Key="BrandRed">#E07A1F</Color>
-    <SolidColorBrush x:Key="NavyBrush" Color="{StaticResource BrandNavy}" />
-    <SolidColorBrush x:Key="NavyDarkBrush" Color="{StaticResource BrandNavyDark}" />
-    <SolidColorBrush x:Key="RedBrush" Color="{StaticResource BrandRed}" />
-    <SolidColorBrush x:Key="PageBrush" Color="#F2F5FA" />
-    <SolidColorBrush x:Key="LineBrush" Color="#DCE3EF" />
-    <SolidColorBrush x:Key="TextBrush" Color="#1B2440" />
-    <SolidColorBrush x:Key="MutedBrush" Color="#5B6785" />
-    <SolidColorBrush x:Key="SoftBlueBrush" Color="#AFC0E3" />
+    <!--
+      Tokens Synthia (guia de marca). A interface é sempre Synthia; a loja entra só com a logo e a faixa
+      TenantAccentBrush sob o topo, que o StoreBrand troca pela cor de destaque cadastrada em Loja.
+    -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#0B5563" />
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#08434E" />
+    <SolidColorBrush x:Key="PrimaryTintBrush" Color="#DCEBEC" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#FFC94A" />
+    <SolidColorBrush x:Key="PageBrush" Color="#F7F5F0" />
+    <SolidColorBrush x:Key="LineBrush" Color="#DAD5CA" />
+    <SolidColorBrush x:Key="TextBrush" Color="#16201E" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#56615D" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#1F7A3D" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#A15C07" />
+    <SolidColorBrush x:Key="ErrorBrush" Color="#B42318" />
+    <SolidColorBrush x:Key="OfflineBrush" Color="#3B5B85" />
+    <SolidColorBrush x:Key="TenantAccentBrush" Color="#DAD5CA" />
+
+    <!-- Fontes embutidas (OFL): o caixa trabalha sem internet. -->
+    <FontFamily x:Key="BodyFont">avares://synthia-caixa/Assets/Fonts#Atkinson Hyperlegible Next</FontFamily>
+    <FontFamily x:Key="DisplayFont">avares://synthia-caixa/Assets/Fonts#Archivo</FontFamily>
   </Application.Resources>
 
   <Application.Styles>
     <FluentTheme>
       <FluentTheme.Palettes>
-        <ColorPaletteResources x:Key="Light" Accent="#2B4C7E" RegionColor="White" />
+        <ColorPaletteResources x:Key="Light" Accent="#0B5563" RegionColor="White" />
       </FluentTheme.Palettes>
     </FluentTheme>
     <Style Selector="TextBlock">
@@ -30,38 +39,56 @@
       <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
       <Setter Property="FontSize" Value="14" />
     </Style>
+    <Style Selector="TextBlock.money">
+      <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+      <Setter Property="FontWeight" Value="ExtraBold" />
+    </Style>
     <Style Selector="Border.card">
       <Setter Property="Background" Value="White" />
       <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="CornerRadius" Value="16" />
       <Setter Property="Padding" Value="16" />
     </Style>
+    <Style Selector="Border.key">
+      <Setter Property="Background" Value="White" />
+      <Setter Property="BorderBrush" Value="#7C8783" />
+      <Setter Property="BorderThickness" Value="1.5,1.5,1.5,3" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="7,1" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.key > TextBlock">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
     <Style Selector="Button.primary">
-      <Setter Property="Background" Value="{StaticResource NavyBrush}" />
+      <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
       <Setter Property="Foreground" Value="White" />
       <Setter Property="FontSize" Value="16" />
-      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontWeight" Value="Bold" />
       <Setter Property="Padding" Value="12" />
-      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="MinHeight" Value="48" />
+      <Setter Property="CornerRadius" Value="10" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource NavyDarkBrush}" />
+      <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}" />
       <Setter Property="Foreground" Value="White" />
     </Style>
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-      <Setter Property="Background" Value="#DCE6F7" />
+      <Setter Property="Background" Value="#DCEBEC" />
     </Style>
     <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#CFDDF4" />
+      <Setter Property="Background" Value="#CFE3E5" />
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#EEF3FB" />
+      <Setter Property="Background" Value="#EEF4F4" />
     </Style>
     <Style Selector="TextBox">
-      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="CornerRadius" Value="10" />
     </Style>
   </Application.Styles>
 </Application>

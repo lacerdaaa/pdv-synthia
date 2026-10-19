@@ -82,7 +82,7 @@ public sealed class StoreProfileTests(ServerFixture fx) : IClassFixture<ServerFi
     }
 
     [Fact]
-    public async Task Retaguarda_usa_cores_e_logo_da_loja_e_cai_na_logo_padrao_sem_cadastro()
+    public async Task Retaguarda_usa_a_faixa_e_a_logo_da_loja_e_cai_na_logo_padrao_sem_cadastro()
     {
         await Service().UpdateAsync(Input() with { PrimaryColor = "#112233", AccentColor = "#AA0000" });
         await Service().RemoveLogoAsync();
@@ -91,16 +91,10 @@ public sealed class StoreProfileTests(ServerFixture fx) : IClassFixture<ServerFi
         var css = await http.GetStringAsync("/retaguarda/marca.css");
         var logo = await http.GetAsync("/retaguarda/marca/logo");
 
-        Assert.Contains("--navy: #112233", css);
-        Assert.Contains("--red: #AA0000", css);
+        // Co-marca: só a faixa sob a logo leva a cor da loja; a interface continua Synthia.
+        Assert.Contains("--tenant-accent: #AA0000", css);
+        Assert.DoesNotContain("#112233", css);
         Assert.Equal("image/png", logo.Content.Headers.ContentType?.MediaType);
         Assert.True((await logo.Content.ReadAsByteArrayAsync()).Length > 1000, "logo padrão do produto");
-    }
-
-    [Fact]
-    public void Cor_escurecida_para_o_tom_secundario()
-    {
-        Assert.Equal("#0C1826", Synthia.Server.Retaguarda.BrandCss.Darken("#112237", 0.3));
-        Assert.Equal("#000000", Synthia.Server.Retaguarda.BrandCss.Darken("#FFFFFF", 1));
     }
 }
