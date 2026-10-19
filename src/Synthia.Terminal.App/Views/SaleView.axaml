@@ -7,7 +7,7 @@
   <Grid ColumnDefinitions="*,380" RowDefinitions="*,Auto" ColumnSpacing="20" RowSpacing="16">
 
     <!-- Itens -->
-    <Border Classes="card" Padding="0">
+    <Border Classes="card" Padding="0" ClipToBounds="True">
       <DockPanel>
         <Grid DockPanel.Dock="Top" ColumnDefinitions="60,*,110,110,120" Margin="16,12">
           <TextBlock Classes="label" Text="#" />
@@ -23,47 +23,51 @@
               <DataTemplate x:DataType="vm:CartLineViewModel">
                 <Grid ColumnDefinitions="60,*,110,110,120">
                   <TextBlock Text="{Binding Index}" FontFamily="monospace" Foreground="{StaticResource MutedBrush}" FontSize="17" />
-                  <TextBlock Grid.Column="1" Text="{Binding Description}" FontSize="18" TextTrimming="CharacterEllipsis" />
-                  <TextBlock Grid.Column="2" Text="{Binding Quantity}" FontSize="18" HorizontalAlignment="Right" />
-                  <TextBlock Grid.Column="3" Text="{Binding UnitPrice}" FontSize="18" HorizontalAlignment="Right" />
-                  <TextBlock Grid.Column="4" Text="{Binding Total}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                  <TextBlock Grid.Column="1" Text="{Binding Description}" FontSize="19" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="2" Text="{Binding Quantity}" FontSize="19" HorizontalAlignment="Right" />
+                  <TextBlock Grid.Column="3" Text="{Binding UnitPrice}" FontSize="19" HorizontalAlignment="Right" />
+                  <TextBlock Grid.Column="4" Classes="money" Text="{Binding Total}" FontSize="19" HorizontalAlignment="Right" />
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" IsVisible="{Binding !Items.Count}">
             <Image Source="{Binding Logo, Source={x:Static app:StoreBrand.Current}}" Height="180" Opacity="0.14" />
-            <TextBlock Text="Caixa livre" FontSize="30" Foreground="{StaticResource SoftBlueBrush}" HorizontalAlignment="Center" />
+            <TextBlock Text="Caixa livre" FontSize="30" Foreground="{StaticResource MutedBrush}" Opacity="0.6" HorizontalAlignment="Center" />
           </StackPanel>
         </Panel>
       </DockPanel>
     </Border>
 
     <!-- Totais e pagamento -->
-    <StackPanel Grid.Column="1" Spacing="16">
-      <Border Classes="card" Background="{StaticResource NavyBrush}" BorderBrush="{StaticResource NavyBrush}">
-        <StackPanel Spacing="2">
-          <TextBlock Text="TOTAL" Foreground="{StaticResource SoftBlueBrush}" FontSize="15" FontWeight="SemiBold" />
-          <TextBlock x:Name="TotalText" Text="{Binding Total}" Foreground="White" FontSize="54" FontWeight="Bold" />
-          <TextBlock Text="{Binding ItemCount}" Foreground="{StaticResource SoftBlueBrush}" FontSize="15" />
+    <StackPanel Grid.Column="1" Spacing="14">
+      <Border Classes="card" Background="{StaticResource PrimaryBrush}" BorderBrush="{StaticResource PrimaryBrush}" Padding="20,16">
+        <StackPanel Spacing="0">
+          <TextBlock Text="TOTAL" Foreground="{StaticResource AccentBrush}" FontSize="14" FontWeight="Bold" />
+          <TextBlock x:Name="TotalText" Classes="money" Text="{Binding Total}" Foreground="White" FontSize="58" />
+          <TextBlock Text="{Binding ItemCount}" Foreground="{StaticResource PrimaryTintBrush}" FontSize="15" />
         </StackPanel>
       </Border>
       <Border Classes="card" IsVisible="{Binding IsPaying}">
         <StackPanel Spacing="8">
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock Text="Pago" FontSize="18" />
-            <TextBlock Grid.Column="1" Text="{Binding Paid}" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="1" Classes="money" Text="{Binding Paid}" FontSize="18" />
           </Grid>
           <Grid ColumnDefinitions="*,Auto">
-            <TextBlock Text="Falta" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource RedBrush}" />
-            <TextBlock Grid.Column="1" Text="{Binding Remaining}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource RedBrush}" />
+            <TextBlock Text="Falta" FontSize="22" FontWeight="Bold" Foreground="{StaticResource ErrorBrush}" />
+            <TextBlock Grid.Column="1" Classes="money" Text="{Binding Remaining}" FontSize="24" Foreground="{StaticResource ErrorBrush}" />
           </Grid>
-          <UniformGrid Columns="2" Margin="0,8,0,0">
-            <TextBlock Text="F5  Dinheiro" FontSize="16" Margin="0,4" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" />
-            <TextBlock Text="F6  Débito" FontSize="16" Margin="0,4" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" />
-            <TextBlock Text="F7  Crédito" FontSize="16" Margin="0,4" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" />
-            <TextBlock Text="F8  PIX" FontSize="16" Margin="0,4" Foreground="{StaticResource NavyBrush}" FontWeight="SemiBold" />
-          </UniformGrid>
+          <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8" Margin="0,8,0,0">
+            <Border Classes="key"><TextBlock Text="F5" /></Border>
+            <TextBlock Grid.Column="1" Text="Dinheiro" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <Border Grid.Column="2" Classes="key"><TextBlock Text="F6" /></Border>
+            <TextBlock Grid.Column="3" Text="Débito" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <Border Grid.Row="1" Classes="key"><TextBlock Text="F7" /></Border>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="Crédito" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <Border Grid.Row="1" Grid.Column="2" Classes="key"><TextBlock Text="F8" /></Border>
+            <TextBlock Grid.Row="1" Grid.Column="3" Text="PIX" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+          </Grid>
         </StackPanel>
       </Border>
       <Border Classes="card" IsVisible="{Binding !IsPaying}">
@@ -73,11 +77,23 @@
         </StackPanel>
       </Border>
       <Border Classes="card">
-        <StackPanel Spacing="6">
+        <StackPanel Spacing="8">
           <TextBlock Classes="label" Text="Atalhos" />
-          <TextBlock FontSize="14" Text="F4 pagamento · Del remove item · Esc volta/descarta" TextWrapping="Wrap" />
-          <TextBlock FontSize="14" Text="F9 sangria · F10 reimprime · F12 fecha turno" TextWrapping="Wrap" />
-          <TextBlock FontSize="14" Text="3*código multiplica · 1,235*PLU informa o peso" TextWrapping="Wrap" />
+          <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+            <Border Classes="key"><TextBlock Text="F4" /></Border>
+            <TextBlock Grid.Column="1" Text="Pagamento" FontSize="14" VerticalAlignment="Center" />
+            <Border Grid.Column="2" Classes="key"><TextBlock Text="Del" /></Border>
+            <TextBlock Grid.Column="3" Text="Remove item" FontSize="14" VerticalAlignment="Center" />
+            <Border Grid.Row="1" Classes="key"><TextBlock Text="Esc" /></Border>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="Volta / descarta" FontSize="14" VerticalAlignment="Center" />
+            <Border Grid.Row="1" Grid.Column="2" Classes="key"><TextBlock Text="F9" /></Border>
+            <TextBlock Grid.Row="1" Grid.Column="3" Text="Sangria" FontSize="14" VerticalAlignment="Center" />
+            <Border Grid.Row="2" Classes="key"><TextBlock Text="F10" /></Border>
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="Reimprime" FontSize="14" VerticalAlignment="Center" />
+            <Border Grid.Row="2" Grid.Column="2" Classes="key"><TextBlock Text="F12" /></Border>
+            <TextBlock Grid.Row="2" Grid.Column="3" Text="Fecha turno" FontSize="14" VerticalAlignment="Center" />
+          </Grid>
+          <TextBlock FontSize="13" Foreground="{StaticResource MutedBrush}" Text="3*código multiplica · 1,235*PLU informa o peso" TextWrapping="Wrap" />
         </StackPanel>
       </Border>
     </StackPanel>
@@ -87,7 +103,7 @@
       <StackPanel Spacing="8">
         <TextBlock Classes="label" Text="{Binding Prompt}" />
         <TextBox x:Name="InputBox" Text="{Binding Input}" FontSize="26" FontFamily="monospace" />
-        <TextBlock Text="{Binding Message}" FontSize="18" FontWeight="SemiBold"
+        <TextBlock Text="{Binding Message}" FontSize="18" FontWeight="Bold"
                    Foreground="{Binding MessageKind, Converter={x:Static app:StateBrushConverter.Instance}}" />
       </StackPanel>
     </Border>

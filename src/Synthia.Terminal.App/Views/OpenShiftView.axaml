@@ -11,7 +11,7 @@
   <Image Source="{Binding Logo, Source={x:Static app:StoreBrand.Current}}" Height="200" HorizontalAlignment="Center" />
   <Border Classes="card" Width="440" Padding="28">
     <StackPanel Spacing="14">
-      <TextBlock Text="Abrir turno" FontSize="26" FontWeight="Bold" Foreground="{StaticResource NavyBrush}" />
+      <TextBlock Text="Abrir turno" FontSize="26" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" />
       <TextBlock Classes="label" Text="O caixa está fechado. Informe o operador e o fundo de troco." TextWrapping="Wrap" />
       <StackPanel Spacing="4">
         <TextBlock Classes="label" Text="Operador" />
@@ -21,7 +21,7 @@
         <TextBlock Classes="label" Text="Fundo de troco (R$)" />
         <TextBox Text="{Binding OpeningCash}" FontSize="18" />
       </StackPanel>
-      <TextBlock Text="{Binding Error}" Foreground="{StaticResource RedBrush}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
+      <TextBlock Text="{Binding Error}" Foreground="{StaticResource ErrorBrush}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" />
       <Button Classes="primary" Content="Abrir turno (Enter)" Command="{Binding OpenCommand}" />
     </StackPanel>
   </Border>
