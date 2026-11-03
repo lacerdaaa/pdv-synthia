@@ -1,6 +1,6 @@
-<p align="center"><img src="docs/img/logo-xandao.png" alt="Xandão Supermercados" width="220"></p>
+<p align="center"><img src="docs/img/logo-synthia.png" alt="Synthia" width="260"></p>
 
-# PDV Synthia
+# Synthia · PDV offline-first
 
 [![CI](https://github.com/lacerdaaa/pdv-synthia/actions/workflows/ci.yml/badge.svg)](https://github.com/lacerdaaa/pdv-synthia/actions/workflows/ci.yml)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
@@ -9,7 +9,8 @@
 
 PDV offline-first para supermercados: caixas que vendem sozinhos, um servidor local que consolida e uma nuvem que
 é só cópia. Nasceu para o **Xandão Supermercados** (projeto Market SP), o cliente zero, e é um produto multi-loja:
-nome, logo, cores e dados do cupom de cada loja ficam no cadastro da retaguarda, não no código.
+nome, logo, cor e dados do cupom de cada loja ficam no cadastro da retaguarda, não no código. A interface é sempre
+Synthia; a loja entra com a logo, a faixa colorida e o cupom.
 
 > **O caixa vende sem depender de nada além dele mesmo**, do pinpad e (para NFC-e normal) da internet.
 > Servidor e nuvem são para consolidar, não para vender.
@@ -59,17 +60,19 @@ flowchart LR
   subgraph Loja["Loja · VLAN dos caixas"]
     direction LR
     CX["Caixa ×4<br/>SQLite: catálogo + outbox<br/>ACBr: NFC-e"]
-    SRV["Servidor local<br/>ASP.NET Core + PostgreSQL<br/>events · catálogo · projeções"]
+    SRV["Servidor local<br/>ASP.NET Core + PostgreSQL<br/>events · catálogo · projeções · loja"]
     CX -- "POST /sync/events" --> SRV
-    SRV -- "GET /sync/catalog" --> CX
+    SRV -- "GET /sync/catalog · /sync/store" --> CX
   end
   SRV -- "HTTPS de saída" --> NUVEM["Nuvem<br/>réplica · dashboards · backup"]
   CX -- "NFC-e" --> SEFAZ["SEFAZ-SP"]
   CX -- "cartão" --> TEF["TEF / adquirente"]
 ```
 
-Os caixas falam direto com SEFAZ e TEF. O servidor só recebe eventos e distribui catálogo; a nuvem recebe cópia de
-tudo pelo servidor.
+Os caixas falam direto com SEFAZ e TEF. O servidor recebe eventos e distribui catálogo e o cadastro da loja; a nuvem
+recebe cópia de tudo pelo servidor. No servidor, o log `events` é a verdade; saldos de estoque (`stock_levels`),
+vendas em colunas para relatório (`sales`, `sale_items`, `sale_payments`), turnos e a fila de NFC-e são projeções
+atualizadas na mesma transação e reconstruíveis a partir do log.
 
 ## Como a sincronização funciona
 
@@ -174,6 +177,7 @@ propósito: outras pessoas (gerente, estoquista), outros lugares (escritório, d
 | NFC-e | Contingências com **prazo de transmissão** (alerta quando vence) e **rejeitadas** com motivo; itens com NCM suspeito e atalho para corrigir o produto |
 | Vendas | Faturamento líquido, ticket médio, cancelamentos; por hora, forma de pagamento, caixa, dia e produtos mais vendidos; exportação CSV |
 | Fechamentos | Conferência de turno: fundo + dinheiro − sangrias = **esperado** × **declarado**, com falta e sobra |
+| Loja | Nome, razão social, CNPJ, IE, endereço, **rodapé do cupom**, **logo** e **cor da faixa**, com prévia do cupom (só admin) |
 | Usuários | Papéis **admin**, **gerente** (tudo menos usuários) e **estoquista** (estoque, sem produtos e preços) |
 | Loja | Nome fantasia, razão social, CNPJ, IE, endereço, **rodapé do cupom**, **logo** e **cor da faixa** (só admin) |
 
@@ -201,6 +205,12 @@ propósito: outras pessoas (gerente, estoquista), outros lugares (escritório, d
 | ![](docs/img/retaguarda-11-vendas.png) | ![](docs/img/retaguarda-12-fechamentos.png) | ![](docs/img/retaguarda-10-nfce.png) |
 | **Nova entrada** | **Estoque** | **Usuários** |
 | ![](docs/img/retaguarda-3-entrada.png) | ![](docs/img/retaguarda-4-estoque.png) | ![](docs/img/retaguarda-9-usuarios.png) |
+| **Loja** | **Histórico do produto** | **Perdas** |
+| ![](docs/img/retaguarda-13-loja.png) | ![](docs/img/retaguarda-5-historico.png) | ![](docs/img/retaguarda-8-ajustes.png) |
+
+As capturas saem de [`tools/screenshots.sh`](tools/screenshots.sh): sobe um servidor descartável, monta um dia de loja
+pelo próprio sistema (cadastro da loja, planilha de produtos, entrada da loja antiga, vendas dos 4 caixas pelo sync com
+devolução, cancelamento, contingência e rejeição de NFC-e, turnos, inventário, nota XML) e fotografa cada tela.
 
 ## Segurança
 
@@ -271,7 +281,7 @@ O servidor serve a pasta [`docs/`](docs) e o documento OpenAPI:
 |---|---|
 | `/` | Redireciona para `/docs/` |
 | [`/docs/`](docs/index.html) | Arquitetura, topologia clicável, simulador de sync, eventos, **console de API ao vivo**, falhas, decisões |
-| [`/docs/sistema.html`](docs/sistema.html) | **Visão geral animada**: arquitetura, infra, fluxo da venda, caixa, sync, estoque, retaguarda, falhas e implantação numa página só |
+| [`/docs/sistema.html`](docs/sistema.html) | **Visão geral animada**: arquitetura, infra, fluxo da venda, caixa, sync, estoque, retaguarda, lojas e marca, falhas e implantação numa página só |
 | [`/docs/simulacao.html`](docs/simulacao.html) | Execução real de um dia de loja, passo a passo |
 | `/openapi/v1.json` | Documento OpenAPI 3 com todas as rotas, tags, resumos e schemas |
 
@@ -402,6 +412,10 @@ tela. Tokens, logo e regras completas estão no guia de marca do Synthia.
   certificado e compõe a chave da NFC-e. Se os dois divergirem, o caixa mostra um aviso.
 - Cada loja tem um `storeId` (UUID gerado na instalação): é a chave dela quando a nuvem atender várias lojas.
 
+A logo do Synthia ([`docs/img/logo-synthia.png`](docs/img/logo-synthia.png)) é gerada por `make_default_logo.py`; as
+páginas de `docs/` usam a mesma paleta (petróleo `#0B5563`, amarelo `#FFC94A`) e as fontes Archivo e Atkinson
+Hyperlegible Next, servidas pelo próprio servidor.
+
 O Xandão é o cliente zero. A logo dele com fundo transparente ([`docs/img/logo-xandao.png`](docs/img/logo-xandao.png)) e a variante com contorno
 branco para fundos coloridos ([`logo-xandao-contorno.png`](docs/img/logo-xandao-contorno.png)) foram extraídas de um
 print por [`tools/branding/make_logo.py`](tools/branding/make_logo.py), que mantém os brancos do desenho (olhos,
@@ -414,11 +428,12 @@ src/
   Synthia.Contracts        envelope, payloads, mensagens de sync, Uuid7, JSON comum
   Synthia.Terminal.Core    LocalDb, Outbox, LocalCatalog, Cart, SaleService, ShiftService,
                            CheckoutSession, ReceiptBuilder, NfceKey/NfceNumbering, ScanResolver,
-                           OutboxPusher, CatalogPuller, TerminalConfig, contratos de dispositivos
+                           OutboxPusher, CatalogPuller, StoreProfileCache/Puller, TerminalConfig,
+                           contratos de dispositivos
   Synthia.Terminal.Devices balança Toledo, ESC/POS, leitor serial, dispositivos simulados
   Synthia.Terminal.App     app do caixa (Avalonia): abertura de turno, venda, pagamento
-  Synthia.Server           Migrator + SQL, EventStore, Projector, CatalogService, OpenAPI, /docs
-                           Backoffice/ (usuários, estoque, importações) e Retaguarda/ (Blazor)
+  Synthia.Server           Migrator + SQL, EventStore, Projector, StockLevels, CatalogService, OpenAPI, /docs
+                           Backoffice/ (usuários, loja, estoque, importações, relatórios) e Retaguarda/ (Blazor)
 tests/
   Synthia.Terminal.Tests   caixa com SQLite temporário, relógio e servidor falsos
   Synthia.Server.Tests     servidor contra Postgres real, docs/OpenAPI, ponta a ponta
@@ -427,6 +442,8 @@ config/
   terminal.example.json    configuração comentada de um caixa
 tools/
   branding/make_logo.py    extrai a logo transparente de um print
+  branding/make_default_logo.py  gera a logo do Synthia
+  screenshots.sh           regera as capturas de docs/img (caixa e retaguarda)
   Synthia.Simulator        roteiro de um dia de loja
   simulate.sh              executa o simulador contra um servidor descartável
   load/one-year.sql        gera um ano de loja para teste de volume
@@ -447,11 +464,12 @@ dotnet test
 - **Dispositivos:** etiqueta EAN-13 e dígito verificador, protocolo Toledo, ESC/POS (acentos, colunas, QR, gaveta),
   detecção de leitor em modo teclado, `terminal.json` e fábrica de dispositivos.
 - **Servidor:** idempotência, estoque negativo, contagem, cancelamentos e devoluções na gaveta, fila de NFC-e,
-  rebuild, delta/snapshot do catálogo, `/docs` e OpenAPI.
+  rebuild, delta/snapshot do catálogo, `/docs` e OpenAPI; saldo mantido igual ao ledger (venda atrasada, contagem
+  antiga, caixas concorrentes sem deadlock); relatório idêntico depois do rebuild; cadastro da loja e logo.
 - **Checkout:** multiplicador, balança (estável, instável, sem balança), etiqueta, pagamento misto, TEF negado,
   estorno ao sair do pagamento, impressora fora, sangria, chave e numeração da NFC-e.
 - **Tela do caixa (headless):** abre turno, vende pelo teclado, paga em débito + dinheiro, descarta com Esc,
-  sangria e fechamento. `SYNTHIA_SCREENSHOTS=docs/img dotnet test tests/Synthia.Terminal.App.Tests` regenera as capturas.
+  sangria e fechamento, nome/logo/faixa da loja chegando pelo sync. `tools/screenshots.sh` regenera as capturas.
 - **Ponta a ponta:** caixa SQLite baixa catálogo, vende e o servidor Postgres projeta estoque e turno.
 
 O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
