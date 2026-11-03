@@ -41,7 +41,23 @@ public sealed class CashierScreenTests : IDisposable
         _vm = new MainWindowViewModel(_host);
         _window = new MainWindow { DataContext = _vm, Width = 1280, Height = 800, WindowState = WindowState.Normal };
         _window.Show();
+        if (ScreenshotDir is not null) ApplyClientZeroStore();
         Pump();
+    }
+
+    private static string? ScreenshotDir =>
+        Environment.GetEnvironmentVariable("SYNTHIA_SCREENSHOTS") is { Length: > 0 } dir ? dir : null;
+
+    /// <summary>Capturas da documentação mostram a co-marca real: o cadastro do Xandão, cliente zero.</summary>
+    private void ApplyClientZeroStore()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "docs", "img", "logo-xandao.png"))) root = root.Parent;
+        if (root is null) return;
+        var logo = File.ReadAllBytes(Path.Combine(root.FullName, "docs", "img", "logo-xandao.png"));
+        var profile = new StoreProfile(Guid.Parse("0199f000-0000-7000-8000-00000000a001"), "Xandão Supermercados", "Xandão Comércio de Alimentos Ltda",
+            "", "", "Av. Brasil, 1000 - Centro - São Paulo/SP", "Vem pro Xandão!", "#253C70", "#C8272E", "xandao", 1);
+        _host.Get<StoreProfileCache>().Apply(profile, logo);
     }
 
     public void Dispose()
@@ -72,8 +88,7 @@ public sealed class CashierScreenTests : IDisposable
 
     private void Snapshot(string name)
     {
-        var dir = Environment.GetEnvironmentVariable("SYNTHIA_SCREENSHOTS");
-        if (string.IsNullOrEmpty(dir)) return;
+        if (ScreenshotDir is not { } dir) return;
         Directory.CreateDirectory(dir);
         _window.CaptureRenderedFrame()?.Save(Path.Combine(dir, $"{name}.png"), new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
     }
