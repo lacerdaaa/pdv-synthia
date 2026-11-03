@@ -40,86 +40,83 @@ public sealed class ReportService(NpgsqlDataSource dataSource, IConfiguration co
 
     public DateOnly Today(DateTimeOffset now) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(now, Zone).DateTime);
 
+    /// <summary>
+    /// Agrega no Postgres sobre a projeção de vendas (sales, sale_items, sale_payments) e traz só os totais:
+    /// tempo e memória não dependem de reler o JSON do log. Horas em UTC voltam para o C# e viram dia e hora
+    /// no fuso da loja.
+    /// </summary>
     /// <param name="topProducts">Quantos produtos listar (exportação usa todos).</param>
     public async Task<SalesReport> SalesAsync(DateOnly from, DateOnly to, string? terminalId = null, CancellationToken ct = default, int topProducts = 20)
     {
         var (start, end) = Range(from, to);
         await using var conn = await dataSource.OpenConnectionAsync(ct);
+        var args = new { start, end, terminalId, topProducts, cash = PaymentMethods.Cash };
+        const string period = "s.occurred_at >= @start AND s.occurred_at < @end AND (@terminalId::text IS NULL OR s.terminal_id = @terminalId)";
 
-        var sales = (await conn.QueryAsync<(string TerminalId, DateTime At, string Payload)>(
-                """
-                SELECT terminal_id, occurred_at, payload::text FROM events
-                WHERE type = @type AND occurred_at >= @start AND occurred_at < @end
-                  AND (@terminalId IS NULL OR terminal_id = @terminalId)
-                """, new { type = EventTypes.SaleCompleted, start, end, terminalId }))
-            .Select(r => (r.TerminalId, At: Local(r.At), Sale: JsonSerializer.Deserialize<SaleCompleted>(r.Payload, SynthiaJson.Options)!))
-            .ToList();
+        // Vendas por hora e caixa. Cancelada sai inteira; devolução sai pelo valor dos itens devolvidos.
+        var buckets = (await conn.QueryAsync<(DateTime Hour, string TerminalId, int Sales, long Gross, long Cancelled)>(
+            $"""
+            SELECT date_trunc('hour', s.occurred_at) AS hour, s.terminal_id,
+                   count(*) FILTER (WHERE NOT s.cancelled)::int AS sales,
+                   sum(s.total_cents)::bigint AS gross,
+                   sum(CASE WHEN s.cancelled THEN s.total_cents ELSE coalesce(r.cents, 0) END)::bigint AS cancelled
+            FROM sales s
+            LEFT JOIN LATERAL (SELECT sum(i.total_cents) AS cents FROM sale_items i WHERE i.sale_id = s.sale_id AND i.refunded) r ON true
+            WHERE {period}
+            GROUP BY 1, 2
+            """, args, commandTimeout: 0)).ToList();
 
-        // Cancelamentos das vendas do período, quando quer que tenham acontecido.
-        var ids = sales.Select(s => s.Sale.SaleId).ToArray();
-        var cancels = (await conn.QueryAsync<(Guid SaleId, string Type, string Payload)>(
-            "SELECT stream_id, type, payload::text FROM events WHERE stream_id = ANY(@ids) AND type IN (@item, @sale) ORDER BY event_id",
-            new { ids, item = EventTypes.SaleItemCancelled, sale = EventTypes.SaleCancelled })).ToList();
-        var cancelledSales = cancels.Where(c => c.Type == EventTypes.SaleCancelled).Select(c => c.SaleId).ToHashSet();
-        var cancelledItems = cancels.Where(c => c.Type == EventTypes.SaleItemCancelled)
-            .Select(c => JsonSerializer.Deserialize<SaleItemCancelled>(c.Payload, SynthiaJson.Options)!)
-            .GroupBy(c => c.SaleId).ToDictionary(g => g.Key, g => g.ToList());
+        var products = (await conn.QueryAsync<ProductTotal>(
+            $"""
+            SELECT i.product_id AS ProductId, (array_agg(i.description))[1] AS Description,
+                   trim_scale(sum(i.quantity)) AS Quantity, sum(i.total_cents)::bigint AS NetCents
+            FROM sales s JOIN sale_items i ON i.sale_id = s.sale_id
+            WHERE {period} AND NOT s.cancelled AND NOT i.refunded
+            GROUP BY i.product_id
+            ORDER BY sum(i.total_cents) DESC, 2
+            LIMIT @topProducts
+            """, args, commandTimeout: 0)).ToList();
 
-        var payments = new Dictionary<string, (int Count, long Cents)>();
+        // Forma de pagamento: o que ficou com a loja (dinheiro sem o troco; devoluções saem pela forma usada).
+        var payments = (await conn.QueryAsync<PaymentTotal>(
+            $"""
+            SELECT method AS Method, sum(n)::int AS Count, sum(cents)::bigint AS NetCents FROM (
+                SELECT p.method, 1 AS n, p.amount_cents - CASE WHEN p.method = @cash THEN s.change_cents ELSE 0 END AS cents
+                FROM sales s JOIN sale_payments p ON p.sale_id = s.sale_id
+                WHERE {period} AND NOT s.cancelled
+                UNION ALL
+                SELECT i.refund_method, 0, -i.total_cents
+                FROM sales s JOIN sale_items i ON i.sale_id = s.sale_id AND i.refunded
+                WHERE {period} AND NOT s.cancelled
+            ) x
+            WHERE method IS NOT NULL
+            GROUP BY method
+            ORDER BY 3 DESC
+            """, args, commandTimeout: 0)).ToList();
+
+        var cancelledSales = await conn.ExecuteScalarAsync<int>($"SELECT count(*) FROM sales s WHERE {period} AND s.cancelled", args);
+
         var days = new SortedDictionary<DateOnly, (int Sales, long Cents)>();
         var terminals = new SortedDictionary<string, (int Sales, long Cents)>();
-        var products = new Dictionary<Guid, (string Description, decimal Qty, long Cents)>();
         var byHour = new long[24];
-        long gross = 0, cancelled = 0;
-        var count = 0;
-
-        foreach (var (terminal, at, sale) in sales)
+        foreach (var b in buckets.Where(b => b.Sales > 0))
         {
-            gross += sale.TotalCents;
-            if (cancelledSales.Contains(sale.SaleId)) { cancelled += sale.TotalCents; continue; }
-
-            var refunds = cancelledItems.GetValueOrDefault(sale.SaleId) ?? [];
-            var refundedIds = refunds.Select(r => r.ItemId).ToHashSet();
-            var refundedCents = sale.Items.Where(i => refundedIds.Contains(i.ItemId)).Sum(i => i.TotalCents);
-            var net = sale.TotalCents - refundedCents;
-            cancelled += refundedCents;
-            count++;
-
-            Add(days, DateOnly.FromDateTime(at), net);
-            Add(terminals, terminal, net);
-            byHour[at.Hour] += net;
-
-            foreach (var item in sale.Items.Where(i => !refundedIds.Contains(i.ItemId)))
-            {
-                var p = products.GetValueOrDefault(item.ProductId, (item.Description, 0m, 0L));
-                products[item.ProductId] = (item.Description, p.Item2 + item.Quantity, p.Item3 + item.TotalCents);
-            }
-
-            // Forma de pagamento: o que ficou com a loja (dinheiro sem o troco; devoluções saem pela forma usada).
-            foreach (var pay in sale.Payments)
-            {
-                var amount = pay.AmountCents - (pay.Method == PaymentMethods.Cash ? sale.ChangeCents : 0);
-                var p = payments.GetValueOrDefault(pay.Method);
-                payments[pay.Method] = (p.Count + 1, p.Cents + amount);
-            }
-            foreach (var refund in refunds)
-            {
-                var item = sale.Items.FirstOrDefault(i => i.ItemId == refund.ItemId);
-                var method = refund.RefundMethod ?? sale.Payments.FirstOrDefault()?.Method;
-                if (item is null || method is null) continue;
-                var p = payments.GetValueOrDefault(method);
-                payments[method] = (p.Count, p.Cents - item.TotalCents);
-            }
+            var local = Local(b.Hour);
+            var net = b.Gross - b.Cancelled;
+            Add(days, DateOnly.FromDateTime(local), b.Sales, net);
+            Add(terminals, b.TerminalId, b.Sales, net);
+            byHour[local.Hour] += net;
         }
 
+        var gross = buckets.Sum(b => b.Gross);
+        var cancelled = buckets.Sum(b => b.Cancelled);
         return new SalesReport(
-            from, to, terminalId, count, cancelledSales.Count, gross, cancelled, gross - cancelled,
-            payments.Select(p => new PaymentTotal(p.Key, p.Value.Count, p.Value.Cents)).OrderByDescending(p => p.NetCents).ToList(),
+            from, to, terminalId, buckets.Sum(b => b.Sales), cancelledSales, gross, cancelled, gross - cancelled,
+            payments,
             days.Select(d => new DayTotal(d.Key, d.Value.Sales, d.Value.Cents)).ToList(),
             terminals.Select(t => new TerminalTotal(t.Key, t.Value.Sales, t.Value.Cents)).ToList(),
             byHour,
-            products.Select(p => new ProductTotal(p.Key, p.Value.Description, p.Value.Qty, p.Value.Cents))
-                .OrderByDescending(p => p.NetCents).Take(topProducts).ToList());
+            products);
     }
 
     public async Task<IReadOnlyList<ShiftReview>> ShiftsAsync(DateOnly from, DateOnly to, CancellationToken ct = default)
@@ -147,9 +144,9 @@ public sealed class ReportService(NpgsqlDataSource dataSource, IConfiguration co
 
     private DateTime Local(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), Zone);
 
-    private static void Add<TKey>(SortedDictionary<TKey, (int Sales, long Cents)> map, TKey key, long cents) where TKey : notnull
+    private static void Add<TKey>(SortedDictionary<TKey, (int Sales, long Cents)> map, TKey key, int sales, long cents) where TKey : notnull
     {
         var v = map.GetValueOrDefault(key);
-        map[key] = (v.Sales + 1, v.Cents + cents);
+        map[key] = (v.Sales + sales, v.Cents + cents);
     }
 }

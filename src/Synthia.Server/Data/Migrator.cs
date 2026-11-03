@@ -24,7 +24,8 @@ public sealed class Migrator(NpgsqlDataSource dataSource, ILogger<Migrator> logg
             if (applied.Contains(name)) continue;
 
             logger.LogInformation("Aplicando migração {Migration}", name);
-            await conn.ExecuteAsync(sql, transaction: tx);
+            // Sem timeout: migração com carga de dados num banco de anos de loja passa bem dos 30 s padrão.
+            await conn.ExecuteAsync(sql, transaction: tx, commandTimeout: 0);
             await conn.ExecuteAsync("INSERT INTO schema_migrations (name) VALUES (@name)", new { name }, tx);
         }
 

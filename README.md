@@ -38,6 +38,7 @@ simulador de sync, o catálogo de eventos e um **console de API ao vivo** gerado
 - [Simulação de um dia de loja](#simulação-de-um-dia-de-loja)
 - [Estrutura do repositório](#estrutura-do-repositório)
 - [Testes](#testes)
+- [Volume de dados](#volume-de-dados)
 - [Roadmap e decisões em aberto](#roadmap-e-decisões-em-aberto)
 - [Convenções](#convenções)
 
@@ -428,6 +429,7 @@ tools/
   branding/make_logo.py    extrai a logo transparente de um print
   Synthia.Simulator        roteiro de um dia de loja
   simulate.sh              executa o simulador contra um servidor descartável
+  load/one-year.sql        gera um ano de loja para teste de volume
 docs/
   index.html               documentação interativa + console de API
   simulacao.html           visualizador da simulação
@@ -454,6 +456,38 @@ dotnet test
 
 O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
 
+## Volume de dados
+
+Medido com **um ano de loja** gerado por [`tools/load/one-year.sql`](tools/load/one-year.sql): 4 caixas, ~1.200 cupons
+por dia, ~10 itens por cupom, 8 mil produtos. Isso dá ~450 mil eventos, 4,4 milhões de movimentos de estoque e
+~2,8 GB de banco por ano.
+
+| Operação | Antes | Agora |
+|---|---|---|
+| Caixa envia uma venda de 10 itens (sync) | 11 ms | 13 ms (mediana), 20 ms (p95) |
+| Devolução de item (sync) | 320 ms | 7 ms |
+| Painel | 3,3 s | 0,04 s |
+| Estoque (lista de 8 mil produtos) | 3,5 s | 0,12 s |
+| Relatório de vendas: 1 mês | 3,1 s | 0,6 s |
+| Relatório de vendas: 1 ano | 28 s e mais de 1 GB de RAM | 2,9 s |
+
+O que mudou:
+
+- **Saldo de estoque** deixou de ser uma *view* que somava o ledger inteiro a cada consulta. A tabela `stock_levels`
+  é atualizada no fim de cada transação de eventos, com os produtos travados em ordem de id (dois caixas
+  sincronizando os mesmos produtos esperam um pelo outro, sem deadlock). A regra continua a mesma:
+  última contagem + movimentos posteriores, e venda atrasada de caixa offline anterior à contagem não conta.
+- **Relatórios** leem a projeção `sales` / `sale_items` / `sale_payments` (colunas, gravadas no sync) em vez de
+  desserializar o JSON de cada venda. O CSV de um mês saiu idêntico ao do cálculo antigo nos 8 mil produtos.
+- **Índices** para a devolução de item (`item_id`) e para a última contagem de cada produto.
+- **Migrações** rodam sem timeout: a carga inicial dessas tabelas num banco de um ano leva cerca de 1 minuto
+  e derrubava o servidor no start com o timeout padrão de 30 s.
+- **Rebuild das projeções** lê o log em blocos (memória constante), mas reprocessa evento a evento: com um ano
+  levou 33 min e segura o sync enquanto roda. Os caixas seguem vendendo offline e reenviam depois.
+  **Use só com a loja fechada.**
+- **No caixa** nada cresce sem limite: a outbox apaga o que já foi enviado há mais de 30 dias e o catálogo é o
+  cadastro atual.
+
 ## Roadmap e decisões em aberto
 
 - [ ] Integração ACBrLib (emissão, contingência, worker de transmissão, inutilização no fim do dia)
@@ -469,6 +503,7 @@ O CI (GitHub Actions) roda build e testes com um Postgres 16 de serviço.
 - [ ] Integração real com ACBr (NFC-e) e TEF; worker de contingência no caixa
 - [x] Multi-loja: identidade, cupom e marca da loja no cadastro da retaguarda, sincronizados com os caixas
 - [ ] Outbox servidor → nuvem e serviço da nuvem (multi-tenant por `storeId`)
+- [ ] Rebuild das projeções em SQL por conjunto (hoje ~33 min por ano de log, só com a loja fechada)
 - [ ] Assinatura: ativação do caixa por chave, licença com tolerância offline, atualização automática
 - [ ] NFC-e fora de SP: URLs de consulta/QR Code por UF (a ACBr já tem a tabela) e responsável técnico
 - [ ] Servidor com standby ou aceitar horas fora? · Edição de preço pela nuvem no MVP?

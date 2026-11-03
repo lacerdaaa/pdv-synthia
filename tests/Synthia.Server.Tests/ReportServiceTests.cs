@@ -82,6 +82,11 @@ public sealed class ReportServiceTests : IAsyncLifetime
         var twoDays = await reports.SalesAsync(today.AddDays(-1), today);
         Assert.Equal(3, twoDays.Sales);
         Assert.Equal(2, twoDays.Days.Count);
+
+        // A projeção de vendas sai igual quando reconstruída do log.
+        await Get<EventStore>().RebuildProjectionsAsync();
+        var rebuilt = await reports.SalesAsync(today.AddDays(-1), today);
+        Assert.Equal(System.Text.Json.JsonSerializer.Serialize(twoDays), System.Text.Json.JsonSerializer.Serialize(rebuilt));
     }
 
     [Fact]
