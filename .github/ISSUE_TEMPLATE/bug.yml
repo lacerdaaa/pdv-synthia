@@ -1,0 +1,41 @@
+name: Bug
+description: Algo não funciona como deveria
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Falha de segurança? Não abra issue pública; veja SECURITY.md.
+  - type: dropdown
+    id: parte
+    attributes:
+      label: Onde acontece
+      options: [Caixa, Retaguarda, Servidor / sync, Dispositivos (balança, impressora, leitor), Fiscal / TEF, Documentação, Outro]
+    validations:
+      required: true
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que aconteceu
+      description: E o que você esperava que acontecesse.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Abrir o caixa com --demo
+        2. Bipar 7891000100103
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: ambiente
+    attributes:
+      label: Ambiente
+      description: Versão/commit, sistema operacional, modelo de balança/impressora, se o servidor estava no ar.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs ou prints
+      render: text
