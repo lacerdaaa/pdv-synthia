@@ -10,8 +10,11 @@ namespace Synthia.Terminal.Core.Sales;
 /// (cabeçalho, itens, totais, pagamentos, consulta, consumidor, identificação, QR Code); o conteúdo
 /// fiscal definitivo (QR Code com CSC, protocolo) virá da ACBr.
 /// </summary>
-public sealed class ReceiptBuilder(StoreSection store, string terminalId, NfceEnvironment environment)
+public sealed class ReceiptBuilder(Func<StoreSection> store, string terminalId, NfceEnvironment environment)
 {
+    public ReceiptBuilder(StoreSection store, string terminalId, NfceEnvironment environment)
+        : this(() => store, terminalId, environment) { }
+
     private static readonly Dictionary<string, string> MethodNames = new()
     {
         [PaymentMethods.Cash] = "Dinheiro",
@@ -67,6 +70,7 @@ public sealed class ReceiptBuilder(StoreSection store, string terminalId, NfceEn
             lines.Add(new ReceiptLine.QrCode($"https://www.nfce.fazenda.sp.gov.br/qrcode?p={key.Value}"));
         }
 
+        if (store().ReceiptFooter is { Length: > 0 } footer) lines.Add(new ReceiptLine.Text(footer, Align.Center));
         lines.Add(new ReceiptLine.Text($"{terminalId} · Operador: {operatorName}", Align.Center));
         return new ReceiptDocument(lines);
     }
@@ -93,12 +97,14 @@ public sealed class ReceiptBuilder(StoreSection store, string terminalId, NfceEn
 
     private List<ReceiptLine> Header()
     {
+        var s = store();
         var lines = new List<ReceiptLine>
         {
-            new ReceiptLine.Text(store.Name, Align.Center, Bold: true),
-            new ReceiptLine.Text($"CNPJ {store.Cnpj}", Align.Center),
+            new ReceiptLine.Text(s.Name, Align.Center, Bold: true),
+            new ReceiptLine.Text($"CNPJ {Synthia.Contracts.Cnpj.Format(s.Cnpj)}", Align.Center),
         };
-        if (!string.IsNullOrWhiteSpace(store.Address)) lines.Add(new ReceiptLine.Text(store.Address, Align.Center));
+        if (!string.IsNullOrWhiteSpace(s.StateRegistration)) lines.Add(new ReceiptLine.Text($"IE {s.StateRegistration}", Align.Center));
+        if (!string.IsNullOrWhiteSpace(s.Address)) lines.Add(new ReceiptLine.Text(s.Address, Align.Center));
         lines.Add(new ReceiptLine.Separator());
         return lines;
     }

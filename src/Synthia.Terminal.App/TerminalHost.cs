@@ -63,6 +63,9 @@ public sealed class TerminalHost : IAsyncDisposable
         s.AddHostedService(sp => sp.GetRequiredService<OutboxPusher>());
         s.AddSingleton<CatalogPuller>();
         s.AddHostedService(sp => sp.GetRequiredService<CatalogPuller>());
+        s.AddSingleton(sp => new StoreProfileCache(sp.GetRequiredService<LocalDb>(), config.Store, config.Terminal.DatabasePath + ".logo"));
+        s.AddSingleton<StoreProfilePuller>();
+        s.AddHostedService(sp => sp.GetRequiredService<StoreProfilePuller>());
         s.AddSingleton<ShiftService>();
         s.AddSingleton(sp => new NfceNumbering(sp.GetRequiredService<LocalDb>(), config.Nfce.Serie));
         s.AddSingleton<INfceEmitter>(sp => new SimulatedNfceEmitter(sp.GetRequiredService<NfceNumbering>(), config.Store.Cnpj, TimeProvider.System));
@@ -71,7 +74,7 @@ public sealed class TerminalHost : IAsyncDisposable
         s.AddSingleton(sp => sp.GetRequiredService<DeviceFactory>().CreatePrinter());
         s.AddSingleton(sp => sp.GetRequiredService<DeviceFactory>().CreatePaymentTerminal());
         s.AddSingleton(sp => new ScanResolver(sp.GetRequiredService<LocalCatalog>(), config.ToScaleBarcodeFormat()));
-        s.AddSingleton(new ReceiptBuilder(config.Store, config.Terminal.Id, config.Nfce.Ambiente));
+        s.AddSingleton(sp => { var store = sp.GetRequiredService<StoreProfileCache>(); return new ReceiptBuilder(() => store.Receipt, config.Terminal.Id, config.Nfce.Ambiente); });
         s.AddSingleton(sp => new CheckoutSession(
             sp.GetRequiredService<LocalCatalog>(), sp.GetRequiredService<ScanResolver>(), sp.GetRequiredService<SaleService>(),
             sp.GetRequiredService<ShiftService>(), sp.GetRequiredService<IReceiptPrinter>(), sp.GetRequiredService<IPaymentTerminal>(),

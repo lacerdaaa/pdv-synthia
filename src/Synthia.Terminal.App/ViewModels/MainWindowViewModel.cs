@@ -21,9 +21,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         _host = host;
         TerminalId = host.Config.Terminal.Id;
-        StoreName = host.Config.Store.Name;
+        var store = host.Get<StoreProfileCache>();
+        StoreBrand.Current.Attach(store);
         Banner = host.Demo ? "DEMONSTRAÇÃO · dispositivos simulados"
             : host.Config.Nfce.Ambiente == NfceEnvironment.Homologacao ? "HOMOLOGAÇÃO · NFC-e sem valor fiscal" : null;
+        if (store.CnpjMismatch) Banner = "CNPJ do cadastro da loja difere do configurado neste caixa: confira o certificado.";
         if (host.ConfigErrors.Count > 0) Banner = "Configuração: " + string.Join(" · ", host.ConfigErrors);
 
         ShowCurrentScreen();
@@ -33,7 +35,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
     }
 
     public string TerminalId { get; }
-    public string StoreName { get; }
     public string? Banner { get; }
 
     [ObservableProperty]
@@ -73,6 +74,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         var pending = _host.Get<OutboxPusher>().PendingCount();
         var version = _host.Get<LocalCatalog>().CurrentVersion();
         SyncLevel = pending == 0 ? SyncLevel.Ok : pending < PendingAlertThreshold ? SyncLevel.Pending : SyncLevel.Alert;
-        SyncText = pending == 0 ? $"Sincronizado · catálogo v{version}" : $"{pending} evento(s) a enviar · catálogo v{version}";
+        // Vocabulário do balcão: "evento" e "sync" ficam na documentação técnica.
+        SyncText = pending == 0 ? $"Tudo enviado · catálogo v{version}"
+            : pending == 1 ? $"1 registro guardado no caixa · catálogo v{version}"
+            : $"{pending} registros guardados no caixa · catálogo v{version}";
     }
 }

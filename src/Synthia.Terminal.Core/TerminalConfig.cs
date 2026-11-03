@@ -66,12 +66,17 @@ public sealed record TerminalConfig
     }
 }
 
-/// <summary>Dados impressos no cupom. CNPJ também compõe a chave da NFC-e.</summary>
+/// <summary>
+/// Dados impressos no cupom. O CNPJ daqui é o do certificado e compõe a chave da NFC-e; nome, endereço,
+/// IE e rodapé vêm do cadastro da loja na retaguarda quando o caixa já sincronizou (estes são o fallback).
+/// </summary>
 public sealed record StoreSection
 {
-    public string Name { get; init; } = "Xandão Supermercados";
+    public string Name { get; init; } = "Minha Loja";
     public string Cnpj { get; init; } = "00.000.000/0001-91";
     public string Address { get; init; } = "";
+    public string StateRegistration { get; init; } = "";
+    public string ReceiptFooter { get; init; } = "";
 }
 
 public sealed record TerminalSection

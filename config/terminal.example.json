@@ -1,8 +1,10 @@
 // Configuração de um caixa. Copie para terminal.json ao lado do executável e ajuste.
 // Valores comentados com "padrão" seguem o mais comum no varejo e podem ser omitidos.
 {
+  // Nome, endereço, IE e rodapé vêm do cadastro da loja (retaguarda > Loja) assim que o caixa sincroniza;
+  // os daqui só valem num caixa que nunca falou com o servidor. O CNPJ daqui é sempre o que vale.
   "store": {
-    "name": "Xandão Supermercados",
+    "name": "Minha Loja",
     "cnpj": "00.000.000/0001-91",                 // do certificado A1; compõe a chave da NFC-e
     "address": "Rua Exemplo, 100 - São Paulo/SP"
   },

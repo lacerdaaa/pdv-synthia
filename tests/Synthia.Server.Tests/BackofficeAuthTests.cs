@@ -126,6 +126,7 @@ public sealed partial class BackofficeAuthTests(ServerFixture fx) : IClassFixtur
         Assert.Equal(HttpStatusCode.OK, (await http.GetAsync("/retaguarda/estoque")).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await http.GetAsync("/retaguarda/inventarios")).StatusCode);
         Assert.NotEqual(HttpStatusCode.OK, (await http.GetAsync("/retaguarda/usuarios")).StatusCode);
+        Assert.NotEqual(HttpStatusCode.OK, (await http.GetAsync("/retaguarda/loja")).StatusCode);
     }
 
     [Fact]

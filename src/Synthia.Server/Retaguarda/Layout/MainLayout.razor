@@ -1,8 +1,9 @@
 @inherits LayoutComponentBase
+@inject StoreProfileService Store
 
 <div class="shell">
     <aside class="side">
-        <a class="brand" href="/retaguarda"><img src="retaguarda/logo-xandao.png" alt="Xandão Supermercados" /></a>
+        <a class="brand" href="/retaguarda"><img src="retaguarda/marca/logo?v=@profile?.LogoHash" alt="@profile?.TradeName" /></a>
         <nav>
             <NavLink href="/retaguarda" Match="NavLinkMatch.All">Painel</NavLink>
             <AuthorizeView Roles="@BackofficeRoles.CatalogEditors">
@@ -20,6 +21,7 @@
             </AuthorizeView>
             <AuthorizeView Roles="@BackofficeRoles.Admin">
                 <NavLink href="/retaguarda/usuarios">Usuários</NavLink>
+                <NavLink href="/retaguarda/loja">Loja</NavLink>
             </AuthorizeView>
         </nav>
         <div class="side-foot">
@@ -33,9 +35,16 @@
             </form>
             <a href="/retaguarda/minha-senha" class="link">Trocar senha</a>
             <a href="/docs/" class="link">Documentação</a>
+            <span class="signature"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M52 13 H24 A9.5 9.5 0 0 0 24 32 H40 A9.5 9.5 0 0 1 40 51 H12" fill="none" stroke="currentColor" stroke-width="12" /></svg><b>Synthia</b> Retaguarda</span>
         </div>
     </aside>
     <main class="content">
         @Body
     </main>
 </div>
+
+@code {
+    private Synthia.Contracts.Sync.StoreProfile? profile;
+
+    protected override async Task OnInitializedAsync() => profile = await Store.GetAsync();
+}
