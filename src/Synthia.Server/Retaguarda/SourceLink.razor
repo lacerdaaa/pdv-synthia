@@ -1,0 +1,11 @@
+@* AGPL-3.0, seção 13: quem usa a retaguarda pela rede tem acesso ao código-fonte desta versão.
+   Fork modificado: aponte Synthia:SourceUrl para o próprio repositório. *@
+@inject IConfiguration Config
+
+<a class="source-link" href="@Url" rel="noopener">Código-fonte · AGPL-3.0</a>
+
+@code {
+    public const string DefaultUrl = "https://github.com/lacerdaaa/pdv-synthia";
+
+    private string Url => Config["Synthia:SourceUrl"] is { Length: > 0 } url ? url : DefaultUrl;
+}

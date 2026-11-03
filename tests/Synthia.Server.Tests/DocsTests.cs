@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Synthia.Server.Tests;
 
@@ -14,6 +15,18 @@ public sealed class DocsTests(ServerFixture fx) : IClassFixture<ServerFixture>
 
         Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
         Assert.Equal("/docs/", res.Headers.Location?.OriginalString);
+    }
+
+    /// <summary>AGPL-3.0, seção 13: quem usa a retaguarda pela rede encontra o código-fonte.</summary>
+    [Fact]
+    public async Task Retaguarda_mostra_o_codigo_fonte_e_fork_pode_apontar_o_proprio()
+    {
+        var html = await _http.GetStringAsync("/retaguarda/login");
+        Assert.Contains("Código-fonte · AGPL-3.0", System.Net.WebUtility.HtmlDecode(html));
+        Assert.Contains("https://github.com/lacerdaaa/pdv-synthia", html);
+
+        await using var fork = fx.Factory.WithWebHostBuilder(b => b.UseSetting("Synthia:SourceUrl", "https://example.org/meu-fork"));
+        Assert.Contains("https://example.org/meu-fork", await fork.CreateClient().GetStringAsync("/retaguarda/login"));
     }
 
     [Theory]

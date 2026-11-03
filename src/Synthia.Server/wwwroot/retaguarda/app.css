@@ -185,3 +185,5 @@ input[type=color] { height: 42px; padding: 4px; cursor: pointer; }
 .table-scroll { overflow-x: auto; border-radius: 12px; }
 .table-scroll .grid-table td.num, .table-scroll .grid-table th.num { white-space: nowrap; }
 .nowrap { white-space: nowrap; }
+.source-link { display: block; margin-top: 4px; font-size: 12px; color: var(--soft); }
+.login .source-link { color: var(--muted); text-align: center; }
