@@ -44,7 +44,7 @@ public sealed partial class StoreBrand : ObservableObject
     {
         StoreName = cache.Receipt.Name;
         Logo = cache.HasLogo ? TryLoad(cache.LogoPath) ?? DefaultLogo : DefaultLogo;
-        if (cache.Profile is { } p) ApplyColors(p.PrimaryColor, p.AccentColor);
+        if (cache.Profile is { } p) ApplyColors(p.AccentColor);
     }
 
     private static Bitmap? TryLoad(string path)
@@ -53,15 +53,14 @@ public sealed partial class StoreBrand : ObservableObject
         catch (Exception) { return null; } // arquivo corrompido: fica a logo padrão até o próximo sync
     }
 
-    private static void ApplyColors(string primary, string accent)
+    /// <summary>
+    /// Co-marca: a interface é sempre Synthia. Da loja só entra a cor de destaque, na faixa sob o topo
+    /// (TenantAccentBrush). A cor principal cadastrada fica guardada, mas não pinta a tela.
+    /// </summary>
+    private static void ApplyColors(string accent)
     {
         if (Application.Current is not { } app) return;
-        if (Color.TryParse(primary, out var navy))
-        {
-            SetBrush(app, "NavyBrush", navy);
-            SetBrush(app, "NavyDarkBrush", Color.FromRgb((byte)(navy.R * 0.7), (byte)(navy.G * 0.7), (byte)(navy.B * 0.7)));
-        }
-        if (Color.TryParse(accent, out var red)) SetBrush(app, "RedBrush", red);
+        if (Color.TryParse(accent, out var color)) SetBrush(app, "TenantAccentBrush", color);
     }
 
     private static void SetBrush(Application app, string key, Color color)

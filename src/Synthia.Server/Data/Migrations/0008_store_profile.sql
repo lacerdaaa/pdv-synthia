@@ -9,8 +9,8 @@ CREATE TABLE store_profile (
     state_registration text NOT NULL DEFAULT '',
     address            text NOT NULL DEFAULT '',
     receipt_footer     text NOT NULL DEFAULT '',
-    primary_color      text NOT NULL DEFAULT '#2B4C7E',
-    accent_color       text NOT NULL DEFAULT '#E07A1F',
+    primary_color      text NOT NULL DEFAULT '#0B5563',  -- guardada; a interface é sempre Synthia (co-marca)
+    accent_color       text NOT NULL DEFAULT '#DAD5CA',  -- faixa sob a logo da loja
     logo               bytea,
     logo_content_type  text,
     version            bigint NOT NULL DEFAULT 1,

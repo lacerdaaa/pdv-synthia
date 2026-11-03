@@ -8,7 +8,7 @@
 
 <header class="page-head"><h1>Loja</h1></header>
 
-<p class="muted">Nome, endereço e rodapé saem no cupom; logo e cores aparecem nos caixas e aqui. Os caixas recebem as mudanças
+<p class="muted">Nome, endereço e rodapé saem no cupom; logo e cor da faixa aparecem nos caixas e aqui. Os caixas recebem as mudanças
     em até um minuto e guardam a última versão para trabalhar sem servidor.</p>
 
 <div class="store-layout">
@@ -24,11 +24,12 @@
             <label>Endereço (uma linha no cupom) <input @bind="input.Address" placeholder="Rua, número - bairro - cidade/UF" /></label>
             <label>Rodapé do cupom <input @bind="input.ReceiptFooter" placeholder="Obrigado pela preferência!" /></label>
         </div>
-        <h2 class="top-gap">Cores</h2>
+        <h2 class="top-gap">Cor da loja</h2>
         <div class="grid">
-            <label>Principal (menus, botões) <input type="color" @bind="input.PrimaryColor" /></label>
-            <label>Destaque (detalhes, alertas) <input type="color" @bind="input.AccentColor" /></label>
+            <label>Faixa sob a logo (caixas e retaguarda) <input type="color" @bind="input.AccentColor" /></label>
         </div>
+        <p class="muted">A tela do sistema segue o padrão Synthia em todas as lojas. A sua marca aparece na logo, na faixa
+            colorida logo abaixo dela e no cupom.</p>
         <p class="muted">O CNPJ que vale na NFC-e é o do certificado digital configurado em cada caixa; o daqui serve para
             conferência e o caixa avisa se os dois forem diferentes.</p>
         @if (message is not null) { <p class="@(ok ? "flash" : "error")">@message</p> }
@@ -89,12 +90,11 @@
         ok = false;
         try
         {
-            var colorsChanged = !string.Equals(input.PrimaryColor, profile?.PrimaryColor, StringComparison.OrdinalIgnoreCase)
-                                || !string.Equals(input.AccentColor, profile?.AccentColor, StringComparison.OrdinalIgnoreCase);
+            var colorsChanged = !string.Equals(input.AccentColor, profile?.AccentColor, StringComparison.OrdinalIgnoreCase);
             Load(await Store.UpdateAsync(new StoreProfileInput(input.TradeName, input.LegalName, input.Cnpj, input.StateRegistration,
                 input.Address, input.ReceiptFooter, input.PrimaryColor, input.AccentColor)));
             message = "Dados da loja salvos."; ok = true;
-            // Cores novas: recarrega para o menu e os botões pegarem a paleta.
+            // Cor nova: recarrega para a faixa sob a logo pegar a cor.
             if (colorsChanged) Navigation.NavigateTo("/retaguarda/loja?salvo=1", forceLoad: true);
         }
         catch (ArgumentException ex) { message = ex.Message; }

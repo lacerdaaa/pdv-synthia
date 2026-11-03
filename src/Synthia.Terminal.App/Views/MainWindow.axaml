@@ -9,6 +9,7 @@
         Width="1280" Height="800" MinWidth="1024" MinHeight="680"
         WindowState="Maximized"
         Background="{StaticResource PageBrush}"
+        FontFamily="{StaticResource BodyFont}"
         Icon="/Assets/logo-padrao.png">
   <Window.DataTemplates>
     <DataTemplate DataType="vm:OpenShiftViewModel"><views:OpenShiftView /></DataTemplate>
@@ -16,30 +17,34 @@
   </Window.DataTemplates>
 
   <DockPanel>
-    <!-- Topo branco com a logo da loja; filete na cor de destaque embaixo. -->
-    <Border DockPanel.Dock="Top" Background="White" Padding="20,8" BorderBrush="{StaticResource RedBrush}" BorderThickness="0,0,0,3">
+    <!-- Co-marca: placa branca com a logo da loja e faixa na cor de destaque dela; o resto é Synthia. -->
+    <Border DockPanel.Dock="Top" Background="White" Padding="20,8" BorderBrush="{StaticResource TenantAccentBrush}" BorderThickness="0,0,0,4">
       <Grid ColumnDefinitions="Auto,*,Auto,Auto">
         <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
           <Image Source="{Binding Logo, Source={x:Static app:StoreBrand.Current}}" Height="60" MaxWidth="220" />
           <Border Width="1" Height="36" Background="{StaticResource LineBrush}" />
-          <Border Background="{StaticResource NavyBrush}" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
-            <TextBlock Text="{Binding TerminalId}" Foreground="White" FontWeight="Bold" FontSize="16" />
+          <Border Background="{StaticResource PrimaryBrush}" CornerRadius="8" Padding="12,4" VerticalAlignment="Center">
+            <TextBlock Text="{Binding TerminalId}" Foreground="White" FontFamily="{StaticResource DisplayFont}" FontWeight="ExtraBold" FontSize="16" />
           </Border>
           <StackPanel VerticalAlignment="Center">
-            <TextBlock Text="{Binding OperatorName}" FontSize="16" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding StoreName, Source={x:Static app:StoreBrand.Current}}" FontSize="12" Foreground="{StaticResource MutedBrush}" />
+            <TextBlock Text="{Binding OperatorName}" FontSize="16" FontWeight="Bold" />
+            <TextBlock Text="{Binding StoreName, Source={x:Static app:StoreBrand.Current}}" FontSize="13" Foreground="{StaticResource MutedBrush}" />
           </StackPanel>
         </StackPanel>
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,24,0">
           <Ellipse Width="10" Height="10" Fill="{Binding SyncLevel, Converter={x:Static app:StateBrushConverter.Instance}}" />
-          <TextBlock Text="{Binding SyncText}" FontSize="14" Foreground="{StaticResource MutedBrush}" />
+          <TextBlock Text="{Binding SyncText}" FontSize="14" FontWeight="SemiBold"
+                     Foreground="{Binding SyncLevel, Converter={x:Static app:StateBrushConverter.Instance}}" />
         </StackPanel>
-        <TextBlock Grid.Column="3" Text="{Binding Clock}" FontSize="16" FontWeight="SemiBold"
-                   Foreground="{StaticResource NavyBrush}" FontFamily="monospace" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+          <TextBlock Text="{Binding Clock}" FontSize="16" FontWeight="SemiBold" FontFamily="monospace" HorizontalAlignment="Right" />
+          <TextBlock Text="Synthia" FontSize="11" FontFamily="{StaticResource DisplayFont}" FontWeight="ExtraBold"
+                     Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Right" />
+        </StackPanel>
       </Grid>
     </Border>
-    <Border DockPanel.Dock="Top" Background="#FBF0DC" Padding="20,6" IsVisible="{Binding Banner, Converter={x:Static ObjectConverters.IsNotNull}}">
-      <TextBlock Text="{Binding Banner}" Foreground="#8A5300" FontWeight="SemiBold" />
+    <Border DockPanel.Dock="Top" Background="#FDF0DC" Padding="20,6" IsVisible="{Binding Banner, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <TextBlock Text="{Binding Banner}" Foreground="#8A4B05" FontWeight="Bold" />
     </Border>
     <ContentControl Content="{Binding Screen}" Margin="20" />
   </DockPanel>

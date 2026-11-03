@@ -121,8 +121,9 @@ caixa nunca pede ID ao servidor e uma venda nunca é ordenada depois do próprio
 ![Tela de venda](docs/img/caixa-2-venda.png)
 
 App desktop em Avalonia sobre o `Terminal.Core`: toda a regra de venda está na `CheckoutSession` (testada sem
-interface) e a tela só repassa o teclado. Operação inteira pelo teclado, como nos PDVs de mercado. Visual em
-azul e branco com as cores da marca (azul `#253C70`, vermelho `#C8272E`).
+interface) e a tela só repassa o teclado. Operação inteira pelo teclado, como nos PDVs de mercado. Visual
+Synthia (Petróleo `#0B5563`, Amarelo Etiqueta `#FFC94A`, fundo Papel `#F7F5F0`), com Archivo no total e nos preços
+e Atkinson Hyperlegible Next no texto, as duas embutidas no app (OFL, licenças em `Licenses/`).
 
 ```bash
 # experimentar sem servidor nem hardware (dispositivos simulados, catálogo de exemplo, banco caixa-demo.db)
@@ -173,7 +174,7 @@ propósito: outras pessoas (gerente, estoquista), outros lugares (escritório, d
 | Vendas | Faturamento líquido, ticket médio, cancelamentos; por hora, forma de pagamento, caixa, dia e produtos mais vendidos; exportação CSV |
 | Fechamentos | Conferência de turno: fundo + dinheiro − sangrias = **esperado** × **declarado**, com falta e sobra |
 | Usuários | Papéis **admin**, **gerente** (tudo menos usuários) e **estoquista** (estoque, sem produtos e preços) |
-| Loja | Nome fantasia, razão social, CNPJ, IE, endereço, **rodapé do cupom**, **logo** e **cores** (só admin) |
+| Loja | Nome fantasia, razão social, CNPJ, IE, endereço, **rodapé do cupom**, **logo** e **cor da faixa** (só admin) |
 
 - **Login** por usuário e senha (hash PBKDF2, cookie de 12 h). No primeiro start, o servidor cria o usuário `admin`
   com a senha de `Backoffice:InitialAdminPassword`; sem ela, gera uma senha e mostra uma única vez no log.
@@ -385,12 +386,16 @@ estorno em dinheiro fora da gaveta, já corrigido.
 ## Marca e dados da loja
 
 Nada da loja fica no código. Em **retaguarda > Loja** o admin cadastra nome, razão social, CNPJ, IE, endereço,
-rodapé do cupom, logo e duas cores (principal e destaque):
+rodapé do cupom, logo e a cor da faixa.
 
-- **Retaguarda:** a logo sai de `/retaguarda/marca/logo` e as cores de `/retaguarda/marca.css`; sem cadastro, vale a
+**Co-marca:** a interface é sempre Synthia em todas as lojas. A loja aparece na logo (numa placa branca), numa faixa
+de 4 px na cor dela logo abaixo e no cupom. A cor principal continua no cadastro e no `/sync/store`, mas não pinta a
+tela. Tokens, logo e regras completas estão no guia de marca do Synthia.
+
+- **Retaguarda:** a logo sai de `/retaguarda/marca/logo` e a cor da faixa de `/retaguarda/marca.css` (`--tenant-accent`); sem cadastro, vale a
   logo padrão do produto ([`tools/branding/make_default_logo.py`](tools/branding/make_default_logo.py)).
 - **Caixa:** puxa `/sync/store` a cada minuto, guarda a cópia no SQLite e a logo num arquivo ao lado do banco, e
-  funciona com ela offline. A logo só é baixada de novo quando o `logoHash` muda. Nome, logo e cores trocam na tela
+  funciona com ela offline. A logo só é baixada de novo quando o `logoHash` muda. Nome, logo e a faixa trocam na tela
   sem reiniciar.
 - **Cupom:** nome, IE, endereço e rodapé vêm do cadastro; o **CNPJ é sempre o do `terminal.json`**, porque é o do
   certificado e compõe a chave da NFC-e. Se os dois divergirem, o caixa mostra um aviso.

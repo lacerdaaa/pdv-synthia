@@ -74,6 +74,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         var pending = _host.Get<OutboxPusher>().PendingCount();
         var version = _host.Get<LocalCatalog>().CurrentVersion();
         SyncLevel = pending == 0 ? SyncLevel.Ok : pending < PendingAlertThreshold ? SyncLevel.Pending : SyncLevel.Alert;
-        SyncText = pending == 0 ? $"Sincronizado · catálogo v{version}" : $"{pending} evento(s) a enviar · catálogo v{version}";
+        // Vocabulário do balcão: "evento" e "sync" ficam na documentação técnica.
+        SyncText = pending == 0 ? $"Tudo enviado · catálogo v{version}"
+            : pending == 1 ? $"1 registro guardado no caixa · catálogo v{version}"
+            : $"{pending} registros guardados no caixa · catálogo v{version}";
     }
 }

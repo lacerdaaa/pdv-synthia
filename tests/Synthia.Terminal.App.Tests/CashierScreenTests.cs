@@ -100,8 +100,9 @@ public sealed class CashierScreenTests : IDisposable
 
         Assert.Equal("Mercado da Esquina", StoreBrand.Current.StoreName);
         Assert.NotSame(defaultLogo, StoreBrand.Current.Logo);
-        Assert.Equal(Color.Parse("#114477"), ((SolidColorBrush)Application.Current!.Resources["NavyBrush"]!).Color);
-        Assert.Equal(Color.Parse("#AA2200"), ((SolidColorBrush)Application.Current!.Resources["RedBrush"]!).Color);
+        // Co-marca: só a faixa leva a cor da loja; a interface continua no Petróleo do Synthia.
+        Assert.Equal(Color.Parse("#AA2200"), ((SolidColorBrush)Application.Current!.Resources["TenantAccentBrush"]!).Color);
+        Assert.Equal(Color.Parse("#0B5563"), ((SolidColorBrush)Application.Current!.Resources["PrimaryBrush"]!).Color);
     }
 
     [AvaloniaFact]
