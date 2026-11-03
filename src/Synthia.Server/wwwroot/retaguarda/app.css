@@ -29,7 +29,7 @@ code { font-family: var(--mono); font-size: .9em; background: #ece8df; padding: 
 .mono { font-family: var(--mono); font-size: 13.5px; }
 .muted { color: var(--muted); }
 
-.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; background: linear-gradient(to right, var(--navy) 240px, transparent 240px); }
+.shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; background: linear-gradient(to right, var(--navy) 240px, transparent 240px); }
 .side { background: var(--navy); color: white; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
 .brand { display: block; background: white; padding: 14px 20px; border-bottom: 4px solid var(--tenant-accent); text-align: center; }
 .brand img { height: 92px; }
@@ -180,3 +180,8 @@ input[type=color] { height: 42px; padding: 4px; cursor: pointer; }
 .login .signature svg { color: var(--sy-primary); }
 .swatch-note { display: flex; align-items: center; gap: 10px; }
 .swatch-note span { width: 40px; height: 8px; border-radius: 2px; display: inline-block; }
+
+/* Tabela larga rola dentro do cartão em vez de empurrar a página. */
+.table-scroll { overflow-x: auto; border-radius: 12px; }
+.table-scroll .grid-table td.num, .table-scroll .grid-table th.num { white-space: nowrap; }
+.nowrap { white-space: nowrap; }

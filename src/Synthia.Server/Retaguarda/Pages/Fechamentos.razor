@@ -21,18 +21,18 @@
     <div class="tile"><span>Sobra total</span><b>@Fmt.Money(Surplus)</b></div>
 </div>
 
+<div class="table-scroll">
 <table class="grid-table">
-    <thead><tr><th>Caixa</th><th>Operador</th><th>Aberto</th><th>Fechado</th><th class="num">Vendas</th><th class="num">Fundo</th>
+    <thead><tr><th>Caixa</th><th>Turno</th><th class="num">Vendas</th><th class="num">Fundo</th>
         <th class="num">Dinheiro</th><th class="num">Sangrias</th><th class="num">Esperado</th><th class="num">Declarado</th><th class="num">Diferença</th></tr></thead>
     <tbody>
         @foreach (var s in shifts)
         {
             <tr class="@(s.DifferenceCents is < 0 ? "row-error" : "")">
-                <td>@s.TerminalId</td>
-                <td>@s.Operator</td>
-                <td>@(s.OpenedAt is { } o ? Fmt.When(o) : "—")</td>
-                <td>@(s.ClosedAt is { } c ? Fmt.When(c) : "")@if (!s.Closed) { <span class="badge update">aberto</span> }</td>
-                <td class="num">@s.Sales · @Fmt.Money(s.SalesCents)</td>
+                <td>@s.TerminalId<br /><small class="muted">@s.Operator</small></td>
+                <td class="nowrap">@(s.OpenedAt is { } o ? Fmt.When(o) : "—")<br />
+                    @if (s.ClosedAt is { } c) { <small class="muted">até @Fmt.When(c)[^5..]</small> } else { <span class="badge update">aberto</span> }</td>
+                <td class="num">@Fmt.Money(s.SalesCents)<br /><small class="muted">@s.Sales venda(s)</small></td>
                 <td class="num">@Fmt.Money(s.OpeningCashCents)</td>
                 <td class="num">@Fmt.Money(s.CashSalesCents)</td>
                 <td class="num">@Fmt.Money(s.WithdrawalsCents)</td>
@@ -45,6 +45,7 @@
         }
     </tbody>
 </table>
+</div>
 @if (shifts.Count == 0) { <p class="empty">Nenhum turno no período.</p> }
 <p class="muted">Esperado = fundo de troco + vendas em dinheiro (já sem troco e devoluções) − sangrias. Diferença = declarado − esperado.</p>
 
