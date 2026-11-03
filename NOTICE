@@ -1,0 +1,14 @@
+Synthia · PDV offline-first para supermercados
+Copyright (C) 2026 Eduardo Lacerda e contribuidores
+
+O código-fonte é distribuído sob a GNU Affero General Public License v3.0 (arquivo LICENSE).
+
+Componentes de terceiros incluídos neste repositório:
+- Fontes Archivo e Atkinson Hyperlegible Next: SIL Open Font License 1.1
+  (src/Synthia.Server/wwwroot/retaguarda/fonts/OFL-*.txt e src/Synthia.Terminal.App/Licenses/OFL-*.txt).
+
+Marcas:
+- O nome e a logo "Xandão Supermercados" (docs/img/logo-xandao*.png e capturas de tela) pertencem ao Xandão
+  Supermercados, cliente zero do projeto, e aparecem apenas como exemplo de cadastro de loja. Não estão cobertos
+  pela AGPL-3.0; não os use para identificar outra loja ou produto.
+- Quem distribuir uma versão modificada deve deixar claro que ela não é a versão oficial do Synthia.
