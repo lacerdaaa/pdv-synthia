@@ -1,0 +1,58 @@
+# Synthia
+
+> PDV (ponto de venda) offline-first para supermercados, em C# / .NET 10. Cada caixa vende sozinho com SQLite local
+> e manda fatos imutáveis (eventos) por uma outbox; o servidor da loja (ASP.NET Core + PostgreSQL) grava os eventos de
+> forma idempotente, deriva projeções (estoque, vendas, turnos, fila de NFC-e) e distribui o catálogo e o cadastro da
+> loja; a retaguarda (Blazor Server) roda no mesmo servidor. Licença AGPL-3.0. Documentação e domínio em português.
+
+Pontos que mais confundem quem chega:
+
+- Evento é imutável e idempotente: chave primária `event_id` (UUIDv7 gerado na origem), gravado com
+  `ON CONFLICT DO NOTHING`. Corrige-se com outro evento, nunca com UPDATE.
+- Projeções são descartáveis e reconstruídas do log (`POST /backoffice/projections/rebuild`). O saldo de estoque é
+  "última contagem + movimentos posteriores", mantido em `stock_levels`.
+- Contratos (`Synthia.Contracts`) são compartilhados por caixa e servidor de versões diferentes: só se acrescentam
+  campos opcionais ou tipos de evento novos.
+- Dinheiro em centavos (`long`), datas em UTC. NFC-e e TEF ainda são simulados (interfaces `INfceEmitter`,
+  `IPaymentTerminal`); a integração real será com ACBrLib e um provedor de TEF.
+- Multi-loja por co-marca: a interface é sempre Synthia; nome, logo, cor da faixa e dados do cupom vêm do cadastro da
+  loja (`/sync/store`). O CNPJ fiscal é o do `terminal.json` (certificado), não o do cadastro.
+
+## Comece aqui
+
+- [README](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/README.md): visão geral, arquitetura, API, eventos, cenários de falha, volume de dados e roadmap
+- [AGENTS.md](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/AGENTS.md): como compilar, testar e as regras que um agente de código não pode quebrar
+- [CONTRIBUTING.md](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/CONTRIBUTING.md): ambiente, regras do núcleo, estilo de commits e PRs
+
+## Contratos e sync
+
+- [Payloads dos eventos](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Contracts/Events/Payloads.cs): venda, turno, sangria, cancelamentos, entrada, contagem, perda, NFC-e
+- [Tipos de evento](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Contracts/Events/EventTypes.cs): os 11 tipos
+- [Envelope](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Contracts/Events/EventEnvelope.cs): campos comuns (event_id, stream, sequência, caixa, horário, versão do catálogo)
+- [Mensagens e rotas de sync](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Contracts/Sync/SyncMessages.cs): `/sync/events`, `/sync/catalog`, `/sync/catalog/snapshot`, `/sync/store`
+- [Uuid7](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Contracts/Uuid7.cs): UUIDv7 monotônico, inclusive no mesmo milissegundo
+
+## Servidor
+
+- [Program.cs](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Server/Program.cs): DI, autenticação (cookie, chave por caixa, X-Api-Key), todas as rotas
+- [EventStore](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Server/Sync/EventStore.cs): gravação idempotente do lote e rebuild das projeções
+- [Projector](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Server/Sync/Projector.cs): o que cada evento faz em cada projeção
+- [StockLevels](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Server/Sync/StockLevels.cs): saldo mantido por evento, travando produtos em ordem para não haver deadlock
+- [ReportService](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Server/Backoffice/ReportService.cs): relatório de vendas e conferência de turno
+- [Migrações](https://github.com/lacerdaaa/pdv-synthia/tree/main/src/Synthia.Server/Data/Migrations): esquema em SQL numerado, só para frente
+
+## Caixa
+
+- [CheckoutSession](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Terminal.Core/Sales/CheckoutSession.cs): a venda independente de tela (códigos, balança, pagamentos com TEF, cupom, gaveta)
+- [SaleService](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Terminal.Core/Sales/SaleService.cs): fecha a venda, emite a NFC-e (a chave vai no evento) e grava o evento na outbox
+- [Outbox](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Terminal.Core/Storage/Outbox.cs) e [OutboxPusher](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Terminal.Core/Sync/OutboxPusher.cs): envio em lotes com backoff
+- [TerminalConfig](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Terminal.Core/TerminalConfig.cs) e [exemplo comentado](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/config/terminal.example.json): configuração de um caixa (loja, servidor, NFC-e, balança, impressora)
+- [Etiqueta de balança](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/src/Synthia.Terminal.Core/Catalog/ScaleBarcode.cs): EAN-13 com PLU e valor ou peso
+
+## Optional
+
+- [Visão geral animada](https://github.com/lacerdaaa/pdv-synthia/blob/main/docs/sistema.html): página única com arquitetura, fluxo da venda e retaguarda (HTML; melhor no navegador)
+- [Simulador de um dia de loja](https://github.com/lacerdaaa/pdv-synthia/tree/main/tools/Synthia.Simulator): roteiro real contra o servidor, com quedas e reenvio
+- [Gerador de um ano de dados](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/tools/load/one-year.sql): teste de volume
+- [Testes do servidor](https://github.com/lacerdaaa/pdv-synthia/tree/main/tests/Synthia.Server.Tests) e [do caixa](https://github.com/lacerdaaa/pdv-synthia/tree/main/tests/Synthia.Terminal.Tests): exemplos executáveis de cada regra
+- [SECURITY.md](https://raw.githubusercontent.com/lacerdaaa/pdv-synthia/main/SECURITY.md): como reportar falhas
