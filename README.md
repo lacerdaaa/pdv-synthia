@@ -6,6 +6,8 @@
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791)
 ![SQLite](https://img.shields.io/badge/SQLite-WAL-003B57)
+[![Licença: AGPL-3.0](https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-0B5563)](LICENSE)
+[![PRs bem-vindos](https://img.shields.io/badge/PRs-bem--vindos-FFC94A)](CONTRIBUTING.md)
 
 PDV offline-first para supermercados: caixas que vendem sozinhos, um servidor local que consolida e uma nuvem que
 é só cópia. Nasceu para o **Xandão Supermercados** (projeto Market SP), o cliente zero, e é um produto multi-loja:
@@ -17,6 +19,25 @@ Synthia; a loja entra com a logo, a faixa colorida e o cupom.
 
 **Documentação interativa:** rode o servidor e abra **http://localhost:5290/docs**. Lá estão a arquitetura, um
 simulador de sync, o catálogo de eventos e um **console de API ao vivo** gerado do OpenAPI, no estilo Swagger.
+
+## Status do projeto
+
+Código aberto, em desenvolvimento ativo, a caminho da primeira loja (o cliente zero). **Ainda não está pronto para
+emitir nota de verdade.**
+
+| Parte | Situação |
+|---|---|
+| Caixa: venda, balança, etiqueta, pagamentos, sangria, turno, cupom ESC/POS | Pronto, testado com dispositivos simulados e protocolos reais (Toledo, ESC/POS) |
+| Sync caixa ↔ servidor, catálogo, estoque, retaguarda, relatórios | Pronto, medido com um ano de dados |
+| **NFC-e** | **Simulada.** A emissão real depende da integração com a ACBrLib, do certificado A1, do CSC e de homologação na SEFAZ |
+| **TEF** | **Simulado.** Falta escolher e integrar o provedor (PayGo, SiTef...) |
+| Nuvem | Não implementada (a loja não depende dela) |
+
+> **Aviso fiscal:** emissão de documento fiscal tem regras por estado e por regime tributário. Antes de usar em
+> produção, integre a ACBr, homologue na SEFAZ e valide o cadastro tributário (NCM, CST/CSOSN, CFOP) com um contador.
+> O software é fornecido sem garantia, nos termos da [licença](LICENSE).
+
+Quer ajudar? Veja [CONTRIBUTING.md](CONTRIBUTING.md); integração fiscal e TEF são as frentes mais valiosas.
 
 ---
 
@@ -42,6 +63,9 @@ simulador de sync, o catálogo de eventos e um **console de API ao vivo** gerado
 - [Volume de dados](#volume-de-dados)
 - [Roadmap e decisões em aberto](#roadmap-e-decisões-em-aberto)
 - [Convenções](#convenções)
+- [Contribuindo](#contribuindo)
+- [Usando com IA](#usando-com-ia)
+- [Licença](#licença)
 
 ## Princípios
 
@@ -534,3 +558,27 @@ O que mudou:
   (`feat(server): …`, `fix(terminal): …`, `docs: …`), pequenos e focados.
 - Código e comentários em português do domínio (caixa, sangria, turno); identificadores em inglês.
 - Dinheiro sempre em centavos (`long`); datas em UTC.
+
+## Contribuindo
+
+Contribuições são muito bem-vindas: correções, testes, hardware, fiscal, TEF, documentação. Leia o
+[CONTRIBUTING.md](CONTRIBUTING.md) (ambiente, regras do núcleo, estilo de commit) e siga o
+[Código de Conduta](CODE_OF_CONDUCT.md). Falhas de segurança vão pelo reporte privado descrito em
+[SECURITY.md](SECURITY.md).
+
+## Usando com IA
+
+[`llms.txt`](llms.txt) resume o projeto para modelos de linguagem, com links para o que importa. Agentes de código
+(Claude Code, Codex, Cursor, Copilot) encontram em [`AGENTS.md`](AGENTS.md) como compilar, testar e as regras que
+não podem ser quebradas.
+
+## Licença
+
+Copyright (C) 2026 Eduardo Lacerda e contribuidores. Distribuído sob a
+[GNU Affero General Public License v3.0](LICENSE): você pode usar, estudar, modificar e redistribuir; versões
+modificadas, inclusive as oferecidas pela rede (a retaguarda, por exemplo), precisam disponibilizar o código-fonte
+sob a mesma licença. O link "Código-fonte" da retaguarda aponta para `Synthia:SourceUrl`; num fork, aponte para o seu
+repositório.
+
+O nome e a logo do Xandão Supermercados aparecem só como exemplo do cliente zero e não fazem parte da licença; veja
+[NOTICE](NOTICE).
